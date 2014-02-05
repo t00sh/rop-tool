@@ -3,6 +3,7 @@ ropc
 
 Tool for finding gadgets in ELF32 binaries.
 
+```
 Usage : ropc [options]
 Options : 
   -s <string>    Search string in memory.
@@ -15,5 +16,5 @@ Options :
   -N             No colors.
   -h             Print help.
   -v             Print current version.
-
+```
 

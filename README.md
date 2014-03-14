@@ -32,6 +32,8 @@ General options
   -h, --help         Print help
   -v, --version      Print version
 
+```
+
 === AUTHOR
 Tosh 
 

@@ -39,8 +39,9 @@ static void print_string(STRING *s) {
 	   "%s%s\n"
 	   COLOR_RESET, 
 	   s->addr, 
-	   s->string,
-	   s->addr == NOT_FOUND ? COLOR_RED : COLOR_GREEN);
+	   s->addr == NOT_FOUND ? COLOR_RED : COLOR_GREEN,
+	   s->string);
+
   } else {
     printf("0x%.8x  ->  %s %s\n", 
 	   s->addr, 

@@ -3,45 +3,24 @@
 /* Test if the 32 bits address don't contains bad chars */
 /* Ex : addr=0x0804800a, bad="\x0a" -> BAD */
 /* Ex : addr=0x0804800a, bad="\x48" -> GOOD */
-int is_good_addr(uint32_t addr, DATA *bad) {
+int is_good_addr(uint32_t addr, BLIST *bad) {
   uint32_t i;
 
   for(i = 0; i < bad->length; i++) {
-    if(((addr >> 24) & 0xFF) == bad->data[i]) {
+    if(((addr >> 24) & 0xFF) == bad->start[i]) {
       return 0;
     }
-    if(((addr >> 16) & 0xFF) == bad->data[i]) {
+    if(((addr >> 16) & 0xFF) == bad->start[i]) {
       return 0;
     }
-    if(((addr >> 8) & 0xFF) == bad->data[i]) {      
+    if(((addr >> 8) & 0xFF) == bad->start[i]) {
       return 0;
     }
-    if(((addr) & 0xFF) == bad->data[i]) {
+    if(((addr) & 0xFF) == bad->start[i]) {
       return 0;
     }
   }
   return 1;
-}
-
-DATA memdup(DATA *data) {
-  DATA ret;
-
-  ret.data = malloc(data->length);
-  if(ret.data == NULL)
-    FATAL_ERROR("OUT of memory");
-
-  ret.length = data->length;
-  ret.addr   = data->addr;
-  memcpy(ret.data, data->data, data->length);
-
-  return ret;
-}
-
-/* Test if char is in range [0-9a-fA-F] */
-int is_hexa_char(int c) {
-  return (isdigit(c) 
-	  || (c >= 'a' && c <= 'f') 
-	  || (c >= 'A' && c <= 'F'));
 }
 
 /* Convert 'a' -> 10 */
@@ -63,64 +42,71 @@ int dec_to_hex(int c) {
 
 /* Convert raw data, to opcodes representation : "\x3a\x2e..." */
 /* char* returned must be free by the caller */
-char* data_to_opcodes(DATA *data) {
+char* blist_to_opcodes(BLIST *blist) {
   char *string;
   uint32_t i;
+  char *p;
 
-  string = malloc(data->length*4 + 1);
+  string = malloc(blist->length*4 + 1);
   if(string == NULL)
-    FATAL_ERROR("OUT of memory");
+    SYSCALL_FATAL_ERROR("malloc()");
 
-  for(i = 0; i < data->length; i++) {
-    string[i*4] = '\\';
-    string[i*4+1] = 'x';
-    string[i*4+2] = dec_to_hex(data->data[i] / 16);
-    string[i*4+3] = dec_to_hex(data->data[i] % 16);
+  p = string;
+
+  for(i = 0; i < blist->length; i++) {
+    if(!isgraph(blist->start[i])) {
+      *(p++) = '\\';
+      *(p++) = 'x';
+      *(p++) = dec_to_hex(blist->start[i] / 16);
+      *(p++) = dec_to_hex(blist->start[i] % 16);
+    } else {
+      *(p++) = blist->start[i];
+    }
   }
-  string[i*4] = '\0';
+  *p = '\0';
 
   return string;
 }
 
 /* Convert "\x0a\x2c..." to raw data */
 /* DATA.data returned must be free by the caller */
-DATA opcodes_to_data(char *str) {
-int len, i;
- DATA data;
+BLIST opcodes_to_blist(char *str) {
+  int len, i;
+  BLIST blist;
 
  len = strlen(str);
  i = 0;
 
- data.data = malloc(len + 1);
+ blist.start = malloc(len + 1);
+ if(blist.start == NULL)
+   SYSCALL_FATAL_ERROR("malloc()");
 
  while(*str != '\0') {
    if(str[0] == '\\' && str[1] == 'x') {
-     if(is_hexa_char(str[2]) && is_hexa_char(str[3])) {
-       data.data[i] = hex_to_dec(str[2]) * 16;
-       data.data[i] += hex_to_dec(str[3]);
+     if(isxdigit(str[2]) && isxdigit(str[3])) {
+       blist.start[i] = hex_to_dec(str[2]) * 16;
+       blist.start[i] += hex_to_dec(str[3]);
        str += 3;
      }
    } else {
-     data.data[i] = *str;
+     blist.start[i] = *str;
    }
    str++;
    i++;
  }
- data.length = i;
- return data;
+ blist.length = i;
+ return blist;
 }
 
-/* Search src in dst. Start searching at specified offset */
-uint32_t memsearch(DATA *dst, DATA *src, uint32_t offset) {
-  uint32_t i, j;
-  
-  for(i = offset; i < dst->length-src->length; i++) {
-    for(j = 0; j < src->length; j++) {
-      if(dst->data[i+j] != src->data[j])
-	break;
-    }
-    if(j == src->length)
-      return i;
+uint32_t memsearch(void *s1, size_t s1_len, void *s2, size_t s2_len) {
+  size_t i;
+
+  if(s1_len < s2_len)
+    return 0;
+
+  for(i = 0; i < s1_len - s2_len; i++) {
+    if(!memcmp((uint8_t*)(s1)+i, s2, s2_len))
+       return i;
   }
-  return (uint32_t)(-1);
-} 
+  return (uint32_t)-1;
+}

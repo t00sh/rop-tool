@@ -1,36 +1,30 @@
 .PHONY: clean
 
-CC = gcc
-CFLAGS = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized 
-CFLAGS += -Wunreachable-code -g3 -DLINUX
-CFLAGS += -L lib/ -I include/
+VERSION = 1.0
+PACKAGE = ropc
 
-SRC = $(wildcard src/*.c) 
+CC = gcc
+CFLAGS = -O3 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized
+CFLAGS += -Wunreachable-code -g3 -fstack-protector-all
+CFLAGS += -I include/
+CFLAGS += -lBeaEngine
+CFLAGS += -DVERSION=\"$(VERSION)\" -DPACKAGE=\"$(PACKAGE)\"
+#CFLAGS += -pg
+
+SRC = $(wildcard src/*.c)
 OBJ = $(SRC:%.c=%.o)
 
-LIB = lib/libdasm.a
-LIB_SRC = $(wildcard lib/*.c)
-LIB_OBJ = $(LIB_SRC:%.c=%.o)
-
-EXE = ropc
+EXE = $(PACKAGE)
 
 all: $(EXE)
 
-$(EXE): $(OBJ) $(LIB)
-	@echo "  LINK $(EXE)" ;
+$(EXE): $(OBJ)
+	@echo " LINK $(EXE)" ;
 	@$(CC) $(CFLAGS) -o $(EXE) $(OBJ) $(LIB);
 
 %.o:%.c
-	@echo "  CC $@" ;
-	@$(CC) $(CFLAGS) -c $< -o $@ ;
-
-$(LIB): $(LIB_OBJ)
-	@echo "  AR $@" ;
-	@ar -q $@ $(LIB_OBJ) 2>/dev/null;
-
-$(LIB_OBJ): $(LIB_SRC)
-	@echo "  CC $@" ;
+	@echo " CC $@" ;
 	@$(CC) $(CFLAGS) -c $< -o $@ ;
 
 clean:
-	rm $(EXE) $(OBJ) $(LIB) $(LIB_OBJ)
+	rm $(EXE) $(OBJ)

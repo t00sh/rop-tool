@@ -14,24 +14,44 @@
 #include <sys/mman.h>
 #include <ctype.h>
 #include <getopt.h>
+#include <limits.h>
+#include <assert.h>
+#include <beaengine/BeaEngine.h>
 
-#include "libdasm.h"
-
-#define VERSION "1.0"
-#define PROGNAME "ROPc"
-
-#define MAX_PATH_LEN 256
 #define MAX_DEPTH 50
-
-#define STAGE0_STRCPY 1
-#define STAGE0_MEMSET 2
-#define STAGE0_MEMCPY 3
+#define MAX_INSTR_SIZE 128
 
 #define COLOR_RESET    "\033[m"
 #define COLOR_RED      "\033[31m"
+#define COLOR_GREEN    "\033[32m"
 #define COLOR_WHITE    "\033[37m"
 #define COLOR_BLACK    "\033[30m"
 #define COLOR_BG_WHITE "\033[47m"
+
+
+enum MODE {
+  MODE_NONE=0,
+  MODE_STRING,
+  MODE_GADGET
+};
+
+enum OUTPUT {
+  OUTPUT_NONE=0,
+  OUTPUT_C,
+  OUTPUT_PERL,
+  OUTPUT_BASH,
+  OUTPUT_C_PLUS,
+  OUTPUT_PYTHON,
+  OUTPUT_RUBY,
+  OUTPUT_PHP,
+  OUTPUT_ASM
+};
+
+enum FLAVOR {
+  FLAVOR_NONE=0,
+  FLAVOR_INTEL,
+  FLAVOR_ATT
+};
 
 #define SYSCALL_FATAL_ERROR(...) do {				\
     fprintf(stderr, "[-] ");					\
@@ -47,87 +67,130 @@
     exit(EXIT_FAILURE);						\
   }while(0)
 
-typedef struct DATA {
-  uint8_t *data;
-  uint32_t length;
+/* Memory structure */
+typedef struct MEM {
   uint32_t addr;
-}DATA, STRING;
+  uint32_t length;
+  uint8_t  *start;
+}MEM;
 
+/* Elf structure */
 typedef struct ELF {
-  Elf32_Ehdr *ehdr;
-  Elf32_Shdr *shdr;
-  Elf32_Phdr *phdr;
-  DATA data;
+  
+  union ehdr {
+    Elf32_Ehdr *x32;
+    Elf64_Ehdr *x64;
+  }ehdr;
+
+  union shdr {
+    Elf32_Shdr *x32;
+    Elf64_Shdr *x64;
+  }shdr;
+
+  union phdr {
+    Elf32_Phdr *x32;
+    Elf64_Phdr *x64;
+  }phdr;
+
+  uint8_t *e_ident;
+  MEM mem;
 
 }ELF;
 
+#define GADGET_COMMENT_LEN 256
+
+/* Gadget structure */
 typedef struct GADGET {
-  char *string;
-  uint32_t addr;
+  char comment[GADGET_COMMENT_LEN];
+  uint32_t value;
   struct GADGET *next;
 
 }GADGET;
 
-# define GADGET_TABLE_SIZE 0x5000
+/* Gadget list structure */
+typedef struct GLIST {
+  GADGET **g_table;
+  uint32_t size;
+}GLIST;
 
-typedef struct GADGETS {
-  GADGET* table[GADGET_TABLE_SIZE];  
-}GADGETS;
+/* Bytes list structure */
+typedef struct BLIST {
+  uint8_t *start;
+  uint32_t length;
 
-typedef struct STRINGS {
-  STRING **lst;
-  uint32_t entries;
-  uint32_t entries_alloc;
-}STRINGS;
+}BLIST;
 
-typedef struct OPTIONS {
-  int search_gadget;
-  int search_string;
-  char filename[MAX_PATH_LEN];
-  int depth;  
-  int call;
-  DATA bad_chars;
-  int filter;
-  int no_colors;
-  int stage0;
-  FILE *out;
-  int att_syntax;
+typedef struct STRING {
+  uint32_t addr;
+  char *string;
+  struct STRING *next;
 
-}OPTIONS;
+}STRING;
 
-extern OPTIONS Options;
-extern ELF File;
-extern DATA String;
+typedef struct SLIST {
+  STRING *head;
+  STRING *tail;
+  uint32_t size;
+
+}SLIST;
+
+extern char options_filename[PATH_MAX];
+extern enum MODE options_mode;
+extern enum FLAVOR options_flavor;
+extern enum OUTPUT options_output;
+extern int options_color;
+extern uint8_t options_depth;
+extern int options_filter;
+extern BLIST options_bad;
+extern BLIST options_search;
 
 /* elf */
-void load_elf(const char *filename, ELF *elf);
-void free_elf(ELF *elf);
+void elf_load(ELF *elf, const char *filename);
+void elf_free(ELF *elf);
+MEM elf_getseg(ELF *elf, uint32_t p_type, uint32_t p_flags);
 
-/* string */
-void free_strings(STRINGS *s);
-void add_string(STRINGS *s, STRING *string);
-void print_string(STRING *s);
-void print_strings(STRINGS *s);
-STRINGS searching_strings_in_elf(ELF *elf, STRING *string);
 
-/* gadget */
-void free_gadgets(GADGETS *g);
-void print_gadgets(GADGETS *g);
-void searching_gadgets_in_elf(GADGETS *g, ELF *elf);
+/* dis */
+int dis_instr(DISASM *dis, uint8_t *code, uint32_t len, int arch);
+int dis_is_call(DISASM *dis);
+int dis_is_jmp(DISASM *dis);
+int dis_is_ret(DISASM *dis);
+ 
+/* gfind */
+void gfind_in_elf(GLIST *glist, ELF *elf);
+
+/* glist */
+void glist_free(GLIST **glist);
+void glist_add(GLIST *glist, GADGET *g);
+GLIST* glist_new(void);
+GADGET* glist_find(GLIST *glist, const char *comment);
+uint32_t glist_size(GLIST *glist);
+void glist_foreach(GLIST *glist, void(*callback)(GADGET*));
+
+/* slist */
+SLIST* slist_new(void);
+void slist_add(SLIST *slist, char *string, uint32_t addr);
+void slist_free(SLIST **slist);
+void slist_foreach(SLIST *slist, void (*callback)(STRING*));
+uint32_t slist_size(SLIST *slist);
 
 /* misc */
-DATA memdup(DATA *data);
-uint32_t memsearch(DATA *dst, DATA *src, uint32_t offset);
-int is_good_addr(uint32_t addr, DATA *bad);
-int is_hexa_char(int c);
-int hex_to_dec(int c);
-int dec_to_hex(int c);
-char* data_to_opcodes(DATA *data);
-DATA opcodes_to_data(char *str);
+BLIST opcodes_to_blist(char *str);
+char* blist_to_opcodes(BLIST *blist);
+int is_good_addr(uint32_t addr, BLIST *bad);
+uint32_t memsearch(void *s1, size_t s1_len, void *s2, size_t s2_len);
 
-/* filter */
-int filter_gadget(char *gadget);
+/* print */
+void print_glist(GLIST *glist);
+void print_slist(SLIST *slist);
 
-/* stage0 */
-void stage0_strcpy(void);
+/* options */
+void options_parse(int argc, char **argv);
+
+/* gfilter */
+int gfilter_gadget(char *instr);
+
+/* sfind */
+void sfind_in_elf(SLIST *slist, ELF *elf, BLIST *string);
+
 #endif

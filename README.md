@@ -3,6 +3,9 @@ ropc
 
 Tool for finding gadgets in ELF32 binaries.
 
+
+=== OPTIONS
+
 ```
 Usage : ropc [options]
 Options : 
@@ -18,3 +21,7 @@ Options :
   -v             Print current version.
 ```
 
+=== AUTHOR
+Tosh 
+
+duretsimon73 -at- gmail ~dot~ com

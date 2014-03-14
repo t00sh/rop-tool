@@ -116,7 +116,8 @@ enum BINFMT_ERR {
 enum BINFMT_TYPE {
   BINFMT_TYPE_UNDEF=0,
   BINFMT_TYPE_ELF32,
-  BINFMT_TYPE_ELF64
+  BINFMT_TYPE_ELF64,
+  BINFMT_TYPE_RAW
 };
 
 enum BINFMT_ENDIAN {
@@ -198,6 +199,7 @@ extern enum MODE options_mode;
 extern enum FLAVOR options_flavor;
 extern enum OUTPUT options_output;
 extern int options_color;
+extern int options_raw;
 extern uint8_t options_depth;
 extern int options_filter;
 extern BLIST options_bad;
@@ -211,6 +213,9 @@ enum BINFMT_ERR elf32_load(BINFMT *bin);
 
 /* elf64 */
 enum BINFMT_ERR elf64_load(BINFMT *bin);
+
+/* raw */
+enum BINFMT_ERR raw_load(BINFMT *bin);
 
 /* dis */
 int dis_instr(DISASM *dis, byte_t *code, len_t len, int arch);

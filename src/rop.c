@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
   }
 
   /* cleanup */
+
   bin_free(&bin);
   if(options_search.start)
     free(options_search.start);

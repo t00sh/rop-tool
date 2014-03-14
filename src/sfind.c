@@ -56,6 +56,7 @@ void sfind_in_bin(SLIST *slist, BINFMT *bin, BLIST *blist) {
   MEM *m;
 
   for(m = bin->mlist->head; m != NULL; m = m->next) {
+    /* TODO: search in all +R mem */
     if(m->flags & MEM_FLAG_PROT_R && m->flags & MEM_FLAG_PROT_X)
       sfind_in_mem(slist, m, blist);
   }

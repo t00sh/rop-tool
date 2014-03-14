@@ -47,9 +47,13 @@ void bin_load(BINFMT *bin, const char *filename) {
   bin->mapped = xmmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
   bin->mapped_size = st.st_size;
 
+  if(options_raw) {
+    raw_load(bin);
+    return;
+  }
+
   for(i = 0; bin_list[i].load != NULL; i++) {
     err = bin_list[i].load(bin);
-    DEBUG("Try to load %s -> %d", bin_list[i].name, err);
     if(err == BINFMT_ERR_OK) {
       bin_check(bin);
       return;

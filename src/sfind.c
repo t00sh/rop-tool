@@ -2,14 +2,14 @@
 
 static addr_t sfind_get_addr(MEM *mem, byte_t *start, len_t length) {
   addr_t addr;
-  off_t off, index;
+  addr_t off, index;
 
   off = 0;
 
   do {
     index = memsearch(mem->start+off, mem->length-off, start, length);
 
-    if(index == (off_t)-1)
+    if(index == NOT_FOUND)
       return 0;
 
     addr = mem->addr + off + index;
@@ -47,7 +47,7 @@ static void sfind_in_mem(SLIST *slist, MEM *mem, BLIST *blist) {
       op.start = blist->start+i;
       op.length = 1;
       tmp = blist_to_opcodes(&op);
-      slist_add(slist, tmp, 0);
+      slist_add(slist, tmp, NOT_FOUND);
     }
   }  
 }

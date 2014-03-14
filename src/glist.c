@@ -72,8 +72,22 @@ void glist_add(GLIST *glist, GADGET *g) {
   glist->size++;
 }
 
+GADGET* glist_find(const GLIST *glist, int (*compare)(GADGET*, const void*), const void *user) {
+  GADGET *g;
+  int i;
 
-GADGET* glist_find(GLIST *glist, const char *comment) {
+  for(i = 0; i < GLIST_TABLE_SIZE; i++) {
+    g = glist->g_table[i];
+    while(g != NULL) {
+      if(compare(g, user))
+	return g;
+      g = g->next;      
+    }
+  }
+  return NULL;
+}
+
+int glist_exist(GLIST *glist, const char *comment) {
   GADGET *g;
   uint32_t hash;
 
@@ -81,9 +95,9 @@ GADGET* glist_find(GLIST *glist, const char *comment) {
 
   for(g = glist->g_table[hash]; g != NULL; g = g->next) {
     if(!strcmp(g->comment, comment))
-      return g;
+      return 1;
   }
-  return NULL;
+  return 0;
 }
 
 int glist_size(GLIST *glist) {

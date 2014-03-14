@@ -1,16 +1,24 @@
 #include "ropc.h"
 
+/* =========================================================================
+   ======================================================================= */
+
 /* print a gadget */
 static void print_gadget(GADGET *g) {
   if(options_color) {
     printf(COLOR_BLACK 
-	   COLOR_BG_WHITE "0x%.8llx" 
+	   COLOR_BG_WHITE "0x%.8x" 
 	   COLOR_RESET "  ->  " 
-	   COLOR_GREEN "%s\n"
-	   COLOR_RESET, 
-	   g->value, g->comment);
+	   "%s%s\n" 
+	   COLOR_RESET, 	   
+	   g->addr, 
+	   g->addr == NOT_FOUND ? COLOR_RED : COLOR_GREEN,
+	   g->comment);
   } else {
-    printf("0x%.8llx  ->  %s\n", g->value, g->comment);
+    printf("0x%.8x  ->  %s %s\n", 
+	   g->addr, 
+	   g->comment,
+	   g->addr == NOT_FOUND ? "(NOT FOUND)" : "");
   }
 }
 
@@ -20,26 +28,36 @@ void print_glist(GLIST *glist) {
   printf("\n  *** %d gadgets found ***\n\n", glist_size(glist));
 }
 
+/* =========================================================================
+   ======================================================================= */
+
 static void print_string(STRING *s) {
   if(options_color) {
     printf(COLOR_BLACK 
-	   COLOR_BG_WHITE "0x%.8llx" 
+	   COLOR_BG_WHITE "0x%.8x" 
 	   COLOR_RESET "  ->  " 
-	   COLOR_GREEN "%s "
-	   COLOR_RED   "%s\n"
+	   "%s%s\n"
 	   COLOR_RESET, 
 	   s->addr, 
 	   s->string,
-	   (s->addr) == 0 ? "(NOT FOUND)" : "");
+	   s->addr == NOT_FOUND ? COLOR_RED : COLOR_GREEN);
   } else {
-    printf("0x%.8llx  ->  %s %s\n", 
+    printf("0x%.8x  ->  %s %s\n", 
 	   s->addr, 
 	   s->string, 
-	   (s->addr == 0) ? "(NOT FOUND)" : "");
+	   s->addr == NOT_FOUND ? "(NOT FOUND)" : "");
   }
 }
 
 void print_slist(SLIST *slist) {
   slist_foreach(slist, print_string);
   printf("\n  *** %d strings found ***\n\n", slist_size(slist));
+}
+
+/* =========================================================================
+   ======================================================================= */
+
+void print_payload(PAYLOAD *payload) {
+  payload_foreach(payload, print_gadget);
+  printf("\n  *** %d gadgets found ***\n\n", payload_size(payload));
 }

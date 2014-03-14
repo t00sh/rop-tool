@@ -60,6 +60,7 @@ void options_parse(int argc, char **argv) {
   int opt;
   char *progname = argv[0];
   const struct option opts[] = {
+    {"payload",     no_argument,       NULL, 'P'},
     {"gadget",      no_argument,       NULL, 'G'},
     {"string",      required_argument, NULL, 'S'},
     {"flavor",      required_argument, NULL, 'f'},
@@ -73,8 +74,12 @@ void options_parse(int argc, char **argv) {
     {NULL,          0,                 NULL, 0  }
   };
 
-  while((opt = getopt_long(argc, argv, "GS:f:b:d:ahnvr", opts, NULL)) != -1) {
+  while((opt = getopt_long(argc, argv, "PGS:f:b:d:ahnvr", opts, NULL)) != -1) {
     switch(opt) {
+
+    case 'P':
+      options_mode = MODE_PAYLOAD;
+      break;
 
     case 'G':
       options_mode = MODE_GADGET;

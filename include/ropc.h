@@ -40,13 +40,14 @@
 /* =========================================================================
    ======================================================================= */
 
-typedef uint64_t addr_t;
-typedef uint64_t len_t;
+typedef uint32_t addr_t;
+typedef uint32_t len_t;
 typedef uint8_t byte_t;
 
 /* =========================================================================
    ======================================================================= */
 
+#define NOT_FOUND ((addr_t)-1)
 #define MAX_DEPTH 50
 
 #define COLOR_RESET    "\033[m"
@@ -59,10 +60,21 @@ typedef uint8_t byte_t;
 /* =========================================================================
    ======================================================================= */
 
+enum REGISTERS {
+  REGISTER_EAX,
+  REGISTER_EBX,
+  REGISTER_ECX,
+  REGISTER_
+};
+
+/* =========================================================================
+   ======================================================================= */
+
 enum MODE {
   MODE_NONE=0,
   MODE_STRING,
-  MODE_GADGET
+  MODE_GADGET,
+  MODE_PAYLOAD
 };
 
 enum OUTPUT {
@@ -153,7 +165,7 @@ typedef struct BINFMT {
 /* Gadget structure */
 typedef struct GADGET {
   char comment[GADGET_COMMENT_LEN];
-  addr_t value;
+  addr_t addr;
   struct GADGET *next;
 
 }GADGET;
@@ -173,6 +185,14 @@ typedef struct BLIST {
   len_t length;
 
 }BLIST;
+
+/* =========================================================================
+   ======================================================================= */
+typedef struct PAYLOAD {
+  GADGET *head;
+  GADGET *tail;
+  int size;
+}PAYLOAD;
 
 /* =========================================================================
    ======================================================================= */
@@ -230,9 +250,10 @@ void gfind_in_bin(GLIST *glist, BINFMT *bin);
 void glist_free(GLIST **glist);
 void glist_add(GLIST *glist, GADGET *g);
 GLIST* glist_new(void);
-GADGET* glist_find(GLIST *glist, const char *comment);
+GADGET* glist_find(const GLIST *glist, int (*compare)(GADGET*, const void*), const void *user);
 int glist_size(GLIST *glist);
 void glist_foreach(GLIST *glist, void(*callback)(GADGET*));
+int glist_exist(GLIST *glist, const char *comment);
 
 /* slist */
 SLIST* slist_new(void);
@@ -252,17 +273,19 @@ MLIST* mlist_new(void);
 BLIST opcodes_to_blist(char *str);
 char* blist_to_opcodes(BLIST *blist);
 int is_good_addr(addr_t addr, BLIST *bad);
-off_t memsearch(void *s1, len_t s1_len, void *s2, len_t s2_len);
+addr_t memsearch(void *s1, len_t s1_len, void *s2, len_t s2_len);
 
 /* print */
 void print_glist(GLIST *glist);
 void print_slist(SLIST *slist);
+void print_payload(PAYLOAD *payload);
 
 /* options */
 void options_parse(int argc, char **argv);
 
 /* gfilter */
 int gfilter_gadget(char *instr);
+GADGET* gfilter_search(const GLIST *glist, const char *gadget);
 
 /* sfind */
 void sfind_in_bin(SLIST *slist, BINFMT *bin, BLIST *string);
@@ -282,5 +305,16 @@ int xfstat(int fildes, struct stat *buf);
 /* bin */
 void bin_free(BINFMT *bin);
 void bin_load(BINFMT *bin, const char *filename);
+
+/* payload */
+void payload_make(const GLIST *src, PAYLOAD *dst);
+PAYLOAD* payload_new(void);
+void payload_add(PAYLOAD *payload, const char *comment, addr_t addr);
+void payload_free(PAYLOAD **payload);
+void payload_foreach(PAYLOAD *payload, void (*callback)(GADGET*));
+int payload_size(PAYLOAD *payload);
+
+/* gmake */
+void gmake_setreg(const GLIST *src, PAYLOAD *dst, const char *reg, addr_t value);
 
 #endif

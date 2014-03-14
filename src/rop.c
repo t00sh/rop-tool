@@ -4,6 +4,7 @@ int main(int argc, char **argv) {
   BINFMT bin;
   GLIST *glist;
   SLIST *slist;
+  PAYLOAD *payload;
 
   options_parse(argc, argv);
   
@@ -23,6 +24,16 @@ int main(int argc, char **argv) {
     slist_free(&slist);
   }
 
+  if(options_mode == MODE_PAYLOAD) {
+    glist = glist_new();
+    gfind_in_bin(glist, &bin);
+    payload = payload_new();
+
+    payload_make(glist, payload);
+    print_payload(payload);
+    glist_free(&glist);
+    payload_free(&payload);
+  }
   /* cleanup */
 
   bin_free(&bin);

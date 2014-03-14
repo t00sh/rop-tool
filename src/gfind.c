@@ -1,7 +1,7 @@
 #include "ropc.h"
 
 /* Search the first instruction which finish a gadget, and return the offset */
-static off_t gfind_end(MEM *mem, off_t off) {
+static addr_t gfind_end(MEM *mem, off_t off) {
   DISASM dis;
   int len;
   len_t i;
@@ -17,7 +17,7 @@ static off_t gfind_end(MEM *mem, off_t off) {
     }
   }
 
-  return (uint32_t)-1;
+  return NOT_FOUND;
 }
 
 /* Get the gadget which start at <start> and finish at <end> */
@@ -30,9 +30,9 @@ static GADGET gfind_extract_gadget(MEM *mem, off_t start, off_t end) {
   int depth;
 
   /* Some inits */
-  memset(&g, 0, sizeof(g));
   memset(buffer, 0, sizeof(buffer));
   depth = len = 0;
+  g.addr = NOT_FOUND;
   
   for(i = start; i <= end; i += len) {
     len = dis_instr(&dis, mem->start + i, mem->length - i, 0);
@@ -60,7 +60,7 @@ static GADGET gfind_extract_gadget(MEM *mem, off_t start, off_t end) {
   if(dis_is_ret(&dis) 
      || ((dis_is_call(&dis) || dis_is_jmp(&dis))
 	 && depth == 1)) {
-    g.value = mem->addr + start;
+    g.addr = mem->addr + start;
     strcpy(g.comment, buffer);
   }
 
@@ -69,15 +69,15 @@ static GADGET gfind_extract_gadget(MEM *mem, off_t start, off_t end) {
 
 /* Find gadgets in memory */
 static void gfind_in_mem(GLIST *glist, MEM *mem) {
-  off_t end;
-  off_t i;
-  off_t start;
+  addr_t end;
+  addr_t i;
+  addr_t start;
   GADGET g;
 
   end = 0;
 
   /* First, find the end of the next gadget */
-  while((end = gfind_end(mem, end)) != (off_t)-1) {
+  while((end = gfind_end(mem, end)) != NOT_FOUND) {
 
     /* Some checks :) */
     if(end < options_depth)
@@ -90,7 +90,7 @@ static void gfind_in_mem(GLIST *glist, MEM *mem) {
       if(is_good_addr(mem->addr + i, &options_bad)) {
 	g = gfind_extract_gadget(mem, i, end);
 	/* If we found a gadget and if gadget don't exist */
-	if(g.value && glist_find(glist, g.comment) == NULL) {
+	if(g.addr != NOT_FOUND && !glist_exist(glist, g.comment)) {
 	  glist_add(glist, &g);
 	}           
       }

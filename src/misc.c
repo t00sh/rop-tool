@@ -94,7 +94,7 @@ BLIST opcodes_to_blist(char *str) {
  return blist;
 }
 
-off_t memsearch(void *s1, len_t s1_len, void *s2, len_t s2_len) {
+addr_t memsearch(void *s1, len_t s1_len, void *s2, len_t s2_len) {
   len_t i;
 
   if(s1_len < s2_len)
@@ -104,5 +104,5 @@ off_t memsearch(void *s1, len_t s1_len, void *s2, len_t s2_len) {
     if(!memcmp((byte_t*)(s1)+i, s2, s2_len))
        return i;
   }
-  return (off_t)-1;
+  return NOT_FOUND;
 }

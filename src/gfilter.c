@@ -92,77 +92,92 @@ static const char *att_filters[] = {
   NULL
 };
 
-static int _gfilter_gadget(char *instr, const char **filters) {
-  int i;
-  const char *p1;
-  char *p2;
+static int gfilter_strcmp(char *instr, const char *filter) {
+  const char *p1 = filter;
+  char *p2 = instr;
 
-  for(i = 0; filters[i] != NULL; i++) {
-    p1 = filters[i];
-    p2 = instr;
+  while(*p1 != '\0' && *p2 != '\0') {
+    if(*p1 == '%') {
 
-    while(*p1 != '\0' && *p2 != '\0') {
-      if(*p1 == '%') {
-
-	p1++;
-	if(*p1 == '%') {
-	  if(*p2 != '%')
-	    break;
-	}
-	if(*p1 == 'X') {
-	  if(*p2 != '0')
-	    break;
-	  strtol(p2, &p2, 0);
-	  p2--;
-	}
-	if(*p1 == 'R') {
-	  if(strncmp("eax", p2, 3) &&
-	     strncmp("ebx", p2, 3) &&
-	     strncmp("ecx", p2, 3) &&
-	     strncmp("edx", p2, 3) &&
-	     strncmp("esp", p2, 3) &&
-	     strncmp("ebp", p2, 3) &&
-	     strncmp("esi", p2, 3) &&
-	     strncmp("edi", p2, 3))
-	    break;
-	  p2 += 2;
-	}
-	if(*p1 == 'r') {
-	  if(strncmp("ax", p2, 2) &&
-	     strncmp("bx", p2, 2) &&
-	     strncmp("cx", p2, 2) &&
-	     strncmp("dx", p2, 2) &&
-	     strncmp("di", p2, 2) &&
-	     strncmp("si", p2, 2))
-	    break;
-	  p2++;
-	}
-
-	if(*p1 == 'b') {
-	  if(strncmp("al", p2, 2) &&
-	     strncmp("bl", p2, 2) &&
-	     strncmp("cl", p2, 2) &&
-	     strncmp("dl", p2, 2))
-	    break;
-	  p2++;
-
-	}
-      } else {
-	if(*p1 != *p2)
-	  break;
-      } 
       p1++;
-      p2++;
-    }
-    if(*p1 == '\0' && *p2 == '\0')
+      if(*p1 == '%') {
+	if(*p2 != '%')
+	  break;
+      }
+      if(*p1 == 'X') {
+	if(*p2 != '0')
+	  break;
+	strtol(p2, &p2, 0);
+	p2--;
+      }
+      if(*p1 == 'R') {
+	if(strncmp("eax", p2, 3) &&
+	   strncmp("ebx", p2, 3) &&
+	   strncmp("ecx", p2, 3) &&
+	   strncmp("edx", p2, 3) &&
+	   strncmp("esp", p2, 3) &&
+	   strncmp("ebp", p2, 3) &&
+	   strncmp("esi", p2, 3) &&
+	   strncmp("edi", p2, 3))
+	  break;
+	p2 += 2;
+      }
+      if(*p1 == 'r') {
+	if(strncmp("ax", p2, 2) &&
+	   strncmp("bx", p2, 2) &&
+	   strncmp("cx", p2, 2) &&
+	   strncmp("dx", p2, 2) &&
+	   strncmp("di", p2, 2) &&
+	   strncmp("si", p2, 2))
+	  break;
+	p2++;
+      }
+
+      if(*p1 == 'b') {
+	if(strncmp("al", p2, 2) &&
+	   strncmp("bl", p2, 2) &&
+	   strncmp("cl", p2, 2) &&
+	   strncmp("dl", p2, 2))
+	  break;
+	p2++;
+
+      }
+    } else {
+      if(*p1 != *p2)
+	break;
+    } 
+    p1++;
+    p2++;
+  }
+  if(*p1 == '\0' && *p2 == '\0')
+    return 1;
+
+  return 0;
+}
+
+int gfilter_gadget(char *instr) {
+  const char **p_filters;
+  int i;
+
+  if(options_flavor == FLAVOR_INTEL)
+    p_filters = intel_filters;
+  else
+    p_filters = att_filters;
+
+  for(i = 0; p_filters[i] != NULL; i++) {
+    if(gfilter_strcmp(instr, p_filters[i])) {
       return 1;
+    }
   }
   return 0;
 }
 
-/* Check if instruction match filters */
-int gfilter_gadget(char *instr) {
-  if(options_flavor == FLAVOR_INTEL)
-    return _gfilter_gadget(instr, intel_filters);
-  return _gfilter_gadget(instr, att_filters);
+static int gfilter_compare(GADGET *g, const void *user) {
+  if(gfilter_strcmp(g->comment, user))
+    return 1;
+  return 0;
+}
+
+GADGET* gfilter_search(const GLIST *glist, const char *gadget) {
+  return glist_find(glist, gfilter_compare, gadget);
 }

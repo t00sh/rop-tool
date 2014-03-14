@@ -1,14 +1,14 @@
 .PHONY: clean
 
-VERSION = 1.0
+VERSION = 1.1 beta
 PACKAGE = ropc
 
 CC = gcc
-CFLAGS = -O3 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized
-CFLAGS += -Wunreachable-code -g3 -fstack-protector-all
+CFLAGS = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized
+CFLAGS += -Wunreachable-code -g -fstack-protector-all -pie -z relro -z now -D_FORTIFY_SOURCE=2
 CFLAGS += -I include/
 CFLAGS += -lBeaEngine
-CFLAGS += -DVERSION=\"$(VERSION)\" -DPACKAGE=\"$(PACKAGE)\"
+CFLAGS += -DVERSION="\"$(VERSION)\"" -DPACKAGE="\"$(PACKAGE)\""
 #CFLAGS += -pg
 
 SRC = $(wildcard src/*.c)

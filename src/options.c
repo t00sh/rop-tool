@@ -40,6 +40,7 @@ static void usage(const char *progname) {
   printf("  -b, --bad          Specify bad chars\n");
   printf("  -f, --file         Specify the file\n");
   printf("  -s, --search       Specify the string to search\n");
+  printf("  -n, --no-color     No colored output\n");
   printf("\n");
   printf("General options\n");
   printf("  -h, --help         Print help\n");

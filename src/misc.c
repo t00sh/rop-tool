@@ -3,7 +3,7 @@
 /* Test if the 32 bits address don't contains bad chars */
 /* Ex : addr=0x0804800a, bad="\x0a" -> BAD */
 /* Ex : addr=0x0804800a, bad="\x48" -> GOOD */
-int is_good_addr(uint32_t addr, BLIST *bad) {
+int is_good_addr(addr_t addr, BLIST *bad) {
   uint32_t i;
 
   for(i = 0; i < bad->length; i++) {
@@ -47,9 +47,7 @@ char* blist_to_opcodes(BLIST *blist) {
   uint32_t i;
   char *p;
 
-  string = malloc(blist->length*4 + 1);
-  if(string == NULL)
-    SYSCALL_FATAL_ERROR("malloc()");
+  string = xmalloc(blist->length*4 + 1);
 
   p = string;
 
@@ -77,9 +75,7 @@ BLIST opcodes_to_blist(char *str) {
  len = strlen(str);
  i = 0;
 
- blist.start = malloc(len + 1);
- if(blist.start == NULL)
-   SYSCALL_FATAL_ERROR("malloc()");
+ blist.start = xmalloc(len + 1);
 
  while(*str != '\0') {
    if(str[0] == '\\' && str[1] == 'x') {
@@ -98,15 +94,15 @@ BLIST opcodes_to_blist(char *str) {
  return blist;
 }
 
-uint32_t memsearch(void *s1, size_t s1_len, void *s2, size_t s2_len) {
-  size_t i;
+off_t memsearch(void *s1, len_t s1_len, void *s2, len_t s2_len) {
+  len_t i;
 
   if(s1_len < s2_len)
     return 0;
 
   for(i = 0; i < s1_len - s2_len; i++) {
-    if(!memcmp((uint8_t*)(s1)+i, s2, s2_len))
+    if(!memcmp((byte_t*)(s1)+i, s2, s2_len))
        return i;
   }
-  return (uint32_t)-1;
+  return (off_t)-1;
 }

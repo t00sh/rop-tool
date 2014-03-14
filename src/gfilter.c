@@ -93,7 +93,7 @@ static const char *att_filters[] = {
 };
 
 static int _gfilter_gadget(char *instr, const char **filters) {
-  uint32_t i;
+  int i;
   const char *p1;
   char *p2;
 

@@ -3,21 +3,15 @@
 SLIST* slist_new(void) {
   SLIST *slist;
 
-  slist = calloc(1, sizeof(SLIST));
-  
-  if(slist == NULL)
-    SYSCALL_FATAL_ERROR("calloc()");
+  slist = xcalloc(1, sizeof(SLIST)); 
 
   return slist;
 }
 
-void slist_add(SLIST *slist, char *string, uint32_t addr) {
+void slist_add(SLIST *slist, char *string, addr_t addr) {
   STRING *new;
 
-  new = malloc(sizeof(STRING));
-
-  if(new == NULL)
-    SYSCALL_FATAL_ERROR("calloc()");
+  new = xmalloc(sizeof(STRING));
 
   new->string = string;
   new->addr = addr;
@@ -58,6 +52,6 @@ void slist_foreach(SLIST *slist, void (*callback)(STRING*)) {
   }
 }
 
-uint32_t slist_size(SLIST *slist) {
+int slist_size(SLIST *slist) {
   return slist->size;
 }

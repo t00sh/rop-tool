@@ -50,15 +50,8 @@ void glist_free(GLIST **glist) {
 GLIST* glist_new(void) {
   GLIST *glist;
 
-  glist = calloc(1, sizeof(GLIST));
-
-  if(glist == NULL)
-    SYSCALL_FATAL_ERROR("calloc()");
-
-  glist->g_table = calloc(GLIST_TABLE_SIZE, sizeof(GADGET*));
-
-  if(glist->g_table == NULL)
-    SYSCALL_FATAL_ERROR("calloc()");
+  glist = xcalloc(1, sizeof(GLIST));
+  glist->g_table = xcalloc(GLIST_TABLE_SIZE, sizeof(GADGET*));
   
   return glist;
 }
@@ -67,8 +60,8 @@ GLIST* glist_new(void) {
 void glist_add(GLIST *glist, GADGET *g) {
   GADGET *new;
   uint32_t hash;
-  if((new = malloc(sizeof(*new))) == NULL)
-    SYSCALL_FATAL_ERROR("malloc");
+
+  new = xmalloc(sizeof(*new));
 
   memcpy(new, g, sizeof(GADGET));
 
@@ -93,6 +86,6 @@ GADGET* glist_find(GLIST *glist, const char *comment) {
   return NULL;
 }
 
-uint32_t glist_size(GLIST *glist) {
+int glist_size(GLIST *glist) {
   return glist->size;
 }

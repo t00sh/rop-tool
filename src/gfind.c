@@ -1,10 +1,10 @@
 #include "ropc.h"
 
 /* Search the first instruction which finish a gadget, and return the offset */
-static uint32_t gfind_end(MEM *mem, uint32_t off) {
+static off_t gfind_end(MEM *mem, off_t off) {
   DISASM dis;
   int len;
-  uint32_t i;
+  len_t i;
 
   /* Itere the entire memory */
   for(i = off; i < mem->length; i++) {
@@ -21,12 +21,12 @@ static uint32_t gfind_end(MEM *mem, uint32_t off) {
 }
 
 /* Get the gadget which start at <start> and finish at <end> */
-static GADGET gfind_extract_gadget(MEM *mem, uint32_t start, uint32_t end) {
+static GADGET gfind_extract_gadget(MEM *mem, off_t start, off_t end) {
   char buffer[GADGET_COMMENT_LEN];
   DISASM dis;
   GADGET g;
   int len;
-  uint32_t i;
+  off_t i;
   int depth;
 
   /* Some inits */
@@ -69,15 +69,15 @@ static GADGET gfind_extract_gadget(MEM *mem, uint32_t start, uint32_t end) {
 
 /* Find gadgets in memory */
 static void gfind_in_mem(GLIST *glist, MEM *mem) {
-  uint32_t end;
-  uint32_t i;
-  uint32_t start;
+  off_t end;
+  off_t i;
+  off_t start;
   GADGET g;
 
   end = 0;
 
   /* First, find the end of the next gadget */
-  while((end = gfind_end(mem, end)) != (uint32_t)-1) {
+  while((end = gfind_end(mem, end)) != (off_t)-1) {
 
     /* Some checks :) */
     if(end < options_depth)
@@ -100,11 +100,12 @@ static void gfind_in_mem(GLIST *glist, MEM *mem) {
 }
 
 /* search gadget in ELF file */
-void gfind_in_elf(GLIST *glist, ELF *elf) {
-  MEM seg;
+void gfind_in_bin(GLIST *glist, BINFMT *bin) {
+  MEM *m;
 
-  seg = elf_getseg(elf, PT_LOAD, PF_X | PF_R);
-
-  gfind_in_mem(glist, &seg);
+  for(m = bin->mlist->head; m != NULL; m = m->next) {
+    if(m->flags & MEM_FLAG_PROT_X)
+      gfind_in_mem(glist, m);
+  }
 }
 

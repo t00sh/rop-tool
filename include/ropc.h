@@ -18,8 +18,36 @@
 #include <assert.h>
 #include <beaengine/BeaEngine.h>
 
+/* =========================================================================
+   ======================================================================= */
+
+#define FATAL_ERROR(...) do {					\
+    fprintf(stderr, "[-] ");					\
+    fprintf(stderr, __VA_ARGS__);				\
+    fprintf(stderr, "\n");					\
+    exit(EXIT_FAILURE);						\
+  }while(0)
+
+#ifndef NDEBUG
+#define DEBUG(...) do {				\
+  fprintf(stderr, "[DEBUG] ");			\
+  fprintf(stderr, __VA_ARGS__);			\
+  fprintf(stderr, "\n");			\
+  }while(0)
+#else
+#define DEBUG(...)
+#endif
+/* =========================================================================
+   ======================================================================= */
+
+typedef uint64_t addr_t;
+typedef uint64_t len_t;
+typedef uint8_t byte_t;
+
+/* =========================================================================
+   ======================================================================= */
+
 #define MAX_DEPTH 50
-#define MAX_INSTR_SIZE 128
 
 #define COLOR_RESET    "\033[m"
 #define COLOR_RED      "\033[31m"
@@ -28,6 +56,8 @@
 #define COLOR_BLACK    "\033[30m"
 #define COLOR_BG_WHITE "\033[47m"
 
+/* =========================================================================
+   ======================================================================= */
 
 enum MODE {
   MODE_NONE=0,
@@ -53,56 +83,76 @@ enum FLAVOR {
   FLAVOR_ATT
 };
 
-#define SYSCALL_FATAL_ERROR(...) do {				\
-    fprintf(stderr, "[-] ");					\
-    fprintf(stderr, __VA_ARGS__);				\
-    fprintf(stderr, " : %s\n", strerror(errno));		\
-    exit(EXIT_FAILURE);						\
-  }while(0)
+/* =========================================================================
+   ======================================================================= */
 
-#define FATAL_ERROR(...) do {					\
-    fprintf(stderr, "[-] ");					\
-    fprintf(stderr, __VA_ARGS__);				\
-    fprintf(stderr, "\n");					\
-    exit(EXIT_FAILURE);						\
-  }while(0)
+#define MEM_FLAG_PROT_X 1
+#define MEM_FLAG_PROT_R 2
+#define MEM_FLAG_PROT_W 4
 
 /* Memory structure */
 typedef struct MEM {
-  uint32_t addr;
-  uint32_t length;
-  uint8_t  *start;
+  addr_t addr;
+  byte_t *start;
+  len_t length;
+  uint32_t flags;
+  struct MEM *next;
 }MEM;
 
-/* Elf structure */
-typedef struct ELF {
-  
-  union ehdr {
-    Elf32_Ehdr *x32;
-    Elf64_Ehdr *x64;
-  }ehdr;
+typedef struct MLIST {
+  MEM *head;
+  int size;
+}MLIST;
 
-  union shdr {
-    Elf32_Shdr *x32;
-    Elf64_Shdr *x64;
-  }shdr;
+/* =========================================================================
+   ======================================================================= */
+enum BINFMT_ERR {
+  BINFMT_ERR_OK=0,
+  BINFMT_ERR_UNRECOGNIZED,
+  BINFMT_ERR_NOTSUPPORTED,
+  BINFMT_ERR_MALFORMEDFILE,
+};
 
-  union phdr {
-    Elf32_Phdr *x32;
-    Elf64_Phdr *x64;
-  }phdr;
+enum BINFMT_TYPE {
+  BINFMT_TYPE_UNDEF=0,
+  BINFMT_TYPE_ELF32,
+  BINFMT_TYPE_ELF64
+};
 
-  uint8_t *e_ident;
-  MEM mem;
+enum BINFMT_ENDIAN {
+  BINFMT_ENDIAN_UNDEF=0,
+  BINFMT_ENDIAN_LITTLE,
+  BINFMT_ENDIAN_BIG
+};
 
-}ELF;
+enum BINFMT_ARCH {
+  BINFMT_ARCH_UNDEF=0,
+  BINFMT_ARCH_X86,
+  BINFMT_ARCH_X86_64,
+};
+
+typedef struct BINFMT {
+  enum BINFMT_TYPE type;
+  enum BINFMT_ENDIAN endian;
+  enum BINFMT_ARCH arch;
+  MLIST *mlist;
+
+  /* TODO: Symbols list */
+
+  byte_t *mapped;
+  size_t mapped_size;
+}BINFMT;
+
+
+/* =========================================================================
+   ======================================================================= */
 
 #define GADGET_COMMENT_LEN 256
 
 /* Gadget structure */
 typedef struct GADGET {
   char comment[GADGET_COMMENT_LEN];
-  uint32_t value;
+  addr_t value;
   struct GADGET *next;
 
 }GADGET;
@@ -110,18 +160,24 @@ typedef struct GADGET {
 /* Gadget list structure */
 typedef struct GLIST {
   GADGET **g_table;
-  uint32_t size;
+  int size;
 }GLIST;
+
+/* =========================================================================
+   ======================================================================= */
 
 /* Bytes list structure */
 typedef struct BLIST {
-  uint8_t *start;
-  uint32_t length;
+  byte_t *start;
+  len_t length;
 
 }BLIST;
 
+/* =========================================================================
+   ======================================================================= */
+
 typedef struct STRING {
-  uint32_t addr;
+  addr_t addr;
   char *string;
   struct STRING *next;
 
@@ -130,9 +186,12 @@ typedef struct STRING {
 typedef struct SLIST {
   STRING *head;
   STRING *tail;
-  uint32_t size;
+  int size;
 
 }SLIST;
+
+/* =========================================================================
+   ======================================================================= */
 
 extern char options_filename[PATH_MAX];
 extern enum MODE options_mode;
@@ -144,41 +203,51 @@ extern int options_filter;
 extern BLIST options_bad;
 extern BLIST options_search;
 
-/* elf */
-void elf_load(ELF *elf, const char *filename);
-void elf_free(ELF *elf);
-MEM elf_getseg(ELF *elf, uint32_t p_type, uint32_t p_flags);
+/* =========================================================================
+   ======================================================================= */
 
+/* elf32 */
+enum BINFMT_ERR elf32_load(BINFMT *bin);
+
+/* elf64 */
+enum BINFMT_ERR elf64_load(BINFMT *bin);
 
 /* dis */
-int dis_instr(DISASM *dis, uint8_t *code, uint32_t len, int arch);
+int dis_instr(DISASM *dis, byte_t *code, len_t len, int arch);
 int dis_is_call(DISASM *dis);
 int dis_is_jmp(DISASM *dis);
 int dis_is_ret(DISASM *dis);
  
 /* gfind */
-void gfind_in_elf(GLIST *glist, ELF *elf);
+void gfind_in_bin(GLIST *glist, BINFMT *bin);
 
 /* glist */
 void glist_free(GLIST **glist);
 void glist_add(GLIST *glist, GADGET *g);
 GLIST* glist_new(void);
 GADGET* glist_find(GLIST *glist, const char *comment);
-uint32_t glist_size(GLIST *glist);
+int glist_size(GLIST *glist);
 void glist_foreach(GLIST *glist, void(*callback)(GADGET*));
 
 /* slist */
 SLIST* slist_new(void);
-void slist_add(SLIST *slist, char *string, uint32_t addr);
+void slist_add(SLIST *slist, char *string, addr_t addr);
 void slist_free(SLIST **slist);
 void slist_foreach(SLIST *slist, void (*callback)(STRING*));
-uint32_t slist_size(SLIST *slist);
+int slist_size(SLIST *slist);
+
+/* mlist */
+void mlist_add(MLIST *mlist, addr_t addr, byte_t *start, len_t length, uint32_t flags);
+void mlist_free(MLIST **mlist);
+void mlist_foreach(MLIST *mlist, void (*callback)(MEM*));
+int mlist_size(MLIST *mlist);
+MLIST* mlist_new(void);
 
 /* misc */
 BLIST opcodes_to_blist(char *str);
 char* blist_to_opcodes(BLIST *blist);
-int is_good_addr(uint32_t addr, BLIST *bad);
-uint32_t memsearch(void *s1, size_t s1_len, void *s2, size_t s2_len);
+int is_good_addr(addr_t addr, BLIST *bad);
+off_t memsearch(void *s1, len_t s1_len, void *s2, len_t s2_len);
 
 /* print */
 void print_glist(GLIST *glist);
@@ -191,6 +260,22 @@ void options_parse(int argc, char **argv);
 int gfilter_gadget(char *instr);
 
 /* sfind */
-void sfind_in_elf(SLIST *slist, ELF *elf, BLIST *string);
+void sfind_in_bin(SLIST *slist, BINFMT *bin, BLIST *string);
+
+/* xfunc */
+void *xmalloc(size_t size);
+void* xcalloc(size_t nmemb, size_t size);
+char* xstrdup(const char *s);
+int xopen(const char *path, int oflag);
+ssize_t xread(int fd, void *buf, size_t count);
+ssize_t xwrite(int fd, const void *buf, size_t count);
+void* xrealloc(void *ptr, size_t size);
+void* xmmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
+int xclose(int fildes);
+int xfstat(int fildes, struct stat *buf);
+
+/* bin */
+void bin_free(BINFMT *bin);
+void bin_load(BINFMT *bin, const char *filename);
 
 #endif

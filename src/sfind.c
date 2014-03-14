@@ -1,15 +1,15 @@
 #include "ropc.h"
 
-static uint32_t sfind_get_addr(MEM *mem, uint8_t *start, uint32_t length) {
-  uint32_t addr;
-  uint32_t off, index;
+static addr_t sfind_get_addr(MEM *mem, byte_t *start, len_t length) {
+  addr_t addr;
+  off_t off, index;
 
   off = 0;
 
   do {
     index = memsearch(mem->start+off, mem->length-off, start, length);
 
-    if(index == (uint32_t)-1)
+    if(index == (off_t)-1)
       return 0;
 
     addr = mem->addr + off + index;
@@ -21,7 +21,7 @@ static uint32_t sfind_get_addr(MEM *mem, uint8_t *start, uint32_t length) {
 }
 
 static void sfind_in_mem(SLIST *slist, MEM *mem, BLIST *blist) {
-  uint32_t i, j, addr;
+  addr_t i, j, addr;
   char *tmp;
   BLIST op;
   int found;
@@ -52,9 +52,11 @@ static void sfind_in_mem(SLIST *slist, MEM *mem, BLIST *blist) {
   }  
 }
 
-void sfind_in_elf(SLIST *slist, ELF *elf, BLIST *blist) {
-  MEM mem;
+void sfind_in_bin(SLIST *slist, BINFMT *bin, BLIST *blist) {
+  MEM *m;
 
-  mem = elf_getseg(elf, PT_LOAD, PF_R | PF_X);
-  sfind_in_mem(slist, &mem, blist);
+  for(m = bin->mlist->head; m != NULL; m = m->next) {
+    if(m->flags & MEM_FLAG_PROT_R && m->flags & MEM_FLAG_PROT_X)
+      sfind_in_mem(slist, m, blist);
+  }
 }

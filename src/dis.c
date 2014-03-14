@@ -1,6 +1,6 @@
 #include "ropc.h"
 
-int dis_instr(DISASM *dis, uint8_t *code, uint32_t len, int arch) {
+int dis_instr(DISASM *dis, byte_t *code, len_t len, int arch) {
 
   memset(dis, 0, sizeof(DISASM));
 

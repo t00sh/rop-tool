@@ -76,7 +76,7 @@ static int elf64_is(BINFMT *bin) {
 enum BINFMT_ARCH elf64_getarch(BINFMT *bin) {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
   
-  if(ehdr->e_machine == EM_IA_64)
+  if(ehdr->e_machine == EM_X86_64)
     return BINFMT_ARCH_X86_64;
 
   return BINFMT_ARCH_UNDEF;

@@ -1,5 +1,28 @@
 #include "ropc.h"
 
+/************************************************************************/
+/* RopC - A Return Oriented Programming tool			        */
+/* 								        */
+/* Copyright 2013-2014, -TOSH-					        */
+/* File coded by -TOSH-						        */
+/* 								        */
+/* This file is part of RopC.					        */
+/* 								        */
+/* RopC is free software: you can redistribute it and/or modify	        */
+/* it under the terms of the GNU General Public License as published by */
+/* the Free Software Foundation, either version 3 of the License, or    */
+/* (at your option) any later version.				        */
+/* 								        */
+/* RopC is distributed in the hope that it will be useful,	        */
+/* but WITHOUT ANY WARRANTY; without even the implied warranty of       */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
+/* GNU General Public License for more details.			        */
+/* 								        */
+/* You should have received a copy of the GNU General Public License    */
+/* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
+/************************************************************************/
+
+
 /* Search the first instruction which finish a gadget, and return the offset */
 static addr_t gfind_end(MEM *mem, off_t off) {
   DISASM dis;
@@ -21,7 +44,7 @@ static addr_t gfind_end(MEM *mem, off_t off) {
 }
 
 /* Get the gadget which start at <start> and finish at <end> */
-static GADGET gfind_extract_gadget(MEM *mem, off_t start, off_t end) {
+static GADGET gfind_extract_gadget(MEM *mem, off_t start, off_t end, enum BINFMT_ARCH arch) {
   char buffer[GADGET_COMMENT_LEN];
   DISASM dis;
   GADGET g;
@@ -35,14 +58,14 @@ static GADGET gfind_extract_gadget(MEM *mem, off_t start, off_t end) {
   g.addr = NOT_FOUND;
   
   for(i = start; i <= end; i += len) {
-    len = dis_instr(&dis, mem->start + i, mem->length - i, 0);
+    len = dis_instr(&dis, mem->start + i, mem->length - i, arch);
 
     /* Return false if is an invalid instruction */
     if(len == UNKNOWN_OPCODE || len == OUT_OF_BLOCK)
       return g;
 
     /* Filter gadget if option is set */
-    if(options_filter && !gfilter_gadget(dis.CompleteInstr))
+    if(options_filter && !gfilter_gadget(dis.CompleteInstr, arch))
       return g;
 
     /* Concatene the instruction to the current gadget string (check overflow) */
@@ -68,7 +91,7 @@ static GADGET gfind_extract_gadget(MEM *mem, off_t start, off_t end) {
 }
 
 /* Find gadgets in memory */
-static void gfind_in_mem(GLIST *glist, MEM *mem) {
+static void gfind_in_mem(GLIST *glist, MEM *mem, enum BINFMT_ARCH arch) {
   addr_t end;
   addr_t i;
   addr_t start;
@@ -88,7 +111,7 @@ static void gfind_in_mem(GLIST *glist, MEM *mem) {
     /* Extract gadgets between [start ; end] */
     for(i = start; i <= end; i++) {
       if(is_good_addr(mem->addr + i, &options_bad)) {
-	g = gfind_extract_gadget(mem, i, end);
+	g = gfind_extract_gadget(mem, i, end, arch);
 	/* If we found a gadget and if gadget don't exist */
 	if(g.addr != NOT_FOUND && !glist_exist(glist, g.comment)) {
 	  glist_add(glist, &g);
@@ -105,7 +128,7 @@ void gfind_in_bin(GLIST *glist, BINFMT *bin) {
 
   for(m = bin->mlist->head; m != NULL; m = m->next) {
     if(m->flags & MEM_FLAG_PROT_X)
-      gfind_in_mem(glist, m);
+      gfind_in_mem(glist, m, bin->arch);
   }
 }
 

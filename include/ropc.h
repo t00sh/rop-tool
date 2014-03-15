@@ -1,6 +1,29 @@
 #ifndef DEF_ROPC_H
 #define DEF_ROPC_H
 
+/************************************************************************/
+/* RopC - A Return Oriented Programming tool			        */
+/* 								        */
+/* Copyright 2013-2014, -TOSH-					        */
+/* File coded by -TOSH-						        */
+/* 								        */
+/* This file is part of RopC.					        */
+/* 								        */
+/* RopC is free software: you can redistribute it and/or modify	        */
+/* it under the terms of the GNU General Public License as published by */
+/* the Free Software Foundation, either version 3 of the License, or    */
+/* (at your option) any later version.				        */
+/* 								        */
+/* RopC is distributed in the hope that it will be useful,	        */
+/* but WITHOUT ANY WARRANTY; without even the implied warranty of       */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
+/* GNU General Public License for more details.			        */
+/* 								        */
+/* You should have received a copy of the GNU General Public License    */
+/* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
+/************************************************************************/
+
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,11 +60,12 @@
 #else
 #define DEBUG(...)
 #endif
+
 /* =========================================================================
    ======================================================================= */
 
-typedef uint32_t addr_t;
-typedef uint32_t len_t;
+typedef uint64_t addr_t;
+typedef uint64_t len_t;
 typedef uint8_t byte_t;
 
 /* =========================================================================
@@ -213,6 +237,7 @@ extern int options_color;
 extern int options_raw;
 extern uint8_t options_depth;
 extern int options_filter;
+extern const char *options_payload;
 extern BLIST options_bad;
 extern BLIST options_search;
 
@@ -229,7 +254,7 @@ enum BINFMT_ERR elf64_load(BINFMT *bin);
 enum BINFMT_ERR raw_load(BINFMT *bin);
 
 /* dis */
-int dis_instr(DISASM *dis, byte_t *code, len_t len, int arch);
+int dis_instr(DISASM *dis, byte_t *code, len_t len, enum BINFMT_ARCH arch);
 int dis_is_call(DISASM *dis);
 int dis_is_jmp(DISASM *dis);
 int dis_is_ret(DISASM *dis);
@@ -275,7 +300,7 @@ void print_payload(PAYLOAD *payload);
 void options_parse(int argc, char **argv);
 
 /* gfilter */
-int gfilter_gadget(char *instr);
+int gfilter_gadget(char *instr, enum BINFMT_ARCH arch);
 GADGET* gfilter_search(const GLIST *glist, const char *gadget);
 
 /* sfind */
@@ -296,16 +321,25 @@ int xfstat(int fildes, struct stat *buf);
 /* bin */
 void bin_free(BINFMT *bin);
 void bin_load(BINFMT *bin, const char *filename);
+MEM* bin_getmem(BINFMT *bin, uint32_t flags);
 
 /* payload */
-void payload_make(const GLIST *src, PAYLOAD *dst);
+void payload_make(BINFMT *bin, const GLIST *src, PAYLOAD *dst, const char *payload);
 PAYLOAD* payload_new(void);
 void payload_add(PAYLOAD *payload, const char *comment, addr_t addr);
 void payload_free(PAYLOAD **payload);
 void payload_foreach(PAYLOAD *payload, void (*callback)(GADGET*));
 int payload_size(PAYLOAD *payload);
+void payload_list(void);
 
-/* gmake */
-void gmake_setreg(const GLIST *src, PAYLOAD *dst, const char *reg, addr_t value);
+/* payload_x86.c */
+void payload_x86_execve_bin_sh(BINFMT *bin, const GLIST *src, PAYLOAD *dst);
+
+/* gmake_x86 */
+void gmake_x86_setreg(const GLIST *src, PAYLOAD *dst, const char *reg, addr_t value);
+void gmake_x86_swapstack(const GLIST *src, PAYLOAD *dst, addr_t addr);
+void gmake_x86_setmem(const GLIST *src, PAYLOAD *dst, addr_t addr, addr_t value);
+void gmake_x86_strcp(const GLIST *src, PAYLOAD *dst, addr_t addr, const char *str);
+void gmake_x86_syscall(const GLIST *src, PAYLOAD *dst);
 
 #endif

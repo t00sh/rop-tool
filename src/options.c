@@ -1,5 +1,28 @@
 #include "ropc.h"
 
+/************************************************************************/
+/* RopC - A Return Oriented Programming tool			        */
+/* 								        */
+/* Copyright 2013-2014, -TOSH-					        */
+/* File coded by -TOSH-						        */
+/* 								        */
+/* This file is part of RopC.					        */
+/* 								        */
+/* RopC is free software: you can redistribute it and/or modify	        */
+/* it under the terms of the GNU General Public License as published by */
+/* the Free Software Foundation, either version 3 of the License, or    */
+/* (at your option) any later version.				        */
+/* 								        */
+/* RopC is distributed in the hope that it will be useful,	        */
+/* but WITHOUT ANY WARRANTY; without even the implied warranty of       */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
+/* GNU General Public License for more details.			        */
+/* 								        */
+/* You should have received a copy of the GNU General Public License    */
+/* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
+/************************************************************************/
+
+
 /* Options */
 char options_filename[PATH_MAX]       = "./a.out";
 enum MODE options_mode                = MODE_GADGET;
@@ -9,6 +32,7 @@ int options_color                     = 1;
 int options_raw                       = 0;
 uint8_t options_depth                 = 15;
 int options_filter                    = 1;
+const char *options_payload           = "x86-bin-sh";
 BLIST options_bad                     = {NULL, 0};
 BLIST options_search                  = {NULL, 0};
 
@@ -25,9 +49,13 @@ static void usage(const char *progname) {
   printf("Tool for searching Gadgets in ELF binaries\n");
   printf("\n");
   printf("MODES\n");
-  printf("  -G --gadget        Gadget searching mode\n");
-  printf("  -S --string        String searching mode (argument required)\n");
-  printf("  -P --payload       Payload generator mode\n");
+  printf("  -G, --gadget       Gadget searching mode\n");
+  printf("  -S, --string       String searching mode (argument required)\n");
+  printf("  -P, --payload      Payload generator mode\n");
+  printf("\n");
+  printf("Payload options\n");
+  printf("  -p, --ptype       Specify the payload generator to use\n");
+  printf("  -l, --list        List payload generators available\n");
   printf("\n");
   printf("Filter options\n");
   printf("  -b, --bad          Specify bad chars\n");
@@ -57,12 +85,15 @@ enum FLAVOR options_set_flavor(const char *flavor) {
 }
 
 void options_parse(int argc, char **argv) {
+  int list = 0;
   int opt;
   char *progname = argv[0];
   const struct option opts[] = {
     {"payload",     no_argument,       NULL, 'P'},
     {"gadget",      no_argument,       NULL, 'G'},
     {"string",      required_argument, NULL, 'S'},
+    {"list",        no_argument,       NULL, 'l'},
+    {"ptype",       required_argument, NULL, 'p'},
     {"flavor",      required_argument, NULL, 'f'},
     {"bad",         required_argument, NULL, 'b'},
     {"depth",       required_argument, NULL, 'd'},
@@ -74,7 +105,7 @@ void options_parse(int argc, char **argv) {
     {NULL,          0,                 NULL, 0  }
   };
 
-  while((opt = getopt_long(argc, argv, "PGS:f:b:d:ahnvr", opts, NULL)) != -1) {
+  while((opt = getopt_long(argc, argv, "PGS:lp:f:b:d:ahnvr", opts, NULL)) != -1) {
     switch(opt) {
 
     case 'P':
@@ -88,6 +119,14 @@ void options_parse(int argc, char **argv) {
     case 'S':
       options_mode = MODE_STRING;
       options_search = opcodes_to_blist(optarg);
+      break;
+
+    case 'p':
+      options_payload = optarg;
+      break;
+
+    case 'l':
+      list = 1;
       break;
 
     case 'f':
@@ -125,6 +164,11 @@ void options_parse(int argc, char **argv) {
     default:
       usage(progname);      
     }
+  }
+
+  if(list) {
+    payload_list();
+    exit(EXIT_FAILURE);
   }
 
   if(options_depth > MAX_DEPTH)

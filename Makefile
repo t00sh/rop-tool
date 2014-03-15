@@ -5,14 +5,15 @@ PACKAGE = ropc
 
 CC = gcc
 CFLAGS = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized
-CFLAGS += -Wunreachable-code -g -fstack-protector-all -pie -z relro -z now -D_FORTIFY_SOURCE=2
+CFLAGS += -Wunreachable-code -g -fstack-protector-all
 CFLAGS += -I include/
 CFLAGS += -lBeaEngine
 CFLAGS += -DVERSION="\"$(VERSION)\"" -DPACKAGE="\"$(PACKAGE)\""
-#CFLAGS += -pg
+CFLAGS += -pg
 
-SRC = $(wildcard src/*.c)
-OBJ = $(SRC:%.c=%.o)
+SRC  = $(wildcard src/*.c)
+SRC += $(wildcard src/binfmt/*.c)
+OBJ  = $(SRC:%.c=%.o)
 
 EXE = $(PACKAGE)
 

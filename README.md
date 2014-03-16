@@ -4,37 +4,54 @@ ropc
 Tool for finding gadgets in ELF32 binaries.
 
 
-=== OPTIONS
+### OPTIONS
 
 ```
-Usage : ./ropc [options]
+Usage : ./ropc [OPTIONS] filename
 Tool for searching Gadgets in ELF binaries
 
 MODES
-  -G --gadget        Gadget searching mode
-  -S --string        String searching mode
-  -P --payload       Payload generator mode
+  -G, --gadget       Gadget searching mode
+  -S, --string       String searching mode (argument required)
+  -P, --payload      Payload generator mode
 
-Gadget Mode
-  -b, --bad          Specify bad chars
-  -d, --depth        Specify the depth searching
-  -f, --file         Specify the file
-  -a, --all          Display all gadgets
-  -n, --no-color     No colored output
-  -F, --flavor       Specify the flavor (intel or att)
+Payload options
+  -p, --ptype       Specify the payload generator to use
+  -l, --list        List payload generators available
 
-String Mode
+Filter options
   -b, --bad          Specify bad chars
-  -f, --file         Specify the file
-  -s, --search       Specify the string to search
+  -d, --depth        Specify the depth searching (gadget mode only)
+  -a, --all          Display all gadgets (gadget mode only)
+
+Output options
+  -n, --no-color     No colors
+  -f, --flavor       Specify the flavor (gadget mode only) : intel or att
 
 General options
+  -r, --raw          Open file in raw mode
   -h, --help         Print help
   -v, --version      Print version
 
 ```
 
-=== AUTHOR
+### EXAMPLES
+Basic gadget searching
+* ropc ./program 
+Search gadgets and exclude bad bytes in address
+* ropc ./program -b "\x00\x0a"
+Display all gadgets with AT&T syntax
+* ropc ./program -f att -a
+List payloads
+* ropc -l
+Genere a payload
+* ropc ./program -P
+Search a string in memory
+* ropc ./program -S "/bin/sh"
+Search in RAW file (not supported format)
+* ropc ./program -r
+
+### AUTHOR
 Tosh 
 
 duretsimon73 -at- gmail ~dot~ com

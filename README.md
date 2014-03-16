@@ -1,7 +1,7 @@
 ropc
 ====
 
-Tool for finding gadgets in ELF32 binaries.
+Tool for finding gadgets in binaries.
 
 
 ### OPTIONS
@@ -34,6 +34,15 @@ General options
   -v, --version      Print version
 
 ```
+
+### FEATURES
+* Multiples modes : String searching, Gadget searching and Payload generator
+* Colored output
+* Intel and AT&T flavor
+* Support of ELF and PE binary format
+* Support of I386 and IA64 architecture
+* ...
+
 
 ### EXAMPLES
 

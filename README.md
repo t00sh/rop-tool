@@ -36,19 +36,33 @@ General options
 ```
 
 ### EXAMPLES
+
 Basic gadget searching
+
 * ropc ./program 
+
 Search gadgets and exclude bad bytes in address
+
 * ropc ./program -b "\x00\x0a"
+
 Display all gadgets with AT&T syntax
+
 * ropc ./program -f att -a
+
 List payloads
+
 * ropc -l
+
 Genere a payload
+
 * ropc ./program -P
+
 Search a string in memory
+
 * ropc ./program -S "/bin/sh"
+
 Search in RAW file (not supported format)
+
 * ropc ./program -r
 
 ### AUTHOR

@@ -144,6 +144,7 @@ enum BINFMT_TYPE {
   BINFMT_TYPE_UNDEF=0,
   BINFMT_TYPE_ELF32,
   BINFMT_TYPE_ELF64,
+  BINFMT_TYPE_PE,
   BINFMT_TYPE_RAW
 };
 
@@ -249,6 +250,9 @@ enum BINFMT_ERR elf32_load(BINFMT *bin);
 
 /* elf64 */
 enum BINFMT_ERR elf64_load(BINFMT *bin);
+
+/* pe */
+enum BINFMT_ERR pe_load(BINFMT *bin);
 
 /* raw */
 enum BINFMT_ERR raw_load(BINFMT *bin);

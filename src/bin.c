@@ -31,6 +31,7 @@ typedef struct BINFMT_LIST {
 static BINFMT_LIST bin_list[] = {
   {"elf32", elf32_load},
   {"elf64", elf64_load},
+  {"pe", pe_load},
   {NULL,    NULL}
 };
 

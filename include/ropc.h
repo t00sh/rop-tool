@@ -28,18 +28,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <unistd.h>
 #include <errno.h>
+
 #include <elf.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/mman.h>
+
 #include <ctype.h>
 #include <getopt.h>
 #include <limits.h>
 #include <assert.h>
 #include <beaengine/BeaEngine.h>
+
+#include "plateform.h"
 
 /* =========================================================================
    ======================================================================= */
@@ -314,13 +313,10 @@ void sfind_in_bin(SLIST *slist, BINFMT *bin, BLIST *string);
 void *xmalloc(size_t size);
 void* xcalloc(size_t nmemb, size_t size);
 char* xstrdup(const char *s);
-int xopen(const char *path, int oflag);
-ssize_t xread(int fd, void *buf, size_t count);
-ssize_t xwrite(int fd, const void *buf, size_t count);
 void* xrealloc(void *ptr, size_t size);
-void* xmmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
-int xclose(int fildes);
-int xfstat(int fildes, struct stat *buf);
+FILE* xfopen(const char *path, const char *mode);
+int xfseek(FILE *stream, long offset, int whence);
+long xftell(FILE *stream);
 
 /* bin */
 void bin_free(BINFMT *bin);

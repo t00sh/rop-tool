@@ -60,16 +60,30 @@ static void bin_check(BINFMT *bin) {
     FATAL_ERROR("File format not recognized");
 }
 
+static long bin_get_size(FILE* file) {
+  long ret;
+
+  xfseek(file, 0, SEEK_END);
+  ret = xftell(file);
+  xfseek(file, 0, SEEK_SET);
+
+  return ret;
+}
+
 void bin_load(BINFMT *bin, const char *filename) {
-  struct stat st;
-  int i, fd;
+  FILE *fd;
+  long size;
+  int i;
   enum BINFMT_ERR err;
 
-  fd = xopen(filename, O_RDONLY);  
-  xfstat(fd, &st);
+  fd = xfopen(filename, "r");  
+  size = bin_get_size(fd);
 
-  bin->mapped = xmmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-  bin->mapped_size = st.st_size;
+  bin->mapped = xmalloc(size);
+  bin->mapped_size = size;
+
+  if(fread(bin->mapped, 1, (size_t)size, fd) != (size_t)size)
+    FATAL_ERROR("Error while read binary file");
 
   if(options_raw) {
     raw_load(bin);
@@ -80,17 +94,20 @@ void bin_load(BINFMT *bin, const char *filename) {
     err = bin_list[i].load(bin);
     if(err == BINFMT_ERR_OK) {
       bin_check(bin);
-      return;
+      break;
     }
     if(err != BINFMT_ERR_UNRECOGNIZED)
       FATAL_ERROR("Error in %s loader : %s", bin_list[i].name, bin_get_err(err));
   }
-  FATAL_ERROR("Format not supported");
+  if(bin_list[i].load == NULL)
+    FATAL_ERROR("Format not supported");
+
+  fclose(fd);
 }
 
 void bin_free(BINFMT *bin) {
   mlist_free(&bin->mlist);
-  munmap(bin->mapped, bin->mapped_size);
+  free(bin->mapped);
 }
 
 MEM* bin_getmem(BINFMT *bin, uint32_t flags) {

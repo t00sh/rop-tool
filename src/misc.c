@@ -129,3 +129,4 @@ addr_t memsearch(void *s1, len_t s1_len, void *s2, len_t s2_len) {
   }
   return NOT_FOUND;
 }
+

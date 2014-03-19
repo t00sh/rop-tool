@@ -96,6 +96,7 @@ void bin_load(BINFMT *bin, const char *filename) {
       bin_check(bin);
       break;
     }
+
     if(err != BINFMT_ERR_UNRECOGNIZED)
       FATAL_ERROR("Error in %s loader : %s", bin_list[i].name, bin_get_err(err));
   }

@@ -38,6 +38,9 @@
 #include <assert.h>
 #include <beaengine/BeaEngine.h>
 
+#include "xfunc.h"
+#include "safe_int.h"
+
 /* =========================================================================
    ======================================================================= */
 
@@ -346,5 +349,10 @@ void gmake_x86_swapstack(const GLIST *src, PAYLOAD *dst, addr_t addr);
 void gmake_x86_setmem(const GLIST *src, PAYLOAD *dst, addr_t addr, addr_t value);
 void gmake_x86_strcp(const GLIST *src, PAYLOAD *dst, addr_t addr, const char *str);
 void gmake_x86_syscall(const GLIST *src, PAYLOAD *dst);
+
+/* endian */
+uint64_t endian_get64(byte_t *p, enum BINFMT_ENDIAN endian);
+uint32_t endian_get32(byte_t *p, enum BINFMT_ENDIAN endian);
+uint16_t endian_get16(byte_t *p, enum BINFMT_ENDIAN endian);
 
 #endif

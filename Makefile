@@ -1,6 +1,6 @@
 .PHONY: clean
 
-VERSION = 1.1 beta
+VERSION = 1.1
 PACKAGE = ropc
 
 CC = gcc

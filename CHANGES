@@ -1,0 +1,17 @@
+Ropc v1.1 (2014-03-19)
+- Better gadget searching algorithm
+- Lot of code refactoring
+- AT&T syntax
+- Changing the disassemble library (BeaEngine)
+- Payload generator
+- ELF64 support 
+- PE32 and PE64 support
+- Raw mode, for searching in unknown formats
+- Better colored output
+- Little and Big endian support
+
+Ropc v1.0 (2014-02-02)
+- Colored output
+- ELF32 support
+- Search strings
+- Search gadgets

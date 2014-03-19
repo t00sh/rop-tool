@@ -23,6 +23,15 @@
 /************************************************************************/
 
 
+enum BINFMT_ARCH raw_get_arch(void) {
+  if(options_arch == ARCH_X86)
+    return BINFMT_ARCH_X86;
+  if(options_arch == ARCH_X86_64)
+    return BINFMT_ARCH_X86_64;
+
+  return BINFMT_ARCH_UNDEF;
+}
+
 enum BINFMT_ERR raw_load(BINFMT *bin) {
   bin->mlist = mlist_new();
 
@@ -33,7 +42,7 @@ enum BINFMT_ERR raw_load(BINFMT *bin) {
 	    MEM_FLAG_PROT_X | MEM_FLAG_PROT_R | MEM_FLAG_PROT_X);
 
   bin->type = BINFMT_TYPE_RAW;
-  bin->arch = BINFMT_ARCH_X86;
+  bin->arch = raw_get_arch();
   bin->endian = BINFMT_ENDIAN_LITTLE;
 
   return BINFMT_ERR_OK;

@@ -28,6 +28,7 @@ char options_filename[PATH_MAX]       = "./a.out";
 enum MODE options_mode                = MODE_GADGET;
 enum FLAVOR options_flavor            = FLAVOR_INTEL;
 enum OUTPUT options_output            = OUTPUT_PERL;
+enum ARCH options_arch                = ARCH_X86;
 int options_color                     = 1;
 int options_raw                       = 0;
 uint8_t options_depth                 = 15;
@@ -66,6 +67,9 @@ static void usage(const char *progname) {
   printf("  -n, --no-color     No colors\n");
   printf("  -f, --flavor       Specify the flavor (gadget mode only) : intel or att\n");
   printf("\n");
+  printf("Arch options\n");
+  printf("  -c, --cpu          Specify the architecture  (raw mode) : x86 or x86_64\n");
+  printf("\n");
   printf("General options\n");
   printf("  -r, --raw          Open file in raw mode\n");
   printf("  -h, --help         Print help\n");
@@ -84,6 +88,17 @@ enum FLAVOR options_set_flavor(const char *flavor) {
   return FLAVOR_NONE;
 }
 
+enum ARCH options_set_arch(const char *arch) {
+  if(!strcmp(arch, "x86"))
+    return ARCH_X86;
+  if(!strcmp(arch, "x86_64"))
+    return ARCH_X86_64;
+
+  FATAL_ERROR("%s: bad architecture", arch);
+
+  return ARCH_NONE;
+}
+
 void options_parse(int argc, char **argv) {
   int list = 0;
   int opt;
@@ -92,6 +107,7 @@ void options_parse(int argc, char **argv) {
     {"payload",     no_argument,       NULL, 'P'},
     {"gadget",      no_argument,       NULL, 'G'},
     {"string",      required_argument, NULL, 'S'},
+    {"cpu",         required_argument, NULL, 'c'},
     {"list",        no_argument,       NULL, 'l'},
     {"ptype",       required_argument, NULL, 'p'},
     {"flavor",      required_argument, NULL, 'f'},
@@ -105,7 +121,7 @@ void options_parse(int argc, char **argv) {
     {NULL,          0,                 NULL, 0  }
   };
 
-  while((opt = getopt_long(argc, argv, "PGS:lp:f:b:d:ahnvr", opts, NULL)) != -1) {
+  while((opt = getopt_long(argc, argv, "PGS:lc:p:f:b:d:ahnvr", opts, NULL)) != -1) {
     switch(opt) {
 
     case 'P':
@@ -119,6 +135,10 @@ void options_parse(int argc, char **argv) {
     case 'S':
       options_mode = MODE_STRING;
       options_search = opcodes_to_blist(optarg);
+      break;
+
+    case 'c':
+      options_arch = options_set_arch(optarg);
       break;
 
     case 'p':

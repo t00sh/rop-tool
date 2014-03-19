@@ -38,8 +38,6 @@
 #include <assert.h>
 #include <beaengine/BeaEngine.h>
 
-#include "plateform.h"
-
 /* =========================================================================
    ======================================================================= */
 
@@ -107,6 +105,12 @@ enum FLAVOR {
   FLAVOR_NONE=0,
   FLAVOR_INTEL,
   FLAVOR_ATT
+};
+
+enum ARCH {
+  ARCH_NONE=0,
+  ARCH_X86,
+  ARCH_X86_64
 };
 
 /* =========================================================================
@@ -233,6 +237,7 @@ extern char options_filename[PATH_MAX];
 extern enum MODE options_mode;
 extern enum FLAVOR options_flavor;
 extern enum OUTPUT options_output;
+extern enum ARCH options_arch;
 extern int options_color;
 extern int options_raw;
 extern uint8_t options_depth;

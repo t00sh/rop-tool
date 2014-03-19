@@ -8,7 +8,7 @@ Tool for finding gadgets in binaries.
 
 ```
 Usage : ./ropc [OPTIONS] filename
-Tool for searching Gadgets in ELF binaries
+Tool for searching Gadgets in ELF and PE binaries
 
 MODES
   -G, --gadget       Gadget searching mode
@@ -28,6 +28,9 @@ Output options
   -n, --no-color     No colors
   -f, --flavor       Specify the flavor (gadget mode only) : intel or att
 
+Arch options
+  -c, --cpu          Specify the architecture  (raw mode) : x86 or x86_64
+
 General options
   -r, --raw          Open file in raw mode
   -h, --help         Print help
@@ -40,8 +43,8 @@ General options
 * Colored output
 * Intel and AT&T flavor
 * Support of ELF and PE binary format
-* Support of I386 and IA64 architecture
-* ...
+* Support of big and little endian
+* Support of x86 and x86_64 architecture
 
 
 ### EXAMPLES
@@ -74,7 +77,15 @@ Search in RAW file (not supported format)
 
 * ropc ./program -r
 
+### SCREENSHOTS
+![ScreenShot](http://imageshack.com/a/img849/3325/fbed.png)
+![ScreenShot](http://imageshack.com/a/img844/3548/owzz.png)
+![ScreenShot](http://imageshack.com/a/img593/9008/lojs.png)
+![ScreenShot](http://imageshack.com/a/img829/4324/5vzm.png)
+
+
 ### AUTHOR
 Tosh 
 
 duretsimon73 -at- gmail ~dot~ com
+

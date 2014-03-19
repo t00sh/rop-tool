@@ -36,7 +36,7 @@ int options_color                     = 1;
 int options_raw                       = 0;
 uint8_t options_depth                 = 15;
 int options_filter                    = 1;
-const char *options_payload           = "x86-bin-sh";
+const char *options_payload           = "x86-linux-bin-sh";
 BLIST options_bad                     = {NULL, 0};
 BLIST options_search                  = {NULL, 0};
 
@@ -50,7 +50,7 @@ static void version(void) {
 /* Display program usage & quit */
 static void usage(const char *progname) {
   printf("Usage : %s [OPTIONS] filename\n", progname);
-  printf("Tool for searching Gadgets in ELF binaries\n");
+  printf("Tool for searching Gadgets in ELF and PE binaries\n");
   printf("\n");
   printf("MODES\n");
   printf("  -G, --gadget       Gadget searching mode\n");

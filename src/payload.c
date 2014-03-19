@@ -37,7 +37,8 @@ typedef struct PAYLOAD_INFO {
 
 /* ALL payloads */
 static PAYLOAD_INFO payloads[] = {
-  {"x86-bin-sh", payload_x86_execve_bin_sh, BINFMT_ARCH_X86, "execve(\"/bin/sh\") with <int 0x80> instruction"},
+  {"x86-linux-bin-sh", payload_x86_execve_bin_sh, BINFMT_ARCH_X86, "execve(\"/bin/sh\") with <int 0x80> instruction"},
+  {"x86_64-linux-bin-sh", payload_x86_64_execve_bin_sh, BINFMT_ARCH_X86_64, "execve(\"/bin/sh\") with <int 0x80> instruction"},
   {NULL, NULL, 0, NULL}
 };
 

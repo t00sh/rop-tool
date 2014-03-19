@@ -352,8 +352,11 @@ void payload_foreach(PAYLOAD *payload, void (*callback)(GADGET*));
 int payload_size(PAYLOAD *payload);
 void payload_list(void);
 
-/* payload_x86.c */
+/* payload_x86 */
 void payload_x86_execve_bin_sh(BINFMT *bin, const GLIST *src, PAYLOAD *dst);
+
+/* payload_x86_64 */
+void payload_x86_64_execve_bin_sh(BINFMT *bin, const GLIST *src, PAYLOAD *dst);
 
 /* gmake_x86 */
 void gmake_x86_setreg(const GLIST *src, PAYLOAD *dst, const char *reg, addr_t value);
@@ -361,6 +364,13 @@ void gmake_x86_swapstack(const GLIST *src, PAYLOAD *dst, addr_t addr);
 void gmake_x86_setmem(const GLIST *src, PAYLOAD *dst, addr_t addr, addr_t value);
 void gmake_x86_strcp(const GLIST *src, PAYLOAD *dst, addr_t addr, const char *str);
 void gmake_x86_syscall(const GLIST *src, PAYLOAD *dst);
+
+/* gmake_x86_64_64 */
+void gmake_x86_64_setreg(const GLIST *src, PAYLOAD *dst, const char *reg, addr_t value);
+void gmake_x86_64_swapstack(const GLIST *src, PAYLOAD *dst, addr_t addr);
+void gmake_x86_64_setmem(const GLIST *src, PAYLOAD *dst, addr_t addr, addr_t value);
+void gmake_x86_64_strcp(const GLIST *src, PAYLOAD *dst, addr_t addr, const char *str);
+void gmake_x86_64_syscall(const GLIST *src, PAYLOAD *dst);
 
 /* endian */
 uint64_t endian_get64(byte_t *p, enum BINFMT_ENDIAN endian);

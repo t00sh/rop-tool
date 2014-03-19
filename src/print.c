@@ -22,37 +22,37 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
+#define PRINT(c,...) do {			\
+    if(options_color) {				\
+      printf(c);				\
+      printf(__VA_ARGS__);			\
+      printf(COLOR_RESET);			\
+    } else {					\
+      printf(__VA_ARGS__);			\
+    }						\
+  }while(0);
 
 /* =========================================================================
    ======================================================================= */
 
-static void print_addr(addr_t addr) {
+static const char* format_addr(addr_t addr) {
+  static char format[20];
+
   if(addr > 0xFFFFFFFF && addr != NOT_FOUND)
-    printf("0x%.8llx", addr);
+    sprintf(format, "0x%.16llx", addr);
   else
-    printf("0x%.8x", (uint32_t)addr);
+    sprintf(format, "0x%.8x", (uint32_t)addr);
+
+  return format;
 }
 
-/* print a gadget */
 static void print_gadget(GADGET *g) {
 
-  if(options_color) {
-    printf(COLOR_BLACK COLOR_BG_WHITE);
-    print_addr(g->addr);
-    printf(COLOR_RESET 
-	   "  ->  " 
-	   "%s%s" COLOR_RESET "\n", 
-	   g->addr == NOT_FOUND ? COLOR_RED : COLOR_GREEN,
-	   g->comment);
-  } else {
-    print_addr(g->addr);
-    printf("  ->  %s %s\n", 
-	   g->comment,
-	   g->addr == NOT_FOUND ? "(NOT FOUND)" : "");
-  }
+  PRINT(COLOR_BLACK COLOR_BG_WHITE, format_addr(g->addr));
+  PRINT(COLOR_WHITE COLOR_BG_BLACK, " -> ");
+  PRINT(COLOR_GREEN COLOR_BG_BLACK, "%s\n", g->comment);
 }
 
-/* print a gadget list */
 void print_glist(GLIST *glist) {
   glist_foreach(glist, print_gadget);
   printf("\n  *** %d gadgets found ***\n\n", glist_size(glist));
@@ -62,32 +62,52 @@ void print_glist(GLIST *glist) {
    ======================================================================= */
 
 static void print_string(STRING *s) {
-  if(options_color) {
-    printf(COLOR_BLACK COLOR_BG_WHITE);
-    print_addr(s->addr);
-    printf(COLOR_RESET 
-	   "  ->  " 
-	   "%s%s" COLOR_RESET "\n",
-	   s->addr == NOT_FOUND ? COLOR_RED : COLOR_GREEN,
-	   s->string);
-
+  PRINT(COLOR_BLACK COLOR_BG_WHITE, format_addr(s->addr));
+  PRINT(COLOR_WHITE COLOR_BG_BLACK, " -> ");
+  
+  if(s->addr == NOT_FOUND) {
+    PRINT(COLOR_RED COLOR_BG_BLACK, "%s\n", s->string);
   } else {
-    print_addr(s->addr);
-    printf("  ->  %s %s\n", 
-	   s->string, 
-	   s->addr == NOT_FOUND ? "(NOT FOUND)" : "");
+    PRINT(COLOR_GREEN COLOR_BG_BLACK, "%s\n", s->string);
   }
 }
 
 void print_slist(SLIST *slist) {
   slist_foreach(slist, print_string);
-  printf("\n  *** %d strings found ***\n\n", slist_size(slist));
 }
 
 /* =========================================================================
    ======================================================================= */
 
+void print_payload_start_perl(void) {
+  PRINT(COLOR_RED COLOR_BG_BLACK, "#!/usr/bin/perl\n\n");
+  PRINT(COLOR_MAGENTA COLOR_BG_BLACK, "use strict;\n");
+  PRINT(COLOR_MAGENTA COLOR_BG_BLACK, "use warnings;\n\n");
+  PRINT(COLOR_GREEN COLOR_BG_BLACK, "my $payload;\n\n");
+}
+
+void print_payload_start(void) {
+  if(options_output == OUTPUT_PERL)
+    print_payload_start_perl();
+}
+
+void print_payload_part_perl(GADGET *g) {
+  PRINT(COLOR_RED COLOR_BG_BLACK, "$payload");
+  PRINT(COLOR_WHITE COLOR_BG_BLACK, " .= ");
+  PRINT(COLOR_YELLOW COLOR_BG_BLACK, "pack('L', %s);", format_addr(g->addr));
+  if(g->addr == NOT_FOUND) {
+    PRINT(COLOR_RED COLOR_BG_BLACK," # %s\n", g->comment);
+  } else {
+    PRINT(COLOR_GREEN COLOR_BG_BLACK," # %s\n", g->comment);
+  }
+}
+
+void print_payload_part(GADGET *g) {
+  if(options_output == OUTPUT_PERL)
+    print_payload_part_perl(g);
+}
+
 void print_payload(PAYLOAD *payload) {
-  payload_foreach(payload, print_gadget);
-  printf("\n  *** %d gadgets found ***\n\n", payload_size(payload));
+  print_payload_start();
+  payload_foreach(payload, print_payload_part);
 }

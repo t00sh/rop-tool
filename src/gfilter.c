@@ -22,6 +22,9 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
+/* =========================================================================
+   This file implement functions for filter and matching gadgets
+   ======================================================================= */
 
 /*
  * %X  : hexadécimal value
@@ -201,6 +204,7 @@ static const char *att_x86_filters[] = {
   NULL
 };
 
+/* Return true if the instruction match the filter */
 static int gfilter_strcmp(char *instr, const char *filter) {
   const char *p1 = filter;
   char *p2 = instr;
@@ -276,6 +280,7 @@ static int gfilter_strcmp(char *instr, const char *filter) {
   return 0;
 }
 
+/* Return true if the gadget match filters */
 int gfilter_gadget(char *instr, enum BINFMT_ARCH arch) {
   const char **p_filters;
   int i;
@@ -300,12 +305,14 @@ int gfilter_gadget(char *instr, enum BINFMT_ARCH arch) {
   return 0;
 }
 
+/* Compare a gadget with a filter */
 static int gfilter_compare(GADGET *g, const void *user) {
   if(gfilter_strcmp(g->comment, user))
     return 1;
   return 0;
 }
 
+/* search a gadget in a glist with a filter */
 GADGET* gfilter_search(const GLIST *glist, const char *gadget) {
   return glist_find(glist, gfilter_compare, gadget);
 }

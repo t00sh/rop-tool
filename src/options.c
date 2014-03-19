@@ -22,9 +22,12 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
+/* =====================================================================
+   This file implement functions used to parse the command line options
+   ===================================================================== */
 
-/* Options */
-char options_filename[PATH_MAX]       = "./a.out";
+/* exported options */
+const char *options_filename          = "./a.out";
 enum MODE options_mode                = MODE_GADGET;
 enum FLAVOR options_flavor            = FLAVOR_INTEL;
 enum OUTPUT options_output            = OUTPUT_PERL;
@@ -77,7 +80,8 @@ static void usage(const char *progname) {
   exit(EXIT_SUCCESS);
 }
 
-enum FLAVOR options_set_flavor(const char *flavor) {
+/* Handle --flavor option */
+static enum FLAVOR options_set_flavor(const char *flavor) {
   if(!strcmp(flavor, "intel"))
     return FLAVOR_INTEL;
   if(!strcmp(flavor, "att"))
@@ -88,7 +92,8 @@ enum FLAVOR options_set_flavor(const char *flavor) {
   return FLAVOR_NONE;
 }
 
-enum ARCH options_set_arch(const char *arch) {
+/* Handle --cpu option */
+static enum ARCH options_set_arch(const char *arch) {
   if(!strcmp(arch, "x86"))
     return ARCH_X86;
   if(!strcmp(arch, "x86_64"))
@@ -99,6 +104,7 @@ enum ARCH options_set_arch(const char *arch) {
   return ARCH_NONE;
 }
 
+/* Parse command line options */
 void options_parse(int argc, char **argv) {
   int list = 0;
   int opt;
@@ -195,7 +201,6 @@ void options_parse(int argc, char **argv) {
     FATAL_ERROR("Depth must be in range 0-%d", MAX_DEPTH);
 
   if(optind < argc) {
-    strncpy(options_filename, argv[optind], PATH_MAX-1);
-    options_filename[PATH_MAX-1] = '\0';
+    options_filename = argv[optind];
   }
 }

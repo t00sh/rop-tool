@@ -22,6 +22,9 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
+/* =========================================================================
+   This file implement function for finding gadget in binary
+   ======================================================================= */
 
 /* Search the first instruction which finish a gadget, and return the offset */
 static addr_t gfind_end(MEM *mem, off_t off) {
@@ -122,7 +125,7 @@ static void gfind_in_mem(GLIST *glist, MEM *mem, enum BINFMT_ARCH arch) {
   }
 }
 
-/* search gadget in ELF file */
+/* search gadget in binary file */
 void gfind_in_bin(GLIST *glist, BINFMT *bin) {
   MEM *m;
 

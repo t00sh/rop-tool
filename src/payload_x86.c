@@ -22,7 +22,11 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
+/* =========================================================================
+   This file implement payloads for Linux x86
+   ======================================================================= */
 
+/* Execve "/bin/sh" */
 void payload_x86_execve_bin_sh(BINFMT *bin, const GLIST *src, PAYLOAD *dst) {
   MEM *data;
 

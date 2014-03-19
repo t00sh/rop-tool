@@ -23,11 +23,16 @@
 /************************************************************************/
 
 
+/* =========================================================================
+   This file contain generic binary loading function
+   ======================================================================= */
+
 typedef struct BINFMT_LIST {
   const char *name;
   enum BINFMT_ERR (*load)(BINFMT*);
 }BINFMT_LIST;
 
+/* List of supported binary formats */
 static BINFMT_LIST bin_list[] = {
   {"elf32", elf32_load},
   {"elf64", elf64_load},
@@ -35,6 +40,7 @@ static BINFMT_LIST bin_list[] = {
   {NULL,    NULL}
 };
 
+/* Convert errors to string */
 static const char* bin_get_err(enum BINFMT_ERR err) {
   switch(err) {
   case BINFMT_ERR_OK:
@@ -49,6 +55,7 @@ static const char* bin_get_err(enum BINFMT_ERR err) {
   return "Unknown error";
 }
 
+/* Check some fields of the BINFMT */
 static void bin_check(BINFMT *bin) {
   if(bin->endian == BINFMT_ENDIAN_UNDEF)
     FATAL_ERROR("Endianess not supported");
@@ -60,6 +67,7 @@ static void bin_check(BINFMT *bin) {
     FATAL_ERROR("File format not recognized");
 }
 
+/* Get the size of the file */
 static long bin_get_size(FILE* file) {
   long ret;
 
@@ -70,6 +78,7 @@ static long bin_get_size(FILE* file) {
   return ret;
 }
 
+/* Load binary in memory */
 void bin_load(BINFMT *bin, const char *filename) {
   FILE *fd;
   long size;
@@ -79,17 +88,20 @@ void bin_load(BINFMT *bin, const char *filename) {
   fd = xfopen(filename, "r");  
   size = bin_get_size(fd);
 
+  /* Load binary in memory */
   bin->mapped = xmalloc(size);
   bin->mapped_size = size;
 
   if(fread(bin->mapped, 1, (size_t)size, fd) != (size_t)size)
     FATAL_ERROR("Error while read binary file");
 
+  /* Raw mode */
   if(options_raw) {
     raw_load(bin);
     return;
   }
 
+  /* Call each binary loader to check what file is it */
   for(i = 0; bin_list[i].load != NULL; i++) {
     err = bin_list[i].load(bin);
     if(err == BINFMT_ERR_OK) {
@@ -106,11 +118,13 @@ void bin_load(BINFMT *bin, const char *filename) {
   fclose(fd);
 }
 
+/* Free the BINFMT structure */
 void bin_free(BINFMT *bin) {
   mlist_free(&bin->mlist);
   free(bin->mapped);
 }
 
+/* Get the first memory segment which match flags */
 MEM* bin_getmem(BINFMT *bin, uint32_t flags) {
   MEM *m;
 

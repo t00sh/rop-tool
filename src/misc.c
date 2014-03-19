@@ -22,6 +22,9 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
+/* =========================================================================
+   This file implement miscellious functions
+   ======================================================================= */
 
 /* Test if the 32 bits address don't contains bad chars */
 /* Ex : addr=0x0804800a, bad="\x0a" -> BAD */
@@ -117,6 +120,7 @@ BLIST opcodes_to_blist(char *str) {
  return blist;
 }
 
+/* Search contiguous bytes in memory */
 addr_t memsearch(void *s1, len_t s1_len, void *s2, len_t s2_len) {
   len_t i;
 

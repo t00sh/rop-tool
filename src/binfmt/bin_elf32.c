@@ -1,5 +1,32 @@
 #include "ropc.h"
 
+/************************************************************************/
+/* RopC - A Return Oriented Programming tool			        */
+/* 								        */
+/* Copyright 2013-2014, -TOSH-					        */
+/* File coded by -TOSH-						        */
+/* 								        */
+/* This file is part of RopC.					        */
+/* 								        */
+/* RopC is free software: you can redistribute it and/or modify	        */
+/* it under the terms of the GNU General Public License as published by */
+/* the Free Software Foundation, either version 3 of the License, or    */
+/* (at your option) any later version.				        */
+/* 								        */
+/* RopC is distributed in the hope that it will be useful,	        */
+/* but WITHOUT ANY WARRANTY; without even the implied warranty of       */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
+/* GNU General Public License for more details.			        */
+/* 								        */
+/* You should have received a copy of the GNU General Public License    */
+/* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
+/************************************************************************/
+
+/* =========================================================================
+   This file implement functions for parsing ELF32 binaries
+   ======================================================================= */
+
+/* Fill bin->mlist structure */
 static void elf32_load_mlist(BINFMT *bin) {
   Elf32_Ehdr *ehdr = (Elf32_Ehdr*)bin->mapped;
   Elf32_Phdr *phdr = (Elf32_Phdr*)(bin->mapped + ehdr->e_phoff);
@@ -38,6 +65,7 @@ static void elf32_load_mlist(BINFMT *bin) {
   }
 }
 
+/* Check some ELF fields */
 static int elf32_check(BINFMT *bin) {
   Elf32_Ehdr *ehdr = (Elf32_Ehdr*)bin->mapped;
   Elf32_Phdr *phdr;
@@ -78,6 +106,7 @@ static int elf32_check(BINFMT *bin) {
   return 1;
 }
 
+/* Check if the binary is an ELF32 file */
 static int elf32_is(BINFMT *bin) {
 
   if(bin->mapped_size < sizeof(Elf32_Ehdr))
@@ -92,7 +121,8 @@ static int elf32_is(BINFMT *bin) {
   return 1;
 }
 
-enum BINFMT_ARCH elf32_getarch(BINFMT *bin) {
+/* Get the architecture */
+static enum BINFMT_ARCH elf32_getarch(BINFMT *bin) {
   Elf32_Ehdr *ehdr = (Elf32_Ehdr*)bin->mapped;
   
   if(ehdr->e_machine == EM_386)
@@ -101,7 +131,8 @@ enum BINFMT_ARCH elf32_getarch(BINFMT *bin) {
   return BINFMT_ARCH_UNDEF;
 }
 
-enum BINFMT_ENDIAN elf32_getendian(BINFMT *bin) {
+/* Get the endianness */
+static enum BINFMT_ENDIAN elf32_getendian(BINFMT *bin) {
   if(bin->mapped[EI_DATA] == ELFDATA2LSB)
     return BINFMT_ENDIAN_LITTLE;
   if(bin->mapped[EI_DATA] == ELFDATA2MSB)
@@ -110,6 +141,7 @@ enum BINFMT_ENDIAN elf32_getendian(BINFMT *bin) {
   return BINFMT_ENDIAN_UNDEF;
 }
 
+/* Fill the BINFMT structure if it's a correct ELF32 */
 enum BINFMT_ERR elf32_load(BINFMT *bin) {
 
   if(!elf32_is(bin))

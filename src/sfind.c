@@ -22,6 +22,9 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
+/* =========================================================================
+   This file implement functions for searching strings in a binary
+   ======================================================================= */
 
 static addr_t sfind_get_addr(MEM *mem, byte_t *start, len_t length) {
   addr_t addr;

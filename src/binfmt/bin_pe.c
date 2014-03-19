@@ -1,3 +1,5 @@
+#include "ropc.h"
+
 /*
 	libpe - the PE library
 
@@ -17,9 +19,6 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-
-#include "ropc.h"
 
 #define PE32 0x10b 
 #define PE64 0x20b 
@@ -171,11 +170,13 @@ typedef struct _IMAGE_SECTION_HEADER {
 } IMAGE_SECTION_HEADER;
 
 
-IMAGE_DOS_HEADER* pe_get_dos(BINFMT *bin) {
+/* Get the dos header */
+static IMAGE_DOS_HEADER* pe_get_dos(BINFMT *bin) {
   return (IMAGE_DOS_HEADER*)(bin->mapped);
 }
 
-WORD pe_get_addr_coff(BINFMT *bin) {
+/* Get the adress of the coff header */
+static WORD pe_get_addr_coff(BINFMT *bin) {
   IMAGE_DOS_HEADER *dos;
 
   dos = pe_get_dos(bin);
@@ -183,7 +184,8 @@ WORD pe_get_addr_coff(BINFMT *bin) {
   return dos->e_lfanew + 4;
 }
 
-IMAGE_COFF_HEADER* pe_get_coff(BINFMT *bin) {
+/* Get the coff header */
+static IMAGE_COFF_HEADER* pe_get_coff(BINFMT *bin) {
   IMAGE_COFF_HEADER *coff;
   WORD addr_coff;
 
@@ -194,7 +196,8 @@ IMAGE_COFF_HEADER* pe_get_coff(BINFMT *bin) {
   return coff;
 }
 
-int pe_get_arch(BINFMT *bin) {
+/* Get the PE arch (PE32 or PE64) */
+static int pe_get_arch(BINFMT *bin) {
   WORD arch;
   WORD addr_coff;
 
@@ -205,7 +208,8 @@ int pe_get_arch(BINFMT *bin) {
   return arch;
 }
 
-WORD pe_get_addr_sections(BINFMT *bin) {
+/* Get the offset of the sections table */
+static WORD pe_get_addr_sections(BINFMT *bin) {
   WORD addr_optional;
   WORD addr_coff;
   WORD arch;
@@ -227,20 +231,23 @@ WORD pe_get_addr_sections(BINFMT *bin) {
   return 0;
 }
 
-void pe_load_mlist(BINFMT *bin) {
+/* Load the PE file in the bin->mlist */
+static void pe_load_mlist(BINFMT *bin) {
   uint32_t flags;
   IMAGE_COFF_HEADER *coff;
   IMAGE_SECTION_HEADER *shdr;
   WORD sections_addr;
   int i;
-
-  bin->mlist = mlist_new();
   
+  bin->mlist = mlist_new();
+
+  /* Get sections table */
   coff = (IMAGE_COFF_HEADER*)(pe_get_addr_coff(bin) + bin->mapped);
   sections_addr = pe_get_addr_sections(bin);
   shdr = (IMAGE_SECTION_HEADER*)(bin->mapped + sections_addr);
 
 
+  /* Load each section */
   for(i = 0; i < coff->NumberOfSections; i++) {
     flags = 0;
 
@@ -260,7 +267,8 @@ void pe_load_mlist(BINFMT *bin) {
   
 }
 
-enum BINFMT_ARCH pe_get_machine(BINFMT *bin) {
+/* Get the machine type */
+static enum BINFMT_ARCH pe_get_machine(BINFMT *bin) {
   IMAGE_COFF_HEADER *coff;
   WORD arch;
 
@@ -283,12 +291,11 @@ enum BINFMT_ARCH pe_get_machine(BINFMT *bin) {
   return BINFMT_ARCH_UNDEF;
 }
 
-int pe_is(BINFMT *bin) {
+/* Check if it's a PE file */
+static int pe_is(BINFMT *bin) {
   WORD header;
   LONG elfanew;
   DWORD pesig;
-
-  header = elfanew = pesig = 0;
 
   header = *((WORD*)(bin->mapped));
 
@@ -306,14 +313,18 @@ int pe_is(BINFMT *bin) {
   return 1;
 }
 
+/* Main/public function : fill the BINFMT structure */
 enum BINFMT_ERR pe_load(BINFMT *bin) {
   if(!pe_is(bin))
     return BINFMT_ERR_UNRECOGNIZED;
 
-  pe_load_mlist(bin);
-
   bin->type = BINFMT_TYPE_PE;
   bin->arch = pe_get_machine(bin);
+
+  // TODO: check endianness for PE files
+  bin->endian = BINFMT_ENDIAN_LITTLE; 
+
+  pe_load_mlist(bin);
   
   return BINFMT_ERR_OK;
 }

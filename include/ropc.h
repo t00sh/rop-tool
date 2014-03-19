@@ -242,14 +242,13 @@ typedef struct STRING {
 typedef struct SLIST {
   STRING *head;
   STRING *tail;
-  int size;
 
 }SLIST;
 
 /* =========================================================================
    ======================================================================= */
 
-extern char options_filename[PATH_MAX];
+extern const char *options_filename;
 extern enum MODE options_mode;
 extern enum FLAVOR options_flavor;
 extern enum OUTPUT options_output;

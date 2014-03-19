@@ -22,9 +22,13 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
+/* =========================================================================
+   This file implement function for manipulate glist objects (gadget list)
+   ======================================================================= */
 
 #define GLIST_TABLE_SIZE 0x8000
 
+/* Hash a string to get the index in glist table */
 static uint32_t glist_hash(const char *comment) {
   uint32_t hash;
   const uint8_t *p = (const uint8_t*)comment;
@@ -38,6 +42,7 @@ static uint32_t glist_hash(const char *comment) {
   return hash % GLIST_TABLE_SIZE;
 }
 
+/* Call the callback for each element of the glist */
 void glist_foreach(GLIST *glist, void(*callback)(GADGET*)) {
   int i;
   GADGET *g;
@@ -70,6 +75,7 @@ void glist_free(GLIST **glist) {
   *glist = NULL;
 }
 
+/* Allocate gadget list */
 GLIST* glist_new(void) {
   GLIST *glist;
 
@@ -95,6 +101,7 @@ void glist_add(GLIST *glist, GADGET *g) {
   glist->size++;
 }
 
+/* Find the first gadget which match the compare() callback */
 GADGET* glist_find(const GLIST *glist, int (*compare)(GADGET*, const void*), const void *user) {
   GADGET *g;
   int i;
@@ -110,6 +117,7 @@ GADGET* glist_find(const GLIST *glist, int (*compare)(GADGET*, const void*), con
   return NULL;
 }
 
+/* Return true if gadget already exist */
 int glist_exist(GLIST *glist, const char *comment) {
   GADGET *g;
   uint32_t hash;
@@ -123,6 +131,7 @@ int glist_exist(GLIST *glist, const char *comment) {
   return 0;
 }
 
+/* Return the size of the glist */
 int glist_size(GLIST *glist) {
   return glist->size;
 }

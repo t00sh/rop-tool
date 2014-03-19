@@ -22,7 +22,12 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
+/* ============================================================
+   This file implement functions for manipulate mlist objects 
+   (memory segments)
+   ============================================================ */
 
+/* Allocate a mlist */
 MLIST* mlist_new(void) {
   MLIST *mlist;
 
@@ -31,6 +36,7 @@ MLIST* mlist_new(void) {
   return mlist;
 }
 
+/* Add a mlist to the head */
 void mlist_add(MLIST *mlist, addr_t addr, byte_t *start, len_t length, uint32_t flags) {
   MEM *new;
 
@@ -48,6 +54,7 @@ void mlist_add(MLIST *mlist, addr_t addr, byte_t *start, len_t length, uint32_t 
   mlist->size++;
 }
 
+/* Free the mlist */
 void mlist_free(MLIST **mlist) {
   MEM *m, *tmp;
 
@@ -62,6 +69,7 @@ void mlist_free(MLIST **mlist) {
   *mlist = NULL;
 }
 
+/* Call the callback for each element in the mlist */
 void mlist_foreach(MLIST *mlist, void (*callback)(MEM*)) {
   MEM *m;
 
@@ -70,6 +78,7 @@ void mlist_foreach(MLIST *mlist, void (*callback)(MEM*)) {
   }
 }
 
+/* Return the mlist size */
 int mlist_size(MLIST *mlist) {
   return mlist->size;
 }

@@ -1,5 +1,33 @@
 #include "ropc.h"
 
+/************************************************************************/
+/* RopC - A Return Oriented Programming tool			        */
+/* 								        */
+/* Copyright 2013-2014, -TOSH-					        */
+/* File coded by -TOSH-						        */
+/* 								        */
+/* This file is part of RopC.					        */
+/* 								        */
+/* RopC is free software: you can redistribute it and/or modify	        */
+/* it under the terms of the GNU General Public License as published by */
+/* the Free Software Foundation, either version 3 of the License, or    */
+/* (at your option) any later version.				        */
+/* 								        */
+/* RopC is distributed in the hope that it will be useful,	        */
+/* but WITHOUT ANY WARRANTY; without even the implied warranty of       */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        */
+/* GNU General Public License for more details.			        */
+/* 								        */
+/* You should have received a copy of the GNU General Public License    */
+/* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
+/************************************************************************/
+
+
+/* =========================================================================
+   This file contain the functions for loading ELF64 binaries
+   ======================================================================= */
+
+/* Load the ELF binary in the bin->mlist */
 static void elf64_load_mlist(BINFMT *bin) {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
   Elf64_Phdr *phdr = (Elf64_Phdr*)(bin->mapped + ehdr->e_phoff);
@@ -39,6 +67,7 @@ static void elf64_load_mlist(BINFMT *bin) {
   }
 }
 
+/* Check some ELF structure fields */
 static int elf64_check(BINFMT *bin) {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
   Elf64_Phdr *phdr;
@@ -79,6 +108,7 @@ static int elf64_check(BINFMT *bin) {
   return 1;
 }
 
+/* Check if it's a ELF64 binary */
 static int elf64_is(BINFMT *bin) {
 
   if(bin->mapped_size < sizeof(Elf64_Ehdr))
@@ -93,6 +123,7 @@ static int elf64_is(BINFMT *bin) {
   return 1;
 }
 
+/* Get the architecture */
 enum BINFMT_ARCH elf64_getarch(BINFMT *bin) {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
   
@@ -102,6 +133,7 @@ enum BINFMT_ARCH elf64_getarch(BINFMT *bin) {
   return BINFMT_ARCH_UNDEF;
 }
 
+/* Get the endianess */
 enum BINFMT_ENDIAN elf64_getendian(BINFMT *bin) {
   if(bin->mapped[EI_DATA] == ELFDATA2LSB)
     return BINFMT_ENDIAN_LITTLE;
@@ -112,6 +144,7 @@ enum BINFMT_ENDIAN elf64_getendian(BINFMT *bin) {
   return BINFMT_ENDIAN_UNDEF;
 }
 
+/* Load elf64, and check the binary */
 enum BINFMT_ERR elf64_load(BINFMT *bin) {
 
   if(!elf64_is(bin))

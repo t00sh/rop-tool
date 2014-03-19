@@ -22,7 +22,11 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
+/* =========================================================================
+   This file implement functions for disassembling x86/x86_64 code
+   ======================================================================= */
 
+/* Disassemble an instruction */
 int dis_instr(DISASM *dis, byte_t *code, len_t len, enum BINFMT_ARCH arch) {
 
   memset(dis, 0, sizeof(DISASM));
@@ -43,14 +47,17 @@ int dis_instr(DISASM *dis, byte_t *code, len_t len, enum BINFMT_ARCH arch) {
   return Disasm(dis);
 }
 
+/* Check if instruction is a CALL */
 int dis_is_call(DISASM *dis) {
   return (dis->Instruction.BranchType == CallType);
 }
 
+/* Check if instruction is a JMP */
 int dis_is_jmp(DISASM *dis) {
   return (dis->Instruction.BranchType == JmpType);
 }
 
+/* Check if instruction is a RET */
 int dis_is_ret(DISASM *dis) {
   return (dis->Instruction.BranchType == RetType);
 }

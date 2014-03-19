@@ -23,6 +23,10 @@
 /************************************************************************/
 
 
+/* =========================================================================
+   This file implement functions for manipulate payloads
+   ======================================================================= */
+
 typedef struct PAYLOAD_INFO {
   const char *name;
   void (*make)(BINFMT*, const GLIST*, PAYLOAD*);
@@ -31,12 +35,14 @@ typedef struct PAYLOAD_INFO {
 }PAYLOAD_INFO;
 
 
+/* ALL payloads */
 static PAYLOAD_INFO payloads[] = {
   {"x86-bin-sh", payload_x86_execve_bin_sh, BINFMT_ARCH_X86, "execve(\"/bin/sh\") with <int 0x80> instruction"},
   {NULL, NULL, 0, NULL}
 };
 
 
+/* List available payloads (--list option) */
 void payload_list(void) {
   int i;
 
@@ -48,6 +54,7 @@ void payload_list(void) {
   }
 }
 
+/* Build a payload */
 void payload_make(BINFMT *bin, const GLIST *src, PAYLOAD *dst, const char *payload) {
   int i;
 
@@ -65,6 +72,7 @@ void payload_make(BINFMT *bin, const GLIST *src, PAYLOAD *dst, const char *paylo
 /* =========================================================================
    ======================================================================= */
 
+/* Allocate a payload */
 PAYLOAD* payload_new(void) {
   PAYLOAD *payload;
 
@@ -73,6 +81,7 @@ PAYLOAD* payload_new(void) {
   return payload;
 }
 
+/* Add a gadget to the tail */
 void payload_add(PAYLOAD *payload, const char *comment, addr_t addr) {
   GADGET *new;
 
@@ -94,6 +103,7 @@ void payload_add(PAYLOAD *payload, const char *comment, addr_t addr) {
   payload->size++;
 }
 
+/* Free the payload */
 void payload_free(PAYLOAD **payload) {
   GADGET *g, *tmp;
 
@@ -108,6 +118,7 @@ void payload_free(PAYLOAD **payload) {
   *payload = NULL;
 }
 
+/* Call the callback for each gadget contained in the payload */
 void payload_foreach(PAYLOAD *payload, void (*callback)(GADGET*)) {
   GADGET *g;
 
@@ -116,6 +127,7 @@ void payload_foreach(PAYLOAD *payload, void (*callback)(GADGET*)) {
   }
 }
 
+/* Return the payload size */
 int payload_size(PAYLOAD *payload) {
   return payload->size;
 }

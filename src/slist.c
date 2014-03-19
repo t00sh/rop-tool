@@ -22,6 +22,9 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
+/* ===============================================================
+   This file implement functions for manipulate SLIST's
+   ============================================================== */
 
 /* Alloc a new SLIST object */
 SLIST* slist_new(void) {
@@ -50,10 +53,9 @@ void slist_add(SLIST *slist, char *string, addr_t addr) {
   if(slist->head == NULL) {
     slist->head = new;
   }
- 
-  slist->size++;
 }
 
+/* Free the SLIST */
 void slist_free(SLIST **slist) {
   STRING *s, *tmp;
 
@@ -69,14 +71,11 @@ void slist_free(SLIST **slist) {
   *slist = NULL;
 }
 
+/* Call the callback for each element of the slist */
 void slist_foreach(SLIST *slist, void (*callback)(STRING*)) {
   STRING *s;
 
   for(s = slist->head; s != NULL; s = s->next) {
     callback(s);
   }
-}
-
-int slist_size(SLIST *slist) {
-  return slist->size;
 }

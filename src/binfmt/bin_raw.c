@@ -22,6 +22,9 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
+/* =========================================================================
+   This file contain the functions for the RAW binary
+   ======================================================================= */
 
 enum BINFMT_ARCH raw_get_arch(void) {
   if(options_arch == ARCH_X86)

@@ -22,7 +22,11 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
+/* =========================================================================
+   This file implement functions for building custom gadgets for x86
+   ======================================================================= */
 
+/* Set register to specified value */
 void gmake_x86_setreg(const GLIST *src, PAYLOAD *dst, const char *reg, addr_t value) {
   char gadget[GADGET_COMMENT_LEN];
   GADGET *g;
@@ -39,6 +43,7 @@ void gmake_x86_setreg(const GLIST *src, PAYLOAD *dst, const char *reg, addr_t va
   payload_add(dst, gadget, value);
 }
 
+/* Stack pivot */
 void gmake_x86_swapstack(const GLIST *src, PAYLOAD *dst, addr_t addr) {
   char gadget[GADGET_COMMENT_LEN];
   GADGET *g;
@@ -53,6 +58,7 @@ void gmake_x86_swapstack(const GLIST *src, PAYLOAD *dst, addr_t addr) {
   }
 }
 
+/* Set memory to specified value */
 void gmake_x86_setmem(const GLIST *src, PAYLOAD *dst, addr_t addr, addr_t value) {
   char gadget[GADGET_COMMENT_LEN];
   char r1[4], r2[4];
@@ -73,6 +79,7 @@ void gmake_x86_setmem(const GLIST *src, PAYLOAD *dst, addr_t addr, addr_t value)
   }
 }
 
+/* Copy string in memory */
 void gmake_x86_strcp(const GLIST *src, PAYLOAD *dst, addr_t addr, const char *str) {
   byte_t *p = (byte_t*)str;
   int len = strlen(str);
@@ -100,6 +107,7 @@ void gmake_x86_strcp(const GLIST *src, PAYLOAD *dst, addr_t addr, const char *st
   }
 }
 
+/* Call syscall */
 void gmake_x86_syscall(const GLIST *src, PAYLOAD *dst) {
   char gadget[GADGET_COMMENT_LEN];
   GADGET *g;

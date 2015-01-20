@@ -26,66 +26,34 @@
    This file implement function for finding gadget in binary
    ======================================================================= */
 
-/* Search the first instruction which finish a gadget, and return the offset */
-static addr_t gfind_end(MEM *mem, off_t off) {
-  DISASM dis;
-  int len;
-  len_t i;
-
-  /* Itere the entire memory */
-  for(i = off; i < mem->length; i++) {
-    len = dis_instr(&dis, mem->start+i, mem->length-i, 0);
-
-    /* Check if it's a valid instruction and a ret/call/jmp */
-    if(len != UNKNOWN_OPCODE && len !=  OUT_OF_BLOCK) {
-      if(dis_is_ret(&dis) || dis_is_call(&dis) || dis_is_jmp(&dis))
-	return i;      
-    }
-  }
-
-  return NOT_FOUND;
-}
-
-/* Get the gadget which start at <start> and finish at <end> */
-static GADGET gfind_extract_gadget(MEM *mem, off_t start, off_t end, enum BINFMT_ARCH arch) {
+/* Get the gadget composed of <count> instructions which start at <start> */
+static GADGET gfind_extract_gadget(MEM *mem, off_t start, size_t count, DIS *dis) {
   char buffer[GADGET_COMMENT_LEN];
-  DISASM dis;
+  char cur_gadget[GADGET_COMMENT_LEN];
   GADGET g;
-  int len;
-  off_t i;
-  int depth;
+  INSTR *instr;
 
   /* Some inits */
   memset(buffer, 0, sizeof(buffer));
-  depth = len = 0;
   g.addr = NOT_FOUND;
-  
-  for(i = start; i <= end; i += len) {
-    len = dis_instr(&dis, mem->start + i, mem->length - i, arch);
 
-    /* Return false if is an invalid instruction */
-    if(len == UNKNOWN_OPCODE || len == OUT_OF_BLOCK)
-      return g;
 
-    /* Filter gadget if option is set */
-    if(options_filter && !gfilter_gadget(dis.CompleteInstr, arch))
-      return g;
+  count = dis_code(dis, mem->start + start, mem->length - start, mem->addr, count);
 
-    /* Concatene the instruction to the current gadget string (check overflow) */
-    if(strlen(buffer) + strlen(dis.CompleteInstr) < sizeof(buffer) - 4) {
-      strcat(buffer, dis.CompleteInstr);
-      strcat(buffer, " ; ");
+  if(dis_end_is_ret(dis) || ((dis_end_is_call(dis) || dis_end_is_jmp(dis)) && count == 1)) {
+
+    while(dis_next_instr(dis, &instr)) {
+      snprintf(cur_gadget, GADGET_COMMENT_LEN, "%s %s", instr->mnemonic, instr->op_str);
+
+      if(options_filter && !gfilter_gadget(cur_gadget, dis->arch))
+	return g;
+
+      if(strlen(cur_gadget) + strlen(buffer) + 4 < GADGET_COMMENT_LEN) {
+	strcat(buffer, cur_gadget);
+	strcat(buffer, " ; ");
+      }
     }
-    depth++;
-  }
 
-  /* Check if the last instruction is ret
-     If it's a call or jmp, add to GLIST
-     only if the gadget contain one instruction
-     (the call or jmp) */
-  if(dis_is_ret(&dis) 
-     || ((dis_is_call(&dis) || dis_is_jmp(&dis))
-	 && depth == 1)) {
     g.addr = mem->addr + start;
     strcpy(g.comment, buffer);
   }
@@ -94,44 +62,40 @@ static GADGET gfind_extract_gadget(MEM *mem, off_t start, off_t end, enum BINFMT
 }
 
 /* Find gadgets in memory */
-static void gfind_in_mem(GLIST *glist, MEM *mem, enum BINFMT_ARCH arch) {
-  addr_t end;
-  addr_t i;
+static void gfind_in_mem(GLIST *glist, MEM *mem, DIS *dis) {
   addr_t start;
   GADGET g;
+  int i;
 
-  end = 0;
+  for(start = 0; start < mem->length; start++) {
+    for(i = 1; i <= options_depth; i++) {
 
-  /* First, find the end of the next gadget */
-  while((end = gfind_end(mem, end)) != NOT_FOUND) {
+      if(is_good_addr(mem->addr + start, &options_bad)) {
+	g = gfind_extract_gadget(mem, start, i, dis);
 
-    /* Some checks :) */
-    if(end < options_depth)
-      start = 0;
-    else
-      start = end - options_depth;
-
-    /* Extract gadgets between [start ; end] */
-    for(i = start; i <= end; i++) {
-      if(is_good_addr(mem->addr + i, &options_bad)) {
-	g = gfind_extract_gadget(mem, i, end, arch);
 	/* If we found a gadget and if gadget don't exist */
 	if(g.addr != NOT_FOUND && !glist_exist(glist, g.comment)) {
 	  glist_add(glist, &g);
-	}           
+	}
       }
-    }  
-    end++;
+    }
   }
 }
 
 /* search gadget in binary file */
 void gfind_in_bin(GLIST *glist, BINFMT *bin) {
   MEM *m;
+  DIS dis;
+
+  if(!dis_init(&dis, bin->arch)) {
+    fprintf(stderr, "[-] Can't init the disassembler.\n");
+    exit(EXIT_FAILURE);
+  }
 
   for(m = bin->mlist->head; m != NULL; m = m->next) {
     if(m->flags & MEM_FLAG_PROT_X)
-      gfind_in_mem(glist, m, bin->arch);
+      gfind_in_mem(glist, m, &dis);
   }
-}
 
+  dis_close(&dis);
+}

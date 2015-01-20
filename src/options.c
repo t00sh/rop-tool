@@ -34,7 +34,7 @@ enum OUTPUT options_output            = OUTPUT_PERL;
 enum ARCH options_arch                = ARCH_X86;
 int options_color                     = 1;
 int options_raw                       = 0;
-uint8_t options_depth                 = 15;
+uint8_t options_depth                 = 5;
 int options_filter                    = 1;
 const char *options_payload           = "x86-linux-bin-sh";
 BLIST options_bad                     = {NULL, 0};
@@ -188,7 +188,7 @@ void options_parse(int argc, char **argv) {
       break;
 
     default:
-      usage(progname);      
+      usage(progname);
     }
   }
 

@@ -1,15 +1,15 @@
 .PHONY: clean
 
-VERSION = 1.1
+VERSION = 1.2
 PACKAGE = ropc
 
 CC = gcc
 CFLAGS = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized
 CFLAGS += -Wunreachable-code -g -fstack-protector-all
 CFLAGS += -I include/
-CFLAGS += -lBeaEngine
+CFLAGS += -lcapstone
 CFLAGS += -DVERSION="\"$(VERSION)\"" -DPACKAGE="\"$(PACKAGE)\""
-CFLAGS += -pg
+#CFLAGS += -pg
 
 SRC  = $(wildcard src/*.c)
 SRC += $(wildcard src/binfmt/*.c)

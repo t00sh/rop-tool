@@ -46,7 +46,7 @@ static const char* format_addr(addr_t addr) {
   static char format[20];
 
   if(addr > 0xFFFFFFFF && addr != NOT_FOUND)
-    sprintf(format, "0x%.16llx", addr);
+    sprintf(format, "0x%.16" PRIx64, addr);
   else
     sprintf(format, "0x%.8x", (uint32_t)addr);
 
@@ -74,7 +74,7 @@ void print_glist(GLIST *glist) {
 static void print_string(STRING *s) {
   PRINT(COLOR_BLACK COLOR_BG_WHITE, format_addr(s->addr));
   PRINT(COLOR_WHITE COLOR_BG_BLACK, " -> ");
-  
+
   if(s->addr == NOT_FOUND) {
     PRINT(COLOR_RED COLOR_BG_BLACK, "%s\n", s->string);
   } else {

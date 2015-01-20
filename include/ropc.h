@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <errno.h>
 
 #include <elf.h>
@@ -36,7 +37,7 @@
 #include <getopt.h>
 #include <limits.h>
 #include <assert.h>
-#include <beaengine/BeaEngine.h>
+#include <capstone/capstone.h>
 
 #include "xfunc.h"
 #include "safe_int.h"
@@ -248,6 +249,24 @@ typedef struct SLIST {
 /* =========================================================================
    ======================================================================= */
 
+typedef cs_insn INSTR;
+typedef csh DIS_HANDLER;
+
+typedef struct INSTR_LST {
+  size_t cur_instr;
+  size_t count;
+  INSTR *insn;
+}INSTR_LST;
+
+typedef struct DIS {
+  DIS_HANDLER handle;
+  INSTR_LST instr_lst;
+  enum ARCH arch;
+}DIS;
+
+/* =========================================================================
+   ======================================================================= */
+
 extern const char *options_filename;
 extern enum MODE options_mode;
 extern enum FLAVOR options_flavor;
@@ -277,11 +296,14 @@ enum BINFMT_ERR pe_load(BINFMT *bin);
 enum BINFMT_ERR raw_load(BINFMT *bin);
 
 /* dis */
-int dis_instr(DISASM *dis, byte_t *code, len_t len, enum BINFMT_ARCH arch);
-int dis_is_call(DISASM *dis);
-int dis_is_jmp(DISASM *dis);
-int dis_is_ret(DISASM *dis);
- 
+int dis_init(DIS *dis, enum BINFMT_ARCH arch);
+void dis_close(DIS *dis);
+int dis_code(DIS *dis, byte_t *code, len_t len, addr_t addr, size_t count);
+int dis_next_instr(DIS *dis, INSTR **instr);
+int dis_end_is_call(DIS *dis);
+int dis_end_is_jmp(DIS *dis);
+int dis_end_is_ret(DIS *dis);
+
 /* gfind */
 void gfind_in_bin(GLIST *glist, BINFMT *bin);
 

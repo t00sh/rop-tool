@@ -84,8 +84,11 @@ Search in RAW file (not supported format)
 ![ScreenShot](http://imageshack.com/a/img829/4324/5vzm.png)
 
 
+### DEPENDENCIES
+- [capstone](http://capstone-engine.org/)
+
 ### AUTHOR
 Tosh 
 
-duretsimon73 -at- gmail ~dot~ com
+tosh -at- t0x0sh ~dot~ com
 

@@ -200,7 +200,7 @@ static const char *att_x86_filters[] = {
   "decb %%%b",
 
   "leavel ",
-  "ret ",
+  "retl ",
   NULL
 };
 
@@ -270,7 +270,7 @@ static int gfilter_strcmp(char *instr, const char *filter) {
     } else {
       if(*p1 != *p2)
 	break;
-    } 
+    }
     p1++;
     p2++;
   }

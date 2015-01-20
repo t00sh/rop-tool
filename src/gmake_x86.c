@@ -39,7 +39,7 @@ void gmake_x86_setreg(const GLIST *src, PAYLOAD *dst, const char *reg, addr_t va
     payload_add(dst, gadget, NOT_FOUND);
   }
 
-  snprintf(gadget, GADGET_COMMENT_LEN, "set %s to value %.8llx", reg, value);
+  snprintf(gadget, GADGET_COMMENT_LEN, "set %s to value %.8" PRIx64, reg, value);
   payload_add(dst, gadget, value);
 }
 

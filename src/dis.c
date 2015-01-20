@@ -26,38 +26,90 @@
    This file implement functions for disassembling x86/x86_64 code
    ======================================================================= */
 
-/* Disassemble an instruction */
-int dis_instr(DISASM *dis, byte_t *code, len_t len, enum BINFMT_ARCH arch) {
+/* Init the disassembler */
+int dis_init(DIS *dis, enum BINFMT_ARCH arch) {
+  int cs_mode;
 
-  memset(dis, 0, sizeof(DISASM));
+  memset(dis, 0, sizeof(DIS));
 
   if(arch == BINFMT_ARCH_X86_64)
-    dis->Archi = 64;
+    cs_mode = CS_MODE_64;
   else
-    dis->Archi = 0;
+    cs_mode = CS_MODE_32;
 
-  dis->SecurityBlock = len;
-  dis->EIP = (UIntPtr)code;  
+  if(cs_open(CS_ARCH_X86, cs_mode, &dis->handle) != CS_ERR_OK)
+    return 0;
 
   if(options_flavor == FLAVOR_ATT)
-    dis->Options = PrefixedNumeral + ATSyntax;
-  else if(options_flavor == FLAVOR_INTEL)
-    dis->Options = PrefixedNumeral + NasmSyntax;
+    cs_option(dis->handle, CS_OPT_SYNTAX, CS_OPT_SYNTAX_ATT);
 
-  return Disasm(dis);
+  dis->arch = arch;
+
+  return 1;
 }
 
-/* Check if instruction is a CALL */
-int dis_is_call(DISASM *dis) {
-  return (dis->Instruction.BranchType == CallType);
+/* Free the instruction list */
+void dis_free_instr_lst(DIS *dis) {
+  if(dis->instr_lst.count > 0) {
+    cs_free(dis->instr_lst.insn, dis->instr_lst.count);
+    dis->instr_lst.count = 0;
+    dis->instr_lst.cur_instr = 0;
+  }
+}
+/* Close the disassembler */
+void dis_close(DIS *dis) {
+  cs_close(&dis->handle);
+  dis_free_instr_lst(dis);
 }
 
-/* Check if instruction is a JMP */
-int dis_is_jmp(DISASM *dis) {
-  return (dis->Instruction.BranchType == JmpType);
+/* Disassemble code */
+int dis_code(DIS *dis, byte_t *code, len_t len, addr_t addr, size_t count) {
+
+  dis_free_instr_lst(dis);
+  dis->instr_lst.count = cs_disasm(dis->handle, code, len, addr, count, &dis->instr_lst.insn);
+
+  return dis->instr_lst.count;
 }
 
-/* Check if instruction is a RET */
-int dis_is_ret(DISASM *dis) {
-  return (dis->Instruction.BranchType == RetType);
+int dis_next_instr(DIS *dis, INSTR **instr) {
+  if(dis->instr_lst.cur_instr >= dis->instr_lst.count)
+    return 0;
+
+  *instr = &dis->instr_lst.insn[dis->instr_lst.cur_instr];
+  dis->instr_lst.cur_instr++;
+
+  return 1;
+}
+
+/* Check if last instruction is a CALL */
+int dis_end_is_call(DIS *dis) {
+  int end;
+
+  if(dis->instr_lst.count == 0)
+    return 0;
+
+  end = dis->instr_lst.count-1;
+  return (!strncmp(dis->instr_lst.insn[end].mnemonic, "call", 4));
+}
+
+/* Check if last instruction is a JMP */
+int dis_end_is_jmp(DIS *dis) {
+  int end;
+
+  if(dis->instr_lst.count == 0)
+    return 0;
+
+  end = dis->instr_lst.count-1;
+  return (!strncmp(dis->instr_lst.insn[end].mnemonic, "jmp", 3));
+}
+
+/* Check if last instruction is a RET */
+int dis_end_is_ret(DIS *dis) {
+  int end;
+
+  if(dis->instr_lst.count == 0)
+    return 0;
+
+  end = dis->instr_lst.count-1;
+  return (!strncmp(dis->instr_lst.insn[end].mnemonic, "ret", 3));
 }

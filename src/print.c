@@ -109,6 +109,47 @@ void print_payload_part_perl(GADGET *g) {
   }
 }
 
+/* PYTHON */
+void print_payload_start_python(void) {
+  PRINT(COLOR_RED COLOR_BG_BLACK, "#!/usr/bin/python\n\n");
+  PRINT(COLOR_MAGENTA COLOR_BG_BLACK, "from struct import pack\n\n");
+  PRINT(COLOR_GREEN COLOR_BG_BLACK, "payload = ''\n\n");
+}
+
+void print_payload_part_python(GADGET *g) {
+  PRINT(COLOR_RED COLOR_BG_BLACK, "payload");
+  PRINT(COLOR_WHITE COLOR_BG_BLACK, " = payload + ");
+  PRINT(COLOR_YELLOW COLOR_BG_BLACK, "pack('<I', %s)", format_addr(g->addr));
+  if(g->addr == NOT_FOUND) {
+    PRINT(COLOR_RED COLOR_BG_BLACK," # %s\n", g->comment);
+  } else {
+    PRINT(COLOR_GREEN COLOR_BG_BLACK," # %s\n", g->comment);
+  }
+}
+
+/* C */
+void print_payload_start_c(void) {
+  PRINT(COLOR_RED COLOR_BG_BLACK, "#include <stdlib.h>\n");
+  PRINT(COLOR_RED COLOR_BG_BLACK, "#include <stdio.h>\n\n");
+  PRINT(COLOR_RED COLOR_BG_BLACK, "#define BUFFER 0x1000\n\n");
+  PRINT(COLOR_GREEN COLOR_BG_BLACK, "int main(void) {\n");
+  PRINT(COLOR_RED COLOR_BG_BLACK, "    unsigned int buffer[BUFFER];\n");
+  PRINT(COLOR_RED COLOR_BG_BLACK, "    int i = 0;\n\n");
+}
+
+void print_payload_part_c(GADGET *g) {
+  PRINT(COLOR_YELLOW COLOR_BG_BLACK, "    buffer[i++] = %s;", format_addr(g->addr));
+  if(g->addr == NOT_FOUND) {
+    PRINT(COLOR_RED COLOR_BG_BLACK," // %s\n", g->comment);
+  } else {
+    PRINT(COLOR_GREEN COLOR_BG_BLACK," // %s\n", g->comment);
+  }
+
+}
+void print_payload_end_c(void) {
+  PRINT(COLOR_RED COLOR_BG_BLACK, "\n    return 0;\n}\n");
+}
+
 /* =========================================================================
    ======================================================================= */
 
@@ -116,16 +157,26 @@ void print_payload_part_perl(GADGET *g) {
 void print_payload_start(void) {
   if(options_output == OUTPUT_PERL)
     print_payload_start_perl();
+  if(options_output == OUTPUT_PYTHON)
+    print_payload_start_python();
+  if(options_output == OUTPUT_C)
+    print_payload_start_c();
 }
 
 /* Finish the payload */
 void print_payload_end(void) {
+  if(options_output == OUTPUT_C)
+    print_payload_end_c();
 }
 
 /* Print a gadget */
 void print_payload_part(GADGET *g) {
   if(options_output == OUTPUT_PERL)
     print_payload_part_perl(g);
+  if(options_output == OUTPUT_PYTHON)
+    print_payload_part_python(g);
+  if(options_output == OUTPUT_C)
+    print_payload_part_c(g);
 }
 
 /* Print a payload */

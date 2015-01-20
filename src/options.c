@@ -69,6 +69,7 @@ static void usage(const char *progname) {
   printf("Output options\n");
   printf("  -n, --no-color     No colors\n");
   printf("  -f, --flavor       Specify the flavor (gadget mode only) : intel or att\n");
+  printf("  -L, --language     Select output language (perl, python, c)\n");
   printf("\n");
   printf("Arch options\n");
   printf("  -c, --cpu          Specify the architecture  (raw mode) : x86 or x86_64\n");
@@ -78,6 +79,20 @@ static void usage(const char *progname) {
   printf("  -h, --help         Print help\n");
   printf("  -v, --version      Print version\n");
   exit(EXIT_SUCCESS);
+}
+
+/* Handle --language option */
+static enum OUTPUT options_set_output(const char *lang) {
+  if(!strcmp(lang, "perl"))
+    return OUTPUT_PERL;
+  if(!strcmp(lang, "python"))
+    return OUTPUT_PYTHON;
+  if(!strcmp(lang, "c"))
+    return OUTPUT_C;
+
+  FATAL_ERROR("%s: bad output language", lang);
+
+  return OUTPUT_NONE;
 }
 
 /* Handle --flavor option */
@@ -115,6 +130,7 @@ void options_parse(int argc, char **argv) {
     {"string",      required_argument, NULL, 'S'},
     {"cpu",         required_argument, NULL, 'c'},
     {"list",        no_argument,       NULL, 'l'},
+    {"language",    required_argument, NULL, 'L'},
     {"ptype",       required_argument, NULL, 'p'},
     {"flavor",      required_argument, NULL, 'f'},
     {"bad",         required_argument, NULL, 'b'},
@@ -127,7 +143,7 @@ void options_parse(int argc, char **argv) {
     {NULL,          0,                 NULL, 0  }
   };
 
-  while((opt = getopt_long(argc, argv, "PGS:lc:p:f:b:d:ahnvr", opts, NULL)) != -1) {
+  while((opt = getopt_long(argc, argv, "PGS:lL:c:p:f:b:d:ahnvr", opts, NULL)) != -1) {
     switch(opt) {
 
     case 'P':
@@ -153,6 +169,10 @@ void options_parse(int argc, char **argv) {
 
     case 'l':
       list = 1;
+      break;
+
+    case 'L':
+      options_output = options_set_output(optarg);
       break;
 
     case 'f':

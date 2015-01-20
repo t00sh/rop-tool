@@ -1,3 +1,7 @@
+Ropc v1.2 (2015-01-20)
+- Fix bugs, and small code improvments
+- Ropc now use the capstone library for disassembly
+
 Ropc v1.1 (2014-03-19)
 - Better gadget searching algorithm
 - Lot of code refactoring

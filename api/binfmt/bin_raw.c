@@ -1,5 +1,4 @@
-#ifndef DEF_SAFE_INT_H
-#define DEF_SAFE_INT_H
+#include "api/binfmt.h"
 
 /************************************************************************/
 /* RopC - A Return Oriented Programming tool			        */
@@ -23,14 +22,27 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
-int safe_add64(uint64_t *r, uint64_t a, uint64_t b);
-int safe_add32(uint32_t *r, uint32_t a, uint32_t b);
-int safe_add16(uint16_t *r, uint16_t a, uint16_t b);
-int safe_mul64(uint64_t *r, uint64_t a, uint64_t b);
-int safe_mul32(uint32_t *r, uint32_t a, uint32_t b);
-int safe_mul16(uint16_t *r, uint16_t a, uint16_t b);
-int safe_sub64(uint64_t *r, uint64_t a, uint64_t b);
-int safe_sub32(uint32_t *r, uint32_t a, uint32_t b);
-int safe_sub16(uint16_t *r, uint16_t a, uint16_t b);
+/* =========================================================================
+   This file contain the functions for the RAW binary
+   ======================================================================= */
 
-#endif
+r_binfmt_arch_e r_binfmt_raw_get_arch(void) {
+
+  return R_BINFMT_ARCH_X86;
+}
+
+r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin) {
+  bin->mlist = r_binfmt_mlist_new();
+
+  r_binfmt_mlist_add(bin->mlist,
+		 0,
+		 bin->mapped,
+		 bin->mapped_size,
+		 R_BINFMT_MEM_FLAG_PROT_X | R_BINFMT_MEM_FLAG_PROT_R | R_BINFMT_MEM_FLAG_PROT_X);
+
+  bin->type = R_BINFMT_TYPE_RAW;
+  bin->arch = r_binfmt_raw_get_arch();
+  bin->endian = R_BINFMT_ENDIAN_LITTLE;
+
+  return R_BINFMT_ERR_OK;
+}

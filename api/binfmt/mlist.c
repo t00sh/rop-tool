@@ -1,4 +1,4 @@
-#include "ropc.h"
+#include "api/binfmt.h"
 
 /************************************************************************/
 /* RopC - A Return Oriented Programming tool			        */
@@ -23,24 +23,20 @@
 /************************************************************************/
 
 /* ============================================================
-   This file implement functions for manipulate mlist objects 
+   This file implement functions for manipulate mlist objects
    (memory segments)
    ============================================================ */
 
 /* Allocate a mlist */
-MLIST* mlist_new(void) {
-  MLIST *mlist;
-
-  mlist = xcalloc(1, sizeof(MLIST)); 
-
-  return mlist;
+r_binfmt_mlist_s* r_binfmt_mlist_new(void) {
+  return r_utils_calloc(1, sizeof(r_binfmt_mlist_s));
 }
 
 /* Add a mlist to the head */
-void mlist_add(MLIST *mlist, addr_t addr, byte_t *start, len_t length, uint32_t flags) {
-  MEM *new;
+void r_binfmt_mlist_add(r_binfmt_mlist_s *mlist, addr_t addr, byte_t *start, len_t length, u32 flags) {
+  r_binfmt_mem_s *new;
 
-  new = xmalloc(sizeof(MEM));
+  new = r_utils_malloc(sizeof(*new));
 
   new->addr = addr;
   new->start = start;
@@ -50,13 +46,13 @@ void mlist_add(MLIST *mlist, addr_t addr, byte_t *start, len_t length, uint32_t 
   new->next = mlist->head;
 
   mlist->head = new;
- 
+
   mlist->size++;
 }
 
 /* Free the mlist */
-void mlist_free(MLIST **mlist) {
-  MEM *m, *tmp;
+void r_binfmt_mlist_free(r_binfmt_mlist_s **mlist) {
+  r_binfmt_mem_s *m, *tmp;
 
   m = (*mlist)->head;
   while(m != NULL) {
@@ -70,8 +66,8 @@ void mlist_free(MLIST **mlist) {
 }
 
 /* Call the callback for each element in the mlist */
-void mlist_foreach(MLIST *mlist, void (*callback)(MEM*)) {
-  MEM *m;
+void r_binfmt_mlist_foreach(r_binfmt_mlist_s *mlist, void (*callback)(r_binfmt_mem_s*)) {
+  r_binfmt_mem_s *m;
 
   for(m = mlist->head; m != NULL; m = m->next) {
     callback(m);
@@ -79,6 +75,6 @@ void mlist_foreach(MLIST *mlist, void (*callback)(MEM*)) {
 }
 
 /* Return the mlist size */
-int mlist_size(MLIST *mlist) {
+int r_binfmt_mlist_size(r_binfmt_mlist_s *mlist) {
   return mlist->size;
 }

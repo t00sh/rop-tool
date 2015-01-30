@@ -1,4 +1,4 @@
-#include "ropc.h"
+#include "api/binfmt.h"
 
 /************************************************************************/
 /* RopC - A Return Oriented Programming tool			        */
@@ -27,106 +27,107 @@
    This file contain generic binary loading function
    ======================================================================= */
 
-typedef struct BINFMT_LIST {
+typedef struct r_binfmt_loader {
   const char *name;
-  enum BINFMT_ERR (*load)(BINFMT*);
-}BINFMT_LIST;
+  r_binfmt_err_e (*load)(r_binfmt_s*);
+}r_binfmt_loader_s;
 
 /* List of supported binary formats */
-static BINFMT_LIST bin_list[] = {
-  {"elf32", elf32_load},
-  {"elf64", elf64_load},
-  {"pe", pe_load},
+static r_binfmt_loader_s r_binfmt_loaders[] = {
+  {"elf32", r_binfmt_elf32_load},
+  //  {"elf64", r_binfmt_elf64_load},
+  //  {"pe",    r_binfmt_pe_load},
   {NULL,    NULL}
 };
 
 /* Convert errors to string */
-static const char* bin_get_err(enum BINFMT_ERR err) {
+static const char* r_binfmt_get_err(r_binfmt_err_e err) {
   switch(err) {
-  case BINFMT_ERR_OK:
+  case R_BINFMT_ERR_OK:
     return "OK";
-  case BINFMT_ERR_UNRECOGNIZED:
+  case R_BINFMT_ERR_UNRECOGNIZED:
     return "unrecognized file format";
-  case BINFMT_ERR_NOTSUPPORTED:
+  case R_BINFMT_ERR_NOTSUPPORTED:
     return "not yet supported";
-  case BINFMT_ERR_MALFORMEDFILE:
+  case R_BINFMT_ERR_MALFORMEDFILE:
     return "malformed file (3vil or offuscated file ?!)";
   }
   return "Unknown error";
 }
 
-/* Check some fields of the BINFMT */
-static void bin_check(BINFMT *bin) {
-  if(bin->endian == BINFMT_ENDIAN_UNDEF)
-    FATAL_ERROR("Endianess not supported");
+/* Check some fields of the R_BINFMT */
+static void r_binfmt_check(r_binfmt_s *bin) {
+  if(bin->endian == R_BINFMT_ENDIAN_UNDEF)
+    R_UTILS_ERR("Endianess not supported");
 
-  if(bin->arch == BINFMT_ARCH_UNDEF)
-    FATAL_ERROR("Arch not supported");
+  if(bin->arch == R_BINFMT_ARCH_UNDEF)
+    R_UTILS_ERR("Arch not supported");
 
-  if(bin->type == BINFMT_TYPE_UNDEF)
-    FATAL_ERROR("File format not recognized");
+  if(bin->type == R_BINFMT_TYPE_UNDEF)
+    R_UTILS_ERR("File format not recognized");
 }
 
 /* Get the size of the file */
-static long bin_get_size(FILE* file) {
+static long r_binfmt_get_size(FILE* file) {
   long ret;
 
-  xfseek(file, 0, SEEK_END);
-  ret = xftell(file);
-  xfseek(file, 0, SEEK_SET);
+  r_utils_fseek(file, 0, SEEK_END);
+  ret = r_utils_ftell(file);
+  r_utils_fseek(file, 0, SEEK_SET);
 
   return ret;
 }
 
 /* Load binary in memory */
-void bin_load(BINFMT *bin, const char *filename) {
+void r_binfmt_load(r_binfmt_s *bin, const char *filename) {
   FILE *fd;
   long size;
   int i;
-  enum BINFMT_ERR err;
+  r_binfmt_err_e err;
 
-  fd = xfopen(filename, "r");  
-  size = bin_get_size(fd);
+  fd = r_utils_fopen(filename, "r");
+  size = r_binfmt_get_size(fd);
 
   /* Load binary in memory */
-  bin->mapped = xmalloc(size);
+  bin->mapped = r_utils_malloc(size);
   bin->mapped_size = size;
 
   if(fread(bin->mapped, 1, (size_t)size, fd) != (size_t)size)
-    FATAL_ERROR("Error while read binary file");
+    R_UTILS_ERR("Error while read binary file");
 
   /* Raw mode */
-  if(options_raw) {
-    raw_load(bin);
-    return;
-  }
+  //  if(options_raw) {
+  //  r_binfmt_raw_load(bin);
+  //  return;
+  //}
 
   /* Call each binary loader to check what file is it */
-  for(i = 0; bin_list[i].load != NULL; i++) {
-    err = bin_list[i].load(bin);
-    if(err == BINFMT_ERR_OK) {
-      bin_check(bin);
+  for(i = 0; r_binfmt_loaders[i].load != NULL; i++) {
+    err = r_binfmt_loaders[i].load(bin);
+    if(err == R_BINFMT_ERR_OK) {
+      r_binfmt_check(bin);
       break;
     }
 
-    if(err != BINFMT_ERR_UNRECOGNIZED)
-      FATAL_ERROR("Error in %s loader : %s", bin_list[i].name, bin_get_err(err));
+    if(err != R_BINFMT_ERR_UNRECOGNIZED)
+      R_UTILS_ERR("Error in %s loader : %s", r_binfmt_loaders[i].name, r_binfmt_get_err(err));
   }
-  if(bin_list[i].load == NULL)
-    FATAL_ERROR("Format not supported");
+
+  if(r_binfmt_loaders[i].load == NULL)
+    R_UTILS_ERR("Format not supported");
 
   fclose(fd);
 }
 
-/* Free the BINFMT structure */
-void bin_free(BINFMT *bin) {
-  mlist_free(&bin->mlist);
+/* Free the r_binfmt structure */
+void r_binfmt_free(r_binfmt_s *bin) {
+  r_binfmt_mlist_free(&bin->mlist);
   free(bin->mapped);
 }
 
 /* Get the first memory segment which match flags */
-MEM* bin_getmem(BINFMT *bin, uint32_t flags) {
-  MEM *m;
+r_binfmt_mem_s* r_binfmt_getmem(r_binfmt_s *bin, u32 flags) {
+  r_binfmt_mem_s *m;
 
   for(m = bin->mlist->head; m != NULL; m = m->next) {
     if(m->flags == flags)

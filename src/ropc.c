@@ -22,60 +22,17 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
-/* ===============================================================
-   This file implement functions for manipulate SLIST's
-   ============================================================== */
+/* =========================================================================
+   This file is the entry point of RopC
+   ======================================================================= */
 
-/* Alloc a new SLIST object */
-SLIST* slist_new(void) {
-  SLIST *slist;
+int main(int argc, char **argv) {
 
-  slist = xcalloc(1, sizeof(SLIST)); 
-
-  return slist;
-}
-
-/* Add a new element to the tail */
-void slist_add(SLIST *slist, char *string, addr_t addr) {
-  STRING *new;
-
-  new = xmalloc(sizeof(STRING));
-
-  new->string = string;
-  new->addr = addr;
-  new->next = NULL;
-
-  if(slist->tail != NULL) {
-    slist->tail->next = new;
-  }
-  slist->tail = new;
-
-  if(slist->head == NULL) {
-    slist->head = new;
-  }
-}
-
-/* Free the SLIST */
-void slist_free(SLIST **slist) {
-  STRING *s, *tmp;
-
-  s = (*slist)->head;
-  while(s != NULL) {
-    tmp = s->next;
-    free(s->string);
-    free(s);
-    s = tmp;
+  if(argc <= 1) {
+    help_usage();
   }
 
-  free(*slist);
-  *slist = NULL;
-}
+  command_execute(argv[1], argc-1, argv+1);
 
-/* Call the callback for each element of the slist */
-void slist_foreach(SLIST *slist, void (*callback)(STRING*)) {
-  STRING *s;
-
-  for(s = slist->head; s != NULL; s = s->next) {
-    callback(s);
-  }
+  return EXIT_SUCCESS;
 }

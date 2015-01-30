@@ -1,4 +1,4 @@
-#include "ropc.h"
+#include "api/utils.h"
 
 /************************************************************************/
 /* RopC - A Return Oriented Programming tool			        */
@@ -22,23 +22,98 @@
 /* along with RopC.  If not, see <http://www.gnu.org/licenses/>	        */
 /************************************************************************/
 
+
 /* =========================================================================
-   This file implement payloads for Linux x86
+   This file implement functions for preventing integer overflow when
+   add, sub or mul two integers
    ======================================================================= */
 
-/* Execve "/bin/sh" */
-void payload_x86_execve_bin_sh(BINFMT *bin, const GLIST *src, PAYLOAD *dst) {
-  MEM *data;
+int r_utils_add64(u64 *r, u64 a, u64 b) {
+  if(UINT64_MAX - a < b)
+    return 0;
 
-  if((data = bin_getmem(bin, MEM_FLAG_PROT_R | MEM_FLAG_PROT_W)) == NULL)
-    FATAL_ERROR("Can't find a +RW memory region");
+  if(r != NULL)
+    *r = a + b;
 
-  gmake_x86_strcp(src, dst, data->addr, "/bin/sh");
-  gmake_x86_setmem(src, dst, data->addr+8, data->addr);
-  gmake_x86_setmem(src, dst, data->addr+12, 0);
-  gmake_x86_setreg(src, dst, "eax", 11);
-  gmake_x86_setreg(src, dst, "ebx", data->addr);
-  gmake_x86_setreg(src, dst, "ecx", data->addr+8);
-  gmake_x86_setreg(src, dst, "edx", data->addr+12);
-  gmake_x86_syscall(src, dst);
+  return 1;
+}
+
+int r_utils_add32(u32 *r, u32 a, u32 b) {
+  if(UINT32_MAX - a < b)
+    return 0;
+
+  if(r != NULL)
+    *r = a + b;
+
+  return 1;
+}
+
+int r_utils_add16(u16 *r, u16 a, u16 b) {
+  if(UINT16_MAX - a < b)
+    return 0;
+
+  if(r != NULL)
+    *r = a + b;
+
+  return 1;
+}
+
+int r_utils_mul64(u64 *r, u64 a, u64 b) {
+  if(UINT64_MAX / a < b)
+    return 0;
+
+  if(r != NULL)
+    *r = a * b;
+
+  return 1;
+}
+
+int r_utils_mul32(u32 *r, u32 a, u32 b) {
+  if(UINT32_MAX / a < b)
+    return 0;
+
+  if(r != NULL)
+    *r = a * b;
+
+  return 1;
+}
+
+int r_utils_mul16(u16 *r, u16 a, u16 b) {
+  if(UINT16_MAX / a < b)
+    return 0;
+
+  if(r != NULL)
+    *r = a * b;
+
+  return 1;
+}
+
+int r_utils_sub64(u64 *r, u64 a, u64 b) {
+  if(b > a)
+    return 0;
+
+  if(r != NULL)
+    *r = a - b;
+
+  return 1;
+}
+
+int r_utils_sub32(u32 *r, u32 a, u32 b) {
+  if(b > a)
+    return 0;
+
+  if(r != NULL)
+    *r = a - b;
+
+  return 1;
+}
+
+int r_utils_sub16(u16 *r, u16 a, u16 b) {
+  if(b > a)
+    return 0;
+
+  if(r != NULL)
+    *r = a - b;
+
+  return 1;
 }

@@ -20,12 +20,12 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define PE32 0x10b 
-#define PE64 0x20b 
+#define PE32 0x10b
+#define PE64 0x20b
 #define MZ 0x5a4d
 
 typedef uint32_t DWORD;
-typedef int32_t LONG; 
+typedef int32_t LONG;
 typedef uint8_t BYTE;
 typedef uint16_t WORD;
 typedef uint64_t QWORD;
@@ -171,12 +171,12 @@ typedef struct _IMAGE_SECTION_HEADER {
 
 
 /* Get the dos header */
-static IMAGE_DOS_HEADER* pe_get_dos(BINFMT *bin) {
+static IMAGE_DOS_HEADER* pe_get_dos(r_binfmt_s *bin) {
   return (IMAGE_DOS_HEADER*)(bin->mapped);
 }
 
 /* Get the adress of the coff header */
-static WORD pe_get_addr_coff(BINFMT *bin) {
+static WORD pe_get_addr_coff(r_binfmt_s *bin) {
   IMAGE_DOS_HEADER *dos;
 
   dos = pe_get_dos(bin);
@@ -185,7 +185,7 @@ static WORD pe_get_addr_coff(BINFMT *bin) {
 }
 
 /* Get the coff header */
-static IMAGE_COFF_HEADER* pe_get_coff(BINFMT *bin) {
+static IMAGE_COFF_HEADER* pe_get_coff(r_binfmt_s *bin) {
   IMAGE_COFF_HEADER *coff;
   WORD addr_coff;
 
@@ -197,7 +197,7 @@ static IMAGE_COFF_HEADER* pe_get_coff(BINFMT *bin) {
 }
 
 /* Get the PE arch (PE32 or PE64) */
-static int pe_get_arch(BINFMT *bin) {
+static int pe_get_arch(r_binfmt_s *bin) {
   WORD arch;
   WORD addr_coff;
 
@@ -209,7 +209,7 @@ static int pe_get_arch(BINFMT *bin) {
 }
 
 /* Get the offset of the sections table */
-static WORD pe_get_addr_sections(BINFMT *bin) {
+static WORD pe_get_addr_sections(r_binfmt_s *bin) {
   WORD addr_optional;
   WORD addr_coff;
   WORD arch;
@@ -221,25 +221,25 @@ static WORD pe_get_addr_sections(BINFMT *bin) {
   switch(arch) {
   case PE32:
     return addr_optional + sizeof(IMAGE_OPTIONAL_HEADER_32)  +
-      ((IMAGE_OPTIONAL_HEADER_32*)(bin->mapped + addr_optional))->NumberOfRvaAndSizes * 
+      ((IMAGE_OPTIONAL_HEADER_32*)(bin->mapped + addr_optional))->NumberOfRvaAndSizes *
       sizeof(IMAGE_DATA_DIRECTORY);
   case PE64:
     return addr_optional + sizeof(IMAGE_OPTIONAL_HEADER_64)  +
-      ((IMAGE_OPTIONAL_HEADER_64*)(bin->mapped + addr_optional))->NumberOfRvaAndSizes * 
+      ((IMAGE_OPTIONAL_HEADER_64*)(bin->mapped + addr_optional))->NumberOfRvaAndSizes *
       sizeof(IMAGE_DATA_DIRECTORY);
-  }  
+  }
   return 0;
 }
 
 /* Load the PE file in the bin->mlist */
-static void pe_load_mlist(BINFMT *bin) {
+static void pe_load_mlist(r_binfmt_s *bin) {
   uint32_t flags;
   IMAGE_COFF_HEADER *coff;
   IMAGE_SECTION_HEADER *shdr;
   WORD sections_addr;
   int i;
-  
-  bin->mlist = mlist_new();
+
+  bin->mlist = r_binfmt_mlist_new();
 
   /* Get sections table */
   coff = (IMAGE_COFF_HEADER*)(pe_get_addr_coff(bin) + bin->mapped);
@@ -252,23 +252,23 @@ static void pe_load_mlist(BINFMT *bin) {
     flags = 0;
 
     if(shdr[i].Characteristics & IMAGE_SCN_MEM_EXECUTE)
-      flags |= MEM_FLAG_PROT_X;
+      flags |= R_BINFMT_MEM_FLAG_PROT_X;
     if(shdr[i].Characteristics & IMAGE_SCN_MEM_WRITE)
-      flags |= MEM_FLAG_PROT_W;
+      flags |= R_BINFMT_MEM_FLAG_PROT_W;
     if(shdr[i].Characteristics & IMAGE_SCN_MEM_READ)
-      flags |= MEM_FLAG_PROT_R;
+      flags |= R_BINFMT_MEM_FLAG_PROT_R;
 
     if(flags)
-      mlist_add(bin->mlist, shdr[i].VirtualAddress,
-		bin->mapped + shdr[i].PointerToRawData,
-		shdr[i].SizeOfRawData,
-		flags);
+      r_binfmt_mlist_add(bin->mlist, shdr[i].VirtualAddress,
+			 bin->mapped + shdr[i].PointerToRawData,
+			 shdr[i].SizeOfRawData,
+			 flags);
   }
-  
+
 }
 
 /* Get the machine type */
-static enum BINFMT_ARCH pe_get_machine(BINFMT *bin) {
+static r_binfmt_arch_e pe_get_machine(r_binfmt_s *bin) {
   IMAGE_COFF_HEADER *coff;
   WORD arch;
 
@@ -277,22 +277,22 @@ static enum BINFMT_ARCH pe_get_machine(BINFMT *bin) {
   arch = pe_get_arch(bin);
 
   if(arch != PE32 && arch != PE64)
-    return BINFMT_ARCH_UNDEF;
+    return R_BINFMT_ARCH_UNDEF;
 
   switch(coff->Machine) {
   case PE_MACHINE_I386:
-    return BINFMT_ARCH_X86;
+    return R_BINFMT_ARCH_X86;
   case PE_MACHINE_IA64:
-    return BINFMT_ARCH_X86_64;
+    return R_BINFMT_ARCH_X86_64;
   default:
-    return BINFMT_ARCH_UNDEF;
+    return R_BINFMT_ARCH_UNDEF;
   }
 
-  return BINFMT_ARCH_UNDEF;
+  return R_BINFMT_ARCH_UNDEF;
 }
 
 /* Check if it's a PE file */
-static int pe_is(BINFMT *bin) {
+static int pe_is(r_binfmt_s *bin) {
   WORD header;
   LONG elfanew;
   DWORD pesig;
@@ -308,23 +308,23 @@ static int pe_is(BINFMT *bin) {
   pesig = *((DWORD*)(bin->mapped + elfanew));
 
   if (pesig != 0x4550) // "PE\0\0"
-    return 0;	
+    return 0;
 
   return 1;
 }
 
-/* Main/public function : fill the BINFMT structure */
-enum BINFMT_ERR pe_load(BINFMT *bin) {
+/* Main/public function : fill the r_binfmt_s structure */
+r_binfmt_err_e r_binfmt_pe_load(r_binfmt_s *bin) {
   if(!pe_is(bin))
-    return BINFMT_ERR_UNRECOGNIZED;
+    return R_BINFMT_ERR_UNRECOGNIZED;
 
-  bin->type = BINFMT_TYPE_PE;
+  bin->type = R_BINFMT_TYPE_PE;
   bin->arch = pe_get_machine(bin);
 
   // TODO: check endianness for PE files
-  bin->endian = BINFMT_ENDIAN_LITTLE; 
+  bin->endian = R_BINFMT_ENDIAN_LITTLE;
 
   pe_load_mlist(bin);
-  
-  return BINFMT_ERR_OK;
+
+  return R_BINFMT_ERR_OK;
 }

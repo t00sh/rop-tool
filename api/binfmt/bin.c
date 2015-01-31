@@ -35,8 +35,8 @@ typedef struct r_binfmt_loader {
 /* List of supported binary formats */
 static r_binfmt_loader_s r_binfmt_loaders[] = {
   {"elf32", r_binfmt_elf32_load},
-  //  {"elf64", r_binfmt_elf64_load},
-  //  {"pe",    r_binfmt_pe_load},
+  {"elf64", r_binfmt_elf64_load},
+  {"pe",    r_binfmt_pe_load},
   {NULL,    NULL}
 };
 

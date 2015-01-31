@@ -4,6 +4,8 @@
 #include <elf.h>
 #include "api/utils.h"
 
+#define R_BINFMT_BAD_ADDR ((u64)-1)
+
 typedef enum r_binfmt_mem_flag {
   R_BINFMT_MEM_FLAG_NONE=0,
   R_BINFMT_MEM_FLAG_PROT_X=1,
@@ -73,9 +75,12 @@ int r_binfmt_mlist_size(r_binfmt_mlist_s *mlist);
 
 
 r_binfmt_err_e r_binfmt_elf32_load(r_binfmt_s *bin);
+r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin);
 
 void r_binfmt_free(r_binfmt_s *bin);
-void r_binfmt_load(r_binfmt_s *bin, const char *filename);
+void r_binfmt_load(r_binfmt_s *bin, const char *filename, int raw);
+void r_binfmt_foreach_mem(r_binfmt_s *bin, void (*callback)(r_binfmt_mem_s*), u32 flags);
+void r_binfmt_get_mem_flag_str(char str[4], r_binfmt_mem_s *mem);
 
 u64 r_binfmt_get_int64(byte_t *p, r_binfmt_endian_e endian);
 u32 r_binfmt_get_int32(byte_t *p, r_binfmt_endian_e endian);

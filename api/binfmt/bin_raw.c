@@ -38,7 +38,7 @@ r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin) {
 		 0,
 		 bin->mapped,
 		 bin->mapped_size,
-		 R_BINFMT_MEM_FLAG_PROT_X | R_BINFMT_MEM_FLAG_PROT_R | R_BINFMT_MEM_FLAG_PROT_X);
+		 R_BINFMT_MEM_FLAG_PROT_X | R_BINFMT_MEM_FLAG_PROT_R | R_BINFMT_MEM_FLAG_PROT_W);
 
   bin->type = R_BINFMT_TYPE_RAW;
   bin->arch = r_binfmt_raw_get_arch();

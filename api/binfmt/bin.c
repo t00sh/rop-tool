@@ -79,11 +79,14 @@ static long r_binfmt_get_size(FILE* file) {
 }
 
 /* Load binary in memory */
-void r_binfmt_load(r_binfmt_s *bin, const char *filename) {
+void r_binfmt_load(r_binfmt_s *bin, const char *filename, int raw) {
   FILE *fd;
   long size;
   int i;
   r_binfmt_err_e err;
+
+  assert(bin != NULL);
+  assert(filename != NULL);
 
   fd = r_utils_fopen(filename, "r");
   size = r_binfmt_get_size(fd);
@@ -95,11 +98,10 @@ void r_binfmt_load(r_binfmt_s *bin, const char *filename) {
   if(fread(bin->mapped, 1, (size_t)size, fd) != (size_t)size)
     R_UTILS_ERR("Error while read binary file");
 
-  /* Raw mode */
-  //  if(options_raw) {
-  //  r_binfmt_raw_load(bin);
-  //  return;
-  //}
+  if(raw) {
+    r_binfmt_raw_load(bin);
+    return;
+  }
 
   /* Call each binary loader to check what file is it */
   for(i = 0; r_binfmt_loaders[i].load != NULL; i++) {
@@ -134,4 +136,38 @@ r_binfmt_mem_s* r_binfmt_getmem(r_binfmt_s *bin, u32 flags) {
       return m;
   }
   return NULL;
+}
+
+void r_binfmt_foreach_mem(r_binfmt_s *bin, void (*callback)(r_binfmt_mem_s*), u32 flags) {
+  r_binfmt_mem_s *m;
+
+  assert(bin != NULL);
+  assert(callback != NULL);
+
+  for(m = bin->mlist->head; m != NULL; m = m->next) {
+    if(m->flags & flags)
+      callback(m);
+  }
+}
+
+void r_binfmt_get_mem_flag_str(char str[4], r_binfmt_mem_s *mem) {
+  int i;
+
+  assert(mem != NULL);
+
+  i = 0;
+  if(mem->flags & R_BINFMT_MEM_FLAG_PROT_R)
+    str[i++] = 'R';
+  else
+    str[i++] = '-';
+  if(mem->flags & R_BINFMT_MEM_FLAG_PROT_W)
+    str[i++] = 'W';
+  else
+    str[i++] = '-';
+  if(mem->flags & R_BINFMT_MEM_FLAG_PROT_X)
+    str[i++] = 'X';
+  else
+    str[i++] = '-';
+
+  str[i] = '\0';
 }

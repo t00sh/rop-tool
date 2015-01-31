@@ -18,10 +18,7 @@ typedef enum search_mode {
 
 
 extern search_mode_e search_options_mode;
-extern u8 search_options_byte;
-extern u16 search_options_word;
-extern u32 search_options_dword;
-extern u64 search_options_qword;
+extern u64 search_options_numeric;
 extern r_utils_bytes_s *search_options_string;
 extern r_utils_bytes_s *search_options_bad;
 extern int search_options_raw;
@@ -31,5 +28,7 @@ extern int search_options_strlen;
 
 void search_print_all_string_in_bin(r_binfmt_s *bin);
 void search_print_split_string_in_bin(r_binfmt_s *bin, r_utils_bytes_s *bytes);
+void search_print_string_in_bin(r_binfmt_s *bin, r_utils_bytes_s *bytes);
+void search_print_numeric_in_bin(r_binfmt_s *bin, u64 n, size_t size_of);
 
 #endif

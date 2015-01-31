@@ -3,10 +3,7 @@
 #define SEARCH_DEFAULT_OPTIONS_STRLEN 6
 
 search_mode_e search_options_mode = SEARCH_MODE_UNDEF;
-u8 search_options_byte = 0;
-u16 search_options_word = 0;
-u32 search_options_dword = 0;
-u64 search_options_qword = 0;
+u64 search_options_numeric = 0;
 r_utils_bytes_s *search_options_string = NULL;
 r_utils_bytes_s *search_options_bad = NULL;
 int search_options_raw = 0;
@@ -60,14 +57,14 @@ void search_options_parse(int argc, char **argv) {
       break;
     case 'b':
       search_options_mode = SEARCH_MODE_BYTE;
-      search_options_byte = strtoull(optarg, NULL, 0);
+      search_options_numeric = strtoull(optarg, NULL, 0);
       break;
     case 'B':
       search_options_bad = r_utils_bytes_unhexlify(optarg);
       break;
     case 'd':
       search_options_mode = SEARCH_MODE_DWORD;
-      search_options_dword = strtoull(optarg, NULL, 0);
+      search_options_numeric = strtoull(optarg, NULL, 0);
       break;
     case 'h':
       search_help();
@@ -78,7 +75,7 @@ void search_options_parse(int argc, char **argv) {
       break;
     case 'q':
       search_options_mode = SEARCH_MODE_QWORD;
-      search_options_qword = strtoull(optarg, NULL, 0);
+      search_options_numeric = strtoull(optarg, NULL, 0);
       break;
     case 'r':
       search_options_raw = 1;
@@ -93,7 +90,7 @@ void search_options_parse(int argc, char **argv) {
       break;
     case 'w':
       search_options_mode = SEARCH_MODE_WORD;
-      search_options_word = strtoull(optarg, NULL, 0);
+      search_options_numeric = strtoull(optarg, NULL, 0);
       break;
 
     default:
@@ -124,11 +121,25 @@ void search_cmd(int argc, char **argv) {
     break;
 
   case SEARCH_MODE_STRING:
+    search_print_string_in_bin(&bin, search_options_string);
+    break;
+
   case SEARCH_MODE_BYTE:
+    search_print_numeric_in_bin(&bin, search_options_numeric, 1);
+    break;
+
   case SEARCH_MODE_WORD:
+    search_print_numeric_in_bin(&bin, search_options_numeric, 2);
+    break;
+
   case SEARCH_MODE_DWORD:
+    search_print_numeric_in_bin(&bin, search_options_numeric, 4);
+    break;
+
   case SEARCH_MODE_QWORD:
-    R_UTILS_ERR("This mode isn't yep supported, be patient !");
+    search_print_numeric_in_bin(&bin, search_options_numeric, 8);
+    break;
+
   default:
     search_help();
     R_UTILS_ERR("I don't know what do you want searching !");

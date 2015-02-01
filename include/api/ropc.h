@@ -3,5 +3,7 @@
 
 #include "api/binfmt.h"
 #include "api/utils.h"
+#include "api/disassemble.h"
+#include "api/gadget.h"
 
 #endif

@@ -169,4 +169,33 @@ int r_utils_dec_to_hexchar(int c);
 int r_utils_hexchar_to_dec(int c);
 void* r_utils_memsearch(void *src, u64 src_len, void *dst, u64 dst_len);
 
+
+/* =========================================================================
+   hashtable.c
+   ======================================================================= */
+
+typedef struct r_utils_hash_elem {
+  void *val;
+  u8 *key;
+  u32 key_len;
+  struct r_utils_hash_elem *next;
+}r_utils_hash_elem_s;
+
+typedef struct r_utils_hash {
+  r_utils_hash_elem_s **elems;
+  u32 size;
+  u32 colisions;
+  void (*elem_destructor)(void*);
+}r_utils_hash_s;
+
+
+void r_utils_hash_foreach(r_utils_hash_s *h, void (*callback)(r_utils_hash_elem_s*));
+void r_utils_hash_free(r_utils_hash_s **h);
+r_utils_hash_elem_s* r_utils_hash_elem_new(void *elem, u8 *key, u32 key_len);
+r_utils_hash_s* r_utils_hash_new(void(*destructor)(void*));
+void r_utils_hash_insert(r_utils_hash_s *h, r_utils_hash_elem_s *elem);
+r_utils_hash_elem_s* r_utils_hash_find_elem(const r_utils_hash_s *h, int (*cmp)(r_utils_hash_elem_s*, const void*), const void *user);
+int r_utils_hash_elem_exist(r_utils_hash_s *h, u8 *key, u32 key_len);
+u32 r_utils_hash_size(r_utils_hash_s *h);
+
 #endif

@@ -171,3 +171,11 @@ void r_binfmt_get_mem_flag_str(char str[4], r_binfmt_mem_s *mem) {
 
   str[i] = '\0';
 }
+
+r_binfmt_arch_e r_binfmt_string_to_arch(const char *str) {
+  if(!strcmp(str, "x86"))
+    return R_BINFMT_ARCH_X86;
+  if(!strcmp(str, "x86-64"))
+    return R_BINFMT_ARCH_X86_64;
+  return R_BINFMT_ARCH_UNDEF;
+}

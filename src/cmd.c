@@ -4,8 +4,10 @@ static void version_cmd(int argc, char **argv);
 static void help_cmd(int argc, char **argv);
 
 void search_cmd(int argc, char **argv);
+void gadget_cmd(int argc, char **argv);
 
 void search_help(void);
+void gadget_help(void);
 
 typedef struct command {
 
@@ -17,7 +19,7 @@ typedef struct command {
 }command_s;
 
 command_s command_list[] = {
-  //  {"gadget",      "Search gadgets",          gadget_help,      gadget_cmd},
+  {"gadget",      "Search gadgets",          gadget_help,      gadget_cmd},
   //  {"patch",       "Patch the binary",        patch_help,       patch_cmd},
   //  {"info",        "Print info about binary", info_help,        info_cmd},
   //  {"disassemble", "Disassemble the binary",  disassemble_help, disassemble_cmd},

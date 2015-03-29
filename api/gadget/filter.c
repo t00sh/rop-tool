@@ -178,32 +178,109 @@ static const char *att_x86_filters[] = {
   "pushl %%%D",
   "pusha",
 
+  "addl (%%%D), %%%D",
   "addl %%%D, (%%%D)",
   "addl %%%D, $%X",
   "addl %%%D, %%%D",
   "addl %%%D, (%%%D)",
 
-  "intb $%X",
+  "addl %%%D, %X(%%%D)",
+  "addb %%%B, %X(%%%D)",
+  "addb %%%B, (%%%D)",
+  "addl $%X, %%%D",
+  "addl %X, %%%D",
+  "addl %X(%%%D), %%%D",
+
+  "int $%X",
   "calll *(%%%D)",
+  "calll *%%%D",
+  "jmpl *%%%D",
   "jmpl *(%%%D)",
 
-  "mov %%%D, %%%D",
+  "movl %%%D, %%%D",
   "movl %%%D, (%%%D)",
-  "mov (%%%D), %%%D",
-  "movb %%%b, %%%b",
+  "movl (%%%D), %%%D",
+  "movb %%%B, %%%B",
+  "movl %X(%%%D), %%%D",
+  "movl %%%D, %X(%%%D)",
 
-  "xchg %%%D, %%%D",
+  "xchgl %%%D, %%%D",
+
 
   "incl %%%D",
-  "incb %%%b",
+  "incb %%%B",
 
   "decl %%%D",
-  "decb %%%b",
+  "decb %%%B",
 
-  "leavel ",
+  "leave ",
   "retl ",
   NULL
 };
+
+static const char *att_x86_64_filters[] = {
+  "popl %%%D",
+  "popq %%%Q",
+  "popa",
+
+  "pushl %%%D",
+  "pushq %%%Q",
+  "pusha",
+
+  "addl (%%%D), %%%D",
+  "addl %%%D, (%%%D)",
+  "addl %%%D, $%X",
+  "addl %%%D, %%%D",
+  "addl %%%D, (%%%D)",
+
+  "addl %%%D, %X(%%%D)",
+  "addl $%X, %%%D",
+  "addl %X, %%%D",
+  "addl %X(%%%D), %%%D",
+  "addb %%%B, %X(%%%D)",
+  "addb %%%B, (%%%D)",
+  "addb %%%B, %X(%%%Q)",
+  "addb %%%B, (%%%Q)",
+  "addq $%X, %%%Q",
+
+  "int $%X",
+  "calll *(%%%D)",
+  "calll *%%%D",
+  "callq *%%%Q",
+  "callq *(%%%Q)",
+  "jmpl *%%%D",
+  "jmpl *(%%%D)",
+  "jmpq *%%%Q",
+  "jmpq *(%%%Q)",
+
+  "movl %%%D, %%%D",
+  "movl %%%D, (%%%D)",
+  "movl (%%%D), %%%D",
+  "movl %X(%%%D), %%%D",
+  "movl %%%D, %X(%%%D)",
+  "movb %%%B, %%%B",
+  "movq %X(%%%Q), %%%Q",
+  "movq %X(%%%Q), %%%Q",
+  "movq %%%Q, %%%Q",
+  "movq %%%Q, (%%%Q)",
+  "movq (%%%Q), %%%Q",
+  "movq %%%Q, %X(%%%Q)",
+
+  "xchgl %%%D, %%%D",
+  "xchgq %%%Q, %%%Q",
+
+  "incl %%%D",
+  "incb %%%B",
+
+  "decl %%%D",
+  "decb %%%B",
+
+  "leave ",
+  "retl ",
+  "retq ",
+  NULL
+};
+
 
 /* Return true if the instruction match the filter */
 static int r_gadget_filter_strncmp(const char *gadget, const char *filter, int len) {
@@ -221,6 +298,8 @@ static int r_gadget_filter_strncmp(const char *gadget, const char *filter, int l
 	  break;
       }
       if(*p1 == 'X') {
+	if(p2[i] == '-')
+	  i++;
 	if(p2[i] != '0' && p2[i+1] != 'x')
 	  break;
 	i += 2;
@@ -279,7 +358,7 @@ static int r_gadget_filter_strncmp(const char *gadget, const char *filter, int l
     p1++;
     i++;
   }
-  if(*p1 == '\0' && (p2[i] == '\0' || i == len))
+  if(*p1 == '\0' && (i == len || p2[i] == '\0'))
     return 1;
 
   return 0;
@@ -300,6 +379,8 @@ int r_gadget_filter(const char *gadget, r_binfmt_arch_e arch, r_disa_flavor_e fl
     p_filters = att_x86_filters;
   } else if(flavor == R_DISA_FLAVOR_INTEL && arch == R_BINFMT_ARCH_X86_64) {
     p_filters = intel_x86_64_filters;
+  } else if(flavor == R_DISA_FLAVOR_ATT && arch == R_BINFMT_ARCH_X86_64) {
+    p_filters = att_x86_64_filters;
   } else {
     /* No filter available for this flavor/architecture : don't filter gadget */
     return 1;

@@ -12,7 +12,7 @@ void gadget_print_search(r_binfmt_s *bin) {
   r_binfmt_mem_s *m;
   r_gadget_handle_s g_handle;
 
-  if(!r_gadget_handle_init(&g_handle, bin->arch, gadget_options_flavor, !gadget_options_all))
+  if(!r_gadget_handle_init(&g_handle, bin->arch, gadget_options_flavor, !gadget_options_all, gadget_options_depth))
     R_UTILS_ERR("Can't init gadget handle !");
 
   for(m = bin->mlist->head; m; m = m->next) {
@@ -22,4 +22,7 @@ void gadget_print_search(r_binfmt_s *bin) {
   }
 
   r_utils_hash_foreach(g_handle.g_hash, gadget_print_gadget);
+  R_UTILS_PRINT_WHITE_BG_BLACK(gadget_options_color, "%" PRId32 " gadgets found.\n", r_utils_hash_size(g_handle.g_hash));
+
+  r_gadget_handle_close(&g_handle);
 }

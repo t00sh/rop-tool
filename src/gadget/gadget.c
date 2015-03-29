@@ -66,7 +66,7 @@ void gadget_options_parse(int argc, char **argv) {
 
     case 'f':
       gadget_options_flavor = r_disa_string_to_flavor(optarg);
-      if(gadget_options_flavor == R_BINFMT_ARCH_UNDEF)
+      if(gadget_options_flavor == R_DISA_FLAVOR_UNDEF)
 	R_UTILS_ERR("%s: bad flavor.", optarg);
       break;
 
@@ -101,4 +101,5 @@ void gadget_cmd(int argc, char **argv) {
 
   r_binfmt_load(&bin, gadget_options_filename, gadget_options_raw);
   gadget_print_search(&bin);
+  r_binfmt_free(&bin);
 }

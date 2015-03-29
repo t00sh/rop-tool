@@ -1,4 +1,4 @@
-.PHONY: clean
+.PHONY: clean release
 
 VERSION = 2.0
 PACKAGE = ropc
@@ -13,13 +13,14 @@ CFLAGS += -I include/
 
 #CFLAGS += -pg
 
-SRC  = $(wildcard src/*.c)
+SRC  = $(wildcard api/*/*.c)
+SRC += $(wildcard src/*.c)
 SRC += $(wildcard src/*/*.c)
-SRC += $(wildcard api/*/*.c)
 
 OBJ  = $(SRC:%.c=%.o)
 
-EXE = $(PACKAGE)
+ARCH=$(shell uname -m)
+EXE = $(PACKAGE)"_"$(ARCH)"_v"$(VERSION)
 
 all: $(EXE)
 
@@ -34,3 +35,7 @@ $(EXE): $(OBJ)
 clean:
 	rm $(EXE) $(OBJ)
 	find . -name "*~" -delete
+
+release: $(EXE)
+	strip $(EXE)
+	gpg --armor --detach-sign $(EXE)

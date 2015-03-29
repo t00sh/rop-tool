@@ -22,7 +22,7 @@ Try "ropc help <cmd>" for more informations about a command.
 
 ```
 
-## GADGET COMMAND
+#### GADGET COMMAND
 
 ```
 Usage : ropc gadget [OPTIONS] [FILENAME]
@@ -38,7 +38,7 @@ OPTIONS:
   --raw, -r                Open file in raw mode (don't considere any file format)
 ```
 
-## SEARCH COMMAND
+#### SEARCH COMMAND
 
 ```
 Usage : ropc search [OPTIONS] [FILENAME]
@@ -90,14 +90,37 @@ Search all strings in binary
 * ropc s ./program -a
 
 ### SCREENSHOTS
-![ScreenShot](http://imageshack.com/a/img849/3325/fbed.png)
-![ScreenShot](http://imageshack.com/a/img844/3548/owzz.png)
-![ScreenShot](http://imageshack.com/a/img593/9008/lojs.png)
-![ScreenShot](http://imageshack.com/a/img829/4324/5vzm.png)
+
+```
+ropc g /bin/ls
+```
+
+![ScreenShot](https://t0x0sh.org/repo/RopC/screens/screen1.png)
+
+```
+ropc s /bin/ls -a
+```
+
+![ScreenShot](https://t0x0sh.org/repo/RopC/screens/screen2.png)
+
+```
+ropc s /bin/ls -s "/bin/sh\x00"
+```
+
+![ScreenShot](https://t0x0sh.org/repo/RopC/screens/screen3.png)
+
+```
+ropc -s /bin/ls -w 0x90
+```
+
+![ScreenShot](https://t0x0sh.org/repo/RopC/screens/screen4.png)
 
 
 ### DEPENDENCIES
 - [capstone](http://capstone-engine.org/)
+
+### RELEASES
+- https://t0x0sh.org/repo/RopC/releases/
 
 ### AUTHOR
 Tosh 

@@ -2,7 +2,7 @@
 *.o
 
 # Executable
-ropc
+ropc_*_v*
 
 # tmp files
 *~

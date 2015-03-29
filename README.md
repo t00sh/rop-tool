@@ -92,25 +92,25 @@ Search all strings in binary
 ### SCREENSHOTS
 
 ```
-ropc g /bin/ls
+ropc gadget /bin/ls
 ```
 
 ![ScreenShot](https://t0x0sh.org/repo/RopC/screens/screen1.png)
 
 ```
-ropc s /bin/ls -a
+ropc search /bin/ls -a
 ```
 
 ![ScreenShot](https://t0x0sh.org/repo/RopC/screens/screen2.png)
 
 ```
-ropc s /bin/ls -s "/bin/sh\x00"
+ropc search /bin/ls -s "/bin/sh\x00"
 ```
 
 ![ScreenShot](https://t0x0sh.org/repo/RopC/screens/screen3.png)
 
 ```
-ropc -s /bin/ls -w 0x90
+ropc search /bin/ls -w 0x90
 ```
 
 ![ScreenShot](https://t0x0sh.org/repo/RopC/screens/screen4.png)

@@ -1,6 +1,6 @@
 #include "api/utils.h"
 
-#define R_UTILS_HASH_SIZE 0x20000
+#define R_UTILS_HASH_SIZE 0x30000
 
 static u32 r_utils_hash(const u8 *key, size_t key_len) {
   u32 hash;
@@ -9,8 +9,8 @@ static u32 r_utils_hash(const u8 *key, size_t key_len) {
   hash = 0;
 
   for(i = 0; i < key_len; i++) {
-    hash = (hash << 5) | (hash >> 27);
-    hash ^= key[i];
+    hash = (hash << 1) | (hash >> 31);
+    hash += key[i];
   }
   return hash % R_UTILS_HASH_SIZE;
 }
@@ -42,7 +42,7 @@ void r_utils_hash_free(r_utils_hash_s **h) {
     while(e != NULL) {
       tmp = e->next;
       if((*h)->elem_destructor)
-	(*h)->elem_destructor(e->val);
+      	(*h)->elem_destructor(e->val);
       free(e->key);
       free(e);
       e = tmp;

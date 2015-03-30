@@ -54,6 +54,7 @@ void search_options_parse(int argc, char **argv) {
     case 'a':
       search_options_mode = SEARCH_MODE_STRING_ALL;
       if(optarg) search_options_strlen = strtoull(optarg, NULL, 0);
+      if(search_options_strlen <= 0) R_UTILS_ERR("Bad argument for \"-a\" option ! Must be an integer > 0, e.g : -a5");
       break;
     case 'b':
       search_options_mode = SEARCH_MODE_BYTE;

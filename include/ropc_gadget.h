@@ -5,6 +5,7 @@
 
 extern u8 gadget_options_depth;
 extern int gadget_options_raw;
+extern int gadget_options_filter;
 extern int gadget_options_all;
 extern int gadget_options_color;
 extern r_binfmt_arch_e gadget_options_arch;

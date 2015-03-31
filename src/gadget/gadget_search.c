@@ -12,7 +12,7 @@ void gadget_print_search(r_binfmt_s *bin) {
   r_binfmt_mem_s *m;
   r_gadget_handle_s g_handle;
 
-  if(!r_gadget_handle_init(&g_handle, bin->arch, gadget_options_flavor, !gadget_options_all, gadget_options_depth))
+  if(!r_gadget_handle_init(&g_handle, bin->arch, gadget_options_flavor, gadget_options_filter, gadget_options_depth, gadget_options_all))
     R_UTILS_ERR("Can't init gadget handle !");
 
   for(m = bin->mlist->head; m; m = m->next) {

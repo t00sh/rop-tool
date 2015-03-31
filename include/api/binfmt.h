@@ -81,6 +81,7 @@ r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin);
 
 void r_binfmt_free(r_binfmt_s *bin);
 void r_binfmt_load(r_binfmt_s *bin, const char *filename, int raw);
+void r_binfmt_write(r_binfmt_s *bin, const char *filename);
 void r_binfmt_foreach_mem(r_binfmt_s *bin, void (*callback)(r_binfmt_mem_s*), u32 flags);
 void r_binfmt_get_mem_flag_str(char str[4], r_binfmt_mem_s *mem);
 r_binfmt_arch_e r_binfmt_string_to_arch(const char *str);

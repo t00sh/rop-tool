@@ -121,6 +121,18 @@ void r_binfmt_load(r_binfmt_s *bin, const char *filename, int raw) {
   fclose(fd);
 }
 
+void r_binfmt_write(r_binfmt_s *bin, const char *filename) {
+  FILE *fd;
+
+    fd = r_utils_fopen(filename, "w");
+
+    if(fwrite(bin->mapped, 1, bin->mapped_size, fd) != bin->mapped_size) {
+      fclose(fd);
+      R_UTILS_ERRX("Error while writing on file %s !", filename);
+    }
+    fclose(fd);
+}
+
 /* Free the r_binfmt structure */
 void r_binfmt_free(r_binfmt_s *bin) {
   r_binfmt_mlist_free(&bin->mlist);

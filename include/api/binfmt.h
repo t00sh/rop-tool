@@ -77,6 +77,7 @@ typedef enum r_binfmt_arch {
 
 
 typedef struct binfmt {
+  addr_t entry;
   r_binfmt_type_e type;
   r_binfmt_endian_e endian;
   r_binfmt_arch_e arch;
@@ -107,6 +108,10 @@ void r_binfmt_write(r_binfmt_s *bin, const char *filename);
 void r_binfmt_foreach_mem(r_binfmt_s *bin, void (*callback)(r_binfmt_mem_s*), u32 flags);
 void r_binfmt_get_mem_flag_str(char str[4], r_binfmt_mem_s *mem);
 r_binfmt_arch_e r_binfmt_string_to_arch(const char *str);
+const char* r_binfmt_arch_to_string(r_binfmt_arch_e arch);
+const char* r_binfmt_type_to_string(r_binfmt_type_e type);
+
+void r_binfmt_print_infos(r_binfmt_s *bin, int color);
 
 u64 r_binfmt_get_int64(byte_t *p, r_binfmt_endian_e endian);
 u32 r_binfmt_get_int32(byte_t *p, r_binfmt_endian_e endian);

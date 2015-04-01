@@ -92,6 +92,9 @@ void r_binfmt_load(r_binfmt_s *bin, const char *filename, int raw) {
   fd = r_utils_fopen(filename, "r");
   size = r_binfmt_get_size(fd);
 
+  if(size > 0xFFFFFFFF)
+    R_UTILS_ERR("File is too big, can't open it !");
+
   /* Load binary in memory */
   bin->mapped = r_utils_malloc(size);
   bin->mapped_size = size;
@@ -191,4 +194,56 @@ r_binfmt_arch_e r_binfmt_string_to_arch(const char *str) {
   if(!strcmp(str, "x86-64"))
     return R_BINFMT_ARCH_X86_64;
   return R_BINFMT_ARCH_UNDEF;
+}
+
+const char* r_binfmt_arch_to_string(r_binfmt_arch_e arch) {
+  switch(arch) {
+  case R_BINFMT_ARCH_X86:
+    return "x86";
+  case R_BINFMT_ARCH_X86_64:
+    return "x86-64";
+  default:
+    return "unknown";
+  }
+  return "unknown";
+}
+
+const char* r_binfmt_type_to_string(r_binfmt_type_e type) {
+  switch(type) {
+  case R_BINFMT_TYPE_ELF32:
+    return "ELF32";
+  case R_BINFMT_TYPE_ELF64:
+    return "ELF64";
+  case R_BINFMT_TYPE_PE:
+    return "PE";
+  case R_BINFMT_TYPE_RAW:
+    return "raw";
+  default:
+    return "unkown";
+  }
+  return "unknown";
+}
+
+
+const char* r_binfmt_endian_to_string(r_binfmt_endian_e endian) {
+  switch(endian) {
+  case R_BINFMT_ENDIAN_BIG:
+    return "big endian";
+  case R_BINFMT_ENDIAN_LITTLE:
+    return "little endian";
+  default:
+    return "unkown";
+  }
+  return "unknown";
+}
+
+void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "File format");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_type_to_string(bin->type));
+
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "Architecture");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_arch_to_string(bin->arch));
+
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "Endianess");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_endian_to_string(bin->endian));
 }

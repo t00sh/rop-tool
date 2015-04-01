@@ -130,7 +130,8 @@ static int elf64_is(r_binfmt_s *bin) {
 r_binfmt_arch_e elf64_getarch(r_binfmt_s *bin) {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
 
-  if(ehdr->e_machine == EM_X86_64)
+  if(ehdr->e_machine == EM_X86_64 ||
+     ehdr->e_machine == EM_IA_64)
     return R_BINFMT_ARCH_X86_64;
 
   return R_BINFMT_ARCH_UNDEF;
@@ -145,6 +146,11 @@ r_binfmt_endian_e elf64_getendian(r_binfmt_s *bin) {
     return R_BINFMT_ENDIAN_BIG;
 
   return R_BINFMT_ENDIAN_UNDEF;
+}
+
+static addr_t r_binfmt_elf64_getentry(r_binfmt_s *bin) {
+  Elf64_Ehdr *ehdr = (Elf64_Ehdr*)(bin->mapped);
+  return r_binfmt_get_int64((byte_t*)&ehdr->e_entry, bin->endian);
 }
 
 /* Load elf64, and check the binary */
@@ -166,6 +172,7 @@ r_binfmt_err_e r_binfmt_elf64_load(r_binfmt_s *bin) {
   if(!elf64_check(bin))
     return R_BINFMT_ERR_MALFORMEDFILE;
 
+  bin->entry = r_binfmt_elf64_getentry(bin);
   elf64_load_mlist(bin);
 
   return R_BINFMT_ERR_OK;

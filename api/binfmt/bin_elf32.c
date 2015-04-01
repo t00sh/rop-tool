@@ -144,6 +144,11 @@ static r_binfmt_endian_e r_binfmt_elf32_getendian(r_binfmt_s *bin) {
   return R_BINFMT_ENDIAN_UNDEF;
 }
 
+static addr_t r_binfmt_elf32_getentry(r_binfmt_s *bin) {
+  Elf32_Ehdr *ehdr = (Elf32_Ehdr*)(bin->mapped);
+  return r_binfmt_get_int32((byte_t*)&ehdr->e_entry, bin->endian);
+}
+
 /* Fill the BINFMT structure if it's a correct ELF32 */
 r_binfmt_err_e r_binfmt_elf32_load(r_binfmt_s *bin) {
 
@@ -154,9 +159,16 @@ r_binfmt_err_e r_binfmt_elf32_load(r_binfmt_s *bin) {
   bin->arch = r_binfmt_elf32_getarch(bin);
   bin->endian = r_binfmt_elf32_getendian(bin);
 
+  if(bin->arch == R_BINFMT_ARCH_UNDEF)
+    return R_BINFMT_ERR_NOTSUPPORTED;
+
+  if(bin->endian == R_BINFMT_ENDIAN_UNDEF)
+    return R_BINFMT_ERR_NOTSUPPORTED;
+
   if(!r_binfmt_elf32_check(bin))
     return R_BINFMT_ERR_MALFORMEDFILE;
 
+  bin->entry = r_binfmt_elf32_getentry(bin);
   r_binfmt_elf32_load_mlist(bin);
 
   return R_BINFMT_ERR_OK;

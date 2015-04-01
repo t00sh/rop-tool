@@ -246,4 +246,7 @@ void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
 
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "Endianess");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_endian_to_string(bin->endian));
+
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "Entry point");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%#" PRIx64 "\n", bin->entry);
 }

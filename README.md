@@ -122,6 +122,9 @@ ropc search /bin/ls -w 0x90
 ### RELEASES
 - https://t0x0sh.org/repo/RopC/releases/
 
+### LICENSE
+- GPLv3 license : http://www.gnu.org/licenses/gpl-3.0.txt
+
 ### AUTHOR
 Tosh 
 

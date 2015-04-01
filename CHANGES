@@ -1,3 +1,8 @@
+Ropc v2.0 (2015-03-29)
+- Big changes in code architecture (more modular)                      - The command line interface have changed (each command do one thing)
+- Better ATT syntax handling
+- See help for more informations
+
 Ropc v1.2 (2015-01-20)
 - Fix bugs, and small code improvments
 - Ropc now use the capstone library for disassembly

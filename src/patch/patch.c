@@ -34,6 +34,7 @@ void patch_help(void) {
   printf("OPTIONS:\n");
   printf("  --address, -a       [a]  Select an address to patch\n");
   printf("  --bytes, -b         [b]  A byte sequence (e.g. : \"\\xaa\\xbb\\xcc\") to write\n");
+  printf("  --filename, -f      [f]  Specify the filename\n");
   printf("  --help, -h               Print this help message\n");
   printf("  --offset, -o        [o]  Select an offset to patch (from start of the file)\n");
   printf("  --output, -O        [o]  Write to an another filename\n");
@@ -49,6 +50,7 @@ void patch_options_parse(int argc, char **argv) {
   const struct option opts[] = {
     {"address",       required_argument, NULL, 'a'},
     {"bytes",         required_argument, NULL, 'b'},
+    {"filename",      required_argument, NULL, 'f'},
     {"help",          no_argument,       NULL, 'h'},
     {"offset",        required_argument, NULL, 'o'},
     {"output",        required_argument, NULL, 'O'},
@@ -56,7 +58,7 @@ void patch_options_parse(int argc, char **argv) {
     {NULL,            0,                 NULL, 0  }
   };
 
-  while((opt = getopt_long(argc, argv, "a:b:ho:O:r", opts, NULL)) != -1) {
+  while((opt = getopt_long(argc, argv, "a:b:f:ho:O:r", opts, NULL)) != -1) {
     switch(opt) {
 
     case 'a':
@@ -65,6 +67,10 @@ void patch_options_parse(int argc, char **argv) {
 
     case 'b':
       patch_options_bytes = r_utils_bytes_unhexlify(optarg);
+      break;
+
+    case 'f':
+      patch_options_filename = optarg;
       break;
 
     case 'h':
@@ -120,10 +126,13 @@ void patch_cmd(int argc, char **argv) {
     /* TODO */
   }
 
-  if(patch_options_output != NULL)
-    r_binfmt_write(&bin, patch_options_output);
-  else
-    r_binfmt_write(&bin, patch_options_filename);
+  if(patch_options_output == NULL)
+    patch_options_output = patch_options_filename;
+
+
+  r_binfmt_write(&bin, patch_options_output);
+  printf("[+] Patched %lu bytes (result saved in %s)\n", patch_options_bytes->len, patch_options_output);
+
 
   r_binfmt_free(&bin);
 }

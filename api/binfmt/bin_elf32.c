@@ -30,13 +30,15 @@
 /* Fill bin->mlist structure */
 static void r_binfmt_elf32_load_mlist(r_binfmt_s *bin) {
   Elf32_Ehdr *ehdr = (Elf32_Ehdr*)bin->mapped;
-  Elf32_Phdr *phdr = (Elf32_Phdr*)(bin->mapped + ehdr->e_phoff);
+  Elf32_Phdr *phdr;
   int i;
   u32 flags;
   u32 p_type, p_flags, p_vaddr, p_offset, p_filesz;
   u16 e_phnum;
 
   bin->mlist = r_binfmt_mlist_new();
+
+  phdr = (Elf32_Phdr*)(bin->mapped + r_binfmt_get_int32((byte_t*)&ehdr->e_phoff, bin->endian));
 
   e_phnum = r_binfmt_get_int16((byte_t*)&ehdr->e_phnum, bin->endian);
 

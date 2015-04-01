@@ -31,7 +31,7 @@
 /* Load the ELF binary in the bin->mlist */
 static void elf64_load_mlist(r_binfmt_s *bin) {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
-  Elf64_Phdr *phdr = (Elf64_Phdr*)(bin->mapped + ehdr->e_phoff);
+  Elf64_Phdr *phdr;
   int i;
   uint64_t flags;
   uint64_t p_vaddr, p_offset, p_filesz;
@@ -39,6 +39,8 @@ static void elf64_load_mlist(r_binfmt_s *bin) {
   uint16_t e_phnum;
 
   bin->mlist = r_binfmt_mlist_new();
+
+  phdr = (Elf64_Phdr*)(bin->mapped + r_binfmt_get_int64((byte_t*)&ehdr->e_phoff, bin->endian));
 
   e_phnum = r_binfmt_get_int16((byte_t*)&ehdr->e_phnum, bin->endian);
 

@@ -55,7 +55,9 @@ typedef uint64_t QWORD;
 enum PE_MACHINE {
   PE_MACHINE_UNDEF=0,
   PE_MACHINE_I386=0x14c,
-  PE_MACHINE_IA64=0X200
+  PE_MACHINE_I860=0x14d,
+  PE_MACHINE_IA64=0x200,
+  PE_MACHINE_AMD64=0x8664,
 };
 
 enum PE_IMAGE_SCN {
@@ -305,6 +307,7 @@ static r_binfmt_arch_e pe_get_machine(r_binfmt_s *bin) {
   case PE_MACHINE_I386:
     return R_BINFMT_ARCH_X86;
   case PE_MACHINE_IA64:
+  case PE_MACHINE_AMD64:
     return R_BINFMT_ARCH_X86_64;
   default:
     return R_BINFMT_ARCH_UNDEF;

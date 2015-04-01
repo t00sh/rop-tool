@@ -349,6 +349,8 @@ r_binfmt_err_e r_binfmt_pe_load(r_binfmt_s *bin) {
   // TODO: check endianness for PE files
   bin->endian = R_BINFMT_ENDIAN_LITTLE;
 
+  // TODO: handle PE entry point
+  bin->entry = 0;
   pe_load_mlist(bin);
 
   return R_BINFMT_ERR_OK;

@@ -1,7 +1,7 @@
 .PHONY: clean release
 
 VERSION = 2.0
-PACKAGE = ropc
+PACKAGE = rop-tool
 
 CC = gcc
 CFLAGS = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized

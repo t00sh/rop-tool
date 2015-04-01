@@ -1,8 +1,11 @@
 # Object files
 *.o
 
-# Executable
-ropc_*_v*
+# Executables
+rop-tool*
+
+# Signature files
+*.asc
 
 # tmp files
 *~

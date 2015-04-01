@@ -20,34 +20,37 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with rop-tool.  If not, see <http://www.gnu.org/licenses/>     */
 /************************************************************************/
-#include "rop_search.h"
+#ifndef DEF_ROP_SEARCH_H
+#define DEF_ROP_SEARCH_H
 
-static void search_print_all_strings(r_binfmt_mem_s *mem) {
-  u64 i;
-  int cur_len;
-  char flag_str[4];
-  int found = 0;
+#include "api/rop.h"
 
-  cur_len = 0;
-  r_binfmt_get_mem_flag_str(flag_str, mem);
 
-  for(i = 0; i < mem->length; i++) {
-    if(isgraph(mem->start[i])) {
-      cur_len++;
-    } else {
-      if(cur_len >= search_options_strlen) {
-	R_UTILS_PRINT_BLACK_BG_WHITE(search_options_color, " %s ", flag_str);
-	R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %.16" PRIx64 " ", (mem->addr + i) - cur_len);
-	R_UTILS_PRINT_WHITE_BG_BLACK(search_options_color, "-> ");
-	R_UTILS_PRINT_RED_BG_BLACK(search_options_color, "%.*s\n", cur_len, (char*)&mem->start[i-cur_len]);
-	found++;
-      }
-      cur_len = 0;
-    }
-  }
-  R_UTILS_PRINT_YELLOW_BG_BLACK(search_options_color, " %d strings found.\n", found);
-}
+typedef enum search_mode {
+  SEARCH_MODE_UNDEF=0,
+  SEARCH_MODE_BYTE,
+  SEARCH_MODE_WORD,
+  SEARCH_MODE_DWORD,
+  SEARCH_MODE_QWORD,
+  SEARCH_MODE_STRING_ALL,
+  SEARCH_MODE_STRING_SPLIT,
+  SEARCH_MODE_STRING
 
-void search_print_all_string_in_bin(r_binfmt_s *bin) {
-  r_binfmt_foreach_mem(bin, search_print_all_strings, R_BINFMT_MEM_FLAG_PROT_R);
-}
+}search_mode_e;
+
+
+extern search_mode_e search_options_mode;
+extern u64 search_options_numeric;
+extern r_utils_bytes_s *search_options_string;
+extern r_utils_bytes_s *search_options_bad;
+extern int search_options_raw;
+extern int search_options_color;
+extern const char *search_options_filename;
+extern int search_options_strlen;
+
+void search_print_all_string_in_bin(r_binfmt_s *bin);
+void search_print_split_string_in_bin(r_binfmt_s *bin, r_utils_bytes_s *bytes);
+void search_print_string_in_bin(r_binfmt_s *bin, r_utils_bytes_s *bytes);
+void search_print_numeric_in_bin(r_binfmt_s *bin, u64 n, size_t size_of);
+
+#endif

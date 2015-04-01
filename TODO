@@ -1,0 +1,12 @@
+- payload generator
+- api/bin_elf64.c need some improvments
+- Work on gadget filters
+- Work on api/bin_pe.c
+- Handle MACOFF format
+- handle --address of patch command
+- handle --bad option in gadget and search command
+- work on info command (need big work on bin_* files), e.g. print sections, memory segments, symbols, protections (ASLR, SSP...), plt functions...
+- Make a tool for format string generator
+- Make a shellcode compiler (translate .s file to opcodes)
+- Handle ARM architecture
+- ...

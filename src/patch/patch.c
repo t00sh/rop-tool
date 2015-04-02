@@ -101,11 +101,37 @@ void patch_options_parse(int argc, char **argv) {
   }
 
   if(patch_options_address == R_BINFMT_BAD_ADDR && patch_options_offset == R_BINFMT_BAD_ADDR)
-    R_UTILS_ERR("Where I patch ? Random location ?! Use --offset or --address options");
+    R_UTILS_ERR("Where I patch ? Random location ?! Use --offset or --address options !");
   if(patch_options_address != R_BINFMT_BAD_ADDR && patch_options_offset != R_BINFMT_BAD_ADDR)
-    R_UTILS_ERR("I need an offset XOR an address, not twice !");
+    R_UTILS_ERR("I need an offset OR an address, not twice !");
   if(patch_options_bytes == NULL)
     R_UTILS_ERR("I patch what ? use --bytes option !");
+}
+
+
+static void patch_address(r_binfmt_s *bin, addr_t addr, void *bytes, u64 len) {
+  r_binfmt_mem_s *m;
+  u64 off;
+
+  for(m = bin->mlist->head; m; m = m->next) {
+    if(addr >= m->addr && addr <= m->addr+m->length) {
+      if(addr+len >= m->addr+m->length) {
+	R_UTILS_ERR("Too many bytes to copy !");
+      }
+
+      off = addr - m->addr;
+      memcpy(m->start+off, bytes, len);
+      return;
+    }
+  }
+  R_UTILS_ERR("Address not found...");
+}
+
+static void patch_offset(r_binfmt_s *bin, addr_t off, void *bytes, u64 len) {
+  if(off >= bin->mapped_size || off+len > bin->mapped_size) {
+    R_UTILS_ERR("Offset out of range !");
+  }
+  memcpy(bin->mapped+off, bytes, len);
 }
 
 void patch_cmd(int argc, char **argv) {
@@ -116,14 +142,16 @@ void patch_cmd(int argc, char **argv) {
   r_binfmt_load(&bin, patch_options_filename, patch_options_raw);
 
   if(patch_options_offset != R_BINFMT_BAD_ADDR) {
-    if(patch_options_offset >= bin.mapped_size-patch_options_bytes->len)
-      R_UTILS_ERR("Offset is too big !");
-    memcpy(bin.mapped + patch_options_offset,
-	   patch_options_bytes->bytes,
-	   patch_options_bytes->len);
+    patch_offset(&bin,
+		 patch_options_offset,
+		 patch_options_bytes->bytes,
+		 patch_options_bytes->len);
 
   } else {
-    /* TODO */
+    patch_address(&bin,
+		  patch_options_address,
+		  patch_options_bytes->bytes,
+		  patch_options_bytes->len);
   }
 
   if(patch_options_output == NULL)

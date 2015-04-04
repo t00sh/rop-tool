@@ -45,6 +45,8 @@ clean:
 	rm $(EXE) $(OBJ)
 	find . -name "*~" -delete
 
-release: $(EXE)
+release: $(EXE) $(EXE_STATIC)
 	strip $(EXE)
+	strip $(EXE_STATIC)
 	gpg --armor --detach-sign $(EXE)
+	gpg --armor --detach-sign $(EXE_STATIC)

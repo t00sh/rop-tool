@@ -255,6 +255,28 @@ static WORD pe_get_addr_sections(r_binfmt_s *bin) {
   return 0;
 }
 
+/* Get the entry point */
+static u64 pe_getentry(r_binfmt_s *bin) {
+  WORD addr_optional;
+  WORD addr_coff;
+  WORD arch;
+
+  addr_coff = pe_get_addr_coff(bin);
+  addr_optional = addr_coff + sizeof(IMAGE_COFF_HEADER);
+  arch = pe_get_arch(bin);
+
+  switch(arch) {
+  case PE32:
+    return ((IMAGE_OPTIONAL_HEADER_32*)(bin->mapped + addr_optional))->AddressOfEntryPoint +
+      ((IMAGE_OPTIONAL_HEADER_32*)(bin->mapped + addr_optional))->ImageBase;
+  case PE64:
+    return ((IMAGE_OPTIONAL_HEADER_64*)(bin->mapped + addr_optional))->AddressOfEntryPoint +
+      ((IMAGE_OPTIONAL_HEADER_64*)(bin->mapped + addr_optional))->ImageBase;
+  }
+
+  return 0;
+}
+
 /* Load the PE file in the bin->mlist */
 static void pe_load_mlist(r_binfmt_s *bin) {
   uint32_t flags;
@@ -350,7 +372,7 @@ r_binfmt_err_e r_binfmt_pe_load(r_binfmt_s *bin) {
   bin->endian = R_BINFMT_ENDIAN_LITTLE;
 
   // TODO: handle PE entry point
-  bin->entry = 0;
+  bin->entry = pe_getentry(bin);
   pe_load_mlist(bin);
 
   return R_BINFMT_ERR_OK;

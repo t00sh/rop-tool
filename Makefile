@@ -6,8 +6,10 @@ PACKAGE = rop-tool
 CC = gcc
 CFLAGS = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized
 CFLAGS += -Wunreachable-code -g -fstack-protector-all
-CFLAGS += -lcapstone
 CFLAGS += -DVERSION="\"$(VERSION)\"" -DPACKAGE="\"$(PACKAGE)\""
+
+LIBS = -lcapstone
+STATIC_LIBS = ../capstone/libcapstone.a
 
 CFLAGS += -I include/
 
@@ -20,13 +22,20 @@ SRC += $(wildcard src/*/*.c)
 OBJ  = $(SRC:%.c=%.o)
 
 ARCH=$(shell uname -m)
-EXE = $(PACKAGE)"_"$(ARCH)"_v"$(VERSION)
+
+EXE = $(PACKAGE)-$(ARCH)
+EXE_STATIC = $(EXE)-static
 
 all: $(EXE)
+static: $(EXE_STATIC)
 
 $(EXE): $(OBJ)
-	@echo " LINK $(EXE)" ;
-	@$(CC) $(CFLAGS) -o $(EXE) $(OBJ) $(LIB);
+	@echo " LINK $@" ;
+	@$(CC) $(CFLAGS) -o $@ $(OBJ) $(LIBS);
+
+$(EXE_STATIC): $(OBJ)
+	@echo " LINK $@"
+	@$(CC) $(CFLAGS) -o $@ $(OBJ) $(STATIC_LIBS) -static
 
 %.o:%.c
 	@echo " CC $@" ;

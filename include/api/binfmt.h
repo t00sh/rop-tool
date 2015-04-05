@@ -79,6 +79,7 @@ typedef enum r_binfmt_arch {
 
 
 typedef struct binfmt {
+  const char *filename;
   addr_t entry;
   r_binfmt_type_e type;
   r_binfmt_endian_e endian;

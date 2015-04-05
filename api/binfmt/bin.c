@@ -81,19 +81,6 @@ static long r_binfmt_get_size(FILE* file) {
   return ret;
 }
 
-static int r_binfmt_file_is_directory(const char *filename) {
-  FILE *f;
-
-  if((f = fopen(filename, "wb")) == NULL) {
-    if(errno == EISDIR)
-      return 1;
-    return 0;
-  }
-
-  fclose(f);
-  return 0;
-}
-
 /* Load binary in memory */
 void r_binfmt_load(r_binfmt_s *bin, const char *filename, int raw) {
   FILE *fd;
@@ -104,15 +91,16 @@ void r_binfmt_load(r_binfmt_s *bin, const char *filename, int raw) {
   assert(bin != NULL);
   assert(filename != NULL);
 
-  if(r_binfmt_file_is_directory(filename))
-    R_UTILS_ERR("File is a directory");
-
   fd = r_utils_fopen(filename, "r");
   size = r_binfmt_get_size(fd);
+
+  if(size == LONG_MAX)
+    R_UTILS_ERR("File seem to be a directory");
 
   /* Load binary in memory */
   bin->mapped = r_utils_malloc(size);
   bin->mapped_size = size;
+  bin->filename = filename;
 
   if(fread(bin->mapped, 1, (size_t)size, fd) != (size_t)size)
     R_UTILS_ERR("Error while read binary file");
@@ -257,6 +245,9 @@ const char* r_binfmt_endian_to_string(r_binfmt_endian_e endian) {
 }
 
 void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "Filename");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", bin->filename);
+
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "File format");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_type_to_string(bin->type));
 

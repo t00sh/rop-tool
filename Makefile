@@ -22,8 +22,9 @@ SRC += $(wildcard src/*/*.c)
 OBJ  = $(SRC:%.c=%.o)
 
 ARCH=$(shell uname -m)
+SYSTEM=$(shell uname -s)
 
-EXE = $(PACKAGE)-$(ARCH)
+EXE = $(PACKAGE)-$(SYSTEM)-$(ARCH)
 EXE_STATIC = $(EXE)-static
 
 all: $(EXE)

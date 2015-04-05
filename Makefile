@@ -1,6 +1,6 @@
 .PHONY: clean release
 
-VERSION = 2.0
+VERSION = 2.1
 PACKAGE = rop-tool
 
 CC = gcc

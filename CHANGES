@@ -1,5 +1,16 @@
+rop-tool v2.1 (2015-04-05)
+- Renamed the project to rop-tool
+- Handle Mach-O file format
+- --all option added to "gadget" command, to get no-uniq gadgets
+- New command : patch, for patching binaries
+- New command : info, to get information about a file
+- Handle AMD64 PE files as x86-64 binaries
+- Fix a bug when opening big endian ELF
+- Provide static binaries in releases
+
 Ropc v2.0 (2015-03-29)
-- Big changes in code architecture (more modular)                      - The command line interface have changed (each command do one thing)
+- Big changes in code architecture (more modular)
+- The command line interface have changed (each command do one thing)
 - Better ATT syntax handling
 - See help for more informations
 

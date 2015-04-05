@@ -39,7 +39,7 @@ void gadget_help(void) {
   printf("OPTIONS:\n");
   printf("  --arch, -A               Select an architecture (in raw mode only)\n");
   printf("  --all, -a                Print all gadgets (even gadgets which are not uniq)\n");
-  printf("  --bad, -B           [b]  Specify bad chars in address\n");
+  //  printf("  --bad, -B           [b]  Specify bad chars in address\n");
   printf("  --depth, -d         [d]  Specify the depth for gadget searching (default is %d)\n", GADGET_DEFAULT_DEPTH);
   printf("  --flavor, -f        [f]  Select a flavor (att or intel)\n");
   printf("  --no-filter, -F          Do not apply some filters on gadgets\n");
@@ -57,7 +57,7 @@ void gadget_options_parse(int argc, char **argv) {
   const struct option opts[] = {
     {"arch",          required_argument, NULL, 'A'},
     {"all",           no_argument,       NULL, 'a'},
-    {"bad",           required_argument, NULL, 'B'},
+    //    {"bad",           required_argument, NULL, 'B'},
     {"depth",         required_argument, NULL, 'd'},
     {"flavor",        required_argument, NULL, 'f'},
     {"no-filter",     no_argument,       NULL, 'F'},
@@ -80,10 +80,11 @@ void gadget_options_parse(int argc, char **argv) {
       gadget_options_all = 1;
       break;
 
+      /*
     case 'B':
       gadget_options_bad = r_utils_bytes_unhexlify(optarg);
       break;
-
+      */
     case 'd':
       gadget_options_depth = strtoull(optarg, NULL, 0);
       break;

@@ -38,7 +38,7 @@ void search_help(void) {
   printf("OPTIONS:\n");
   printf("  --all-string, -a    [n]  Search all printable strings of at least [n] caracteres. (default is %d)\n", SEARCH_DEFAULT_OPTIONS_STRLEN);
   printf("  --byte, -b          [b]  Search the byte [b] in binary\n");
-  printf("  --bad, -B           [b]  Specify bad chars in address\n");
+  //  printf("  --bad, -B           [b]  Specify bad chars in address\n");
   printf("  --dword, -d         [d]  Search the dword [d] in binary\n");
   printf("  --help, -h               Print this help message\n");
   printf("  --no-color, -n           Don't colorize output\n");
@@ -58,7 +58,7 @@ void search_options_parse(int argc, char **argv) {
   const struct option opts[] = {
     {"all-string",    optional_argument, NULL, 'a'},
     {"byte",          required_argument, NULL, 'b'},
-    {"bad",           required_argument, NULL, 'B'},
+    //    {"bad",           required_argument, NULL, 'B'},
     {"dword",         required_argument, NULL, 'd'},
     {"help",          no_argument,       NULL, 'h'},
     {"no-color",      no_argument,       NULL, 'n'},
@@ -82,9 +82,10 @@ void search_options_parse(int argc, char **argv) {
       search_options_mode = SEARCH_MODE_BYTE;
       search_options_numeric = strtoull(optarg, NULL, 0);
       break;
-    case 'B':
+      /*    case 'B':
       search_options_bad = r_utils_bytes_unhexlify(optarg);
       break;
+      */
     case 'd':
       search_options_mode = SEARCH_MODE_DWORD;
       search_options_numeric = strtoull(optarg, NULL, 0);

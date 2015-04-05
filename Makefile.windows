@@ -40,6 +40,5 @@ clean:
 	find . -name "*~" -delete
 
 release: $(EXE)
-	strip $(EXE)
 	gpg --armor --detach-sign $(EXE)
 

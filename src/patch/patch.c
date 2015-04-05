@@ -159,7 +159,7 @@ void patch_cmd(int argc, char **argv) {
 
 
   r_binfmt_write(&bin, patch_options_output);
-  printf("[+] Patched %lu bytes (result saved in %s)\n", patch_options_bytes->len, patch_options_output);
+  printf("[+] Patched %" PRIu64 " bytes (result saved in %s)\n", patch_options_bytes->len, patch_options_output);
 
 
   r_binfmt_free(&bin);

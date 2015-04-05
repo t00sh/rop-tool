@@ -43,6 +43,7 @@ $(EXE_STATIC): $(OBJ)
 
 clean:
 	rm $(EXE) $(OBJ)
+	rm *.asc
 	find . -name "*~" -delete
 
 release: $(EXE) $(EXE_STATIC)

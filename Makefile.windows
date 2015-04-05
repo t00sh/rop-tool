@@ -1,0 +1,45 @@
+.PHONY: clean release
+include Makefile.inc
+
+ifeq ($(ARCH), x86)
+	CC = i686-w64-mingw32-gcc
+	STATIC_LIBS = ./capstone-3.0.2-win32/capstone.dll
+else
+	CC = x86_64-w64-mingw32-gcc
+	ARCH = x86-64
+	STATIC_LIBS = ./capstone-3.0.2-win64/capstone.dll	
+endif
+
+CFLAGS = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized
+CFLAGS += -Wunreachable-code -g 
+CFLAGS += -DVERSION="\"$(VERSION)\"" -DPACKAGE="\"$(PACKAGE)\""
+
+CFLAGS += -mwindows -D__WINDOWS__
+CFLAGS += -I include/ -I ./capstone-linux32/include/
+
+SRC  = $(wildcard api/*/*.c)
+SRC += $(wildcard src/*.c)
+SRC += $(wildcard src/*/*.c)
+
+OBJ  = $(SRC:%.c=%.o)
+
+EXE = $(PACKAGE)-Windows-$(ARCH)
+
+all: $(EXE)
+
+$(EXE): $(OBJ)
+	@echo " LINK $@"
+	@$(CC) $(CFLAGS) -o $@ $(OBJ) $(STATIC_LIBS) -static
+
+%.o:%.c
+	@echo " CC $@" ;
+	@$(CC) $(CFLAGS) -c $< -o $@ ;
+
+clean:
+	rm $(EXE) $(OBJ)
+	find . -name "*~" -delete
+
+release: $(EXE)
+	strip $(EXE)
+	gpg --armor --detach-sign $(EXE)
+

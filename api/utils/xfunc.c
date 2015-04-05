@@ -27,7 +27,7 @@ void* r_utils_malloc(size_t size) {
   void *p;
 
   if((p = malloc(size)) == NULL)
-    R_UTILS_ERRX("malloc(%zu)", size);
+    R_UTILS_ERRX("malloc(%"SIZE_T_FMT")", size);
 
   return p;
 }
@@ -36,7 +36,7 @@ void* r_utils_calloc(size_t nmemb, size_t size) {
   void *p;
 
   if((p = calloc(nmemb, size)) == NULL)
-    R_UTILS_ERRX("calloc(%zu,%zu)", nmemb, size);
+    R_UTILS_ERRX("calloc(%"SIZE_T_FMT",%"SIZE_T_FMT")", nmemb, size);
 
   return p;
 }
@@ -45,7 +45,7 @@ void* r_utils_realloc(void *ptr, size_t size) {
   void *p;
 
   if((p = realloc(ptr, size)) == NULL)
-    R_UTILS_ERRX("realloc(%p, %zu)", ptr, size);
+    R_UTILS_ERRX("realloc(%p, %"SIZE_T_FMT")", ptr, size);
 
   return p;
 }
@@ -86,6 +86,7 @@ long r_utils_ftell(FILE *stream) {
   return ret;
 }
 
+#ifdef __linux__
 int r_utils_open(const char *path, int oflag) {
   int f;
 
@@ -99,7 +100,7 @@ ssize_t r_utils_read(int fd, void *buf, size_t count) {
   ssize_t ret;
 
   if((ret = read(fd, buf, count)) == -1)
-    R_UTILS_ERRX("read(%d, %p, %zu)", fd, buf, count);
+    R_UTILS_ERRX("read(%d, %p, %"SIZE_T_FMT")", fd, buf, count);
 
   return ret;
 }
@@ -108,7 +109,7 @@ ssize_t r_utils_write(int fd, const void *buf, size_t count) {
   ssize_t ret;
 
   if((ret = write(fd, buf, count)) == -1)
-    R_UTILS_ERRX("write(%d, %p, %zu)", fd, buf, count);
+    R_UTILS_ERRX("write(%d, %p, %"SIZE_T_FMT")", fd, buf, count);
 
   return ret;
 }
@@ -117,7 +118,7 @@ void* r_utils_mmap(void *addr, size_t len, int prot, int flags, int fildes, off_
   void *p;
 
   if((p = mmap(addr, len, prot, flags, fildes, off)) == MAP_FAILED)
-    R_UTILS_ERRX("mmap(%p, %zu, %d, %d, %d, %ld)", addr, len, prot, flags, fildes, off);
+    R_UTILS_ERRX("mmap(%p, %"SIZE_T_FMT", %d, %d, %d, %ld)", addr, len, prot, flags, fildes, off);
 
   return p;
 }
@@ -157,3 +158,5 @@ int r_utils_execve(const char *path, char *const argv[], char *const envp[]) {
 
   return ret;
 }
+
+#endif /* __linux__ */

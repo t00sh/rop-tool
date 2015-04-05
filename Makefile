@@ -1,19 +1,25 @@
 .PHONY: clean release
+include Makefile.inc
 
-VERSION = 2.1
-PACKAGE = rop-tool
 
 CC = gcc
+
 CFLAGS = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized
 CFLAGS += -Wunreachable-code -g -fstack-protector-all
 CFLAGS += -DVERSION="\"$(VERSION)\"" -DPACKAGE="\"$(PACKAGE)\""
 
-LIBS = -lcapstone
-STATIC_LIBS = ../capstone/libcapstone.a
-
 CFLAGS += -I include/
 
-#CFLAGS += -pg
+ifeq ($(ARCH), x86)
+	CFLAGS += -m32 -L capstone-linux32
+	STATIC_LIBS = ./capstone-linux32/libcapstone.a
+	LIBS = -L ./capstone-linux32/ -lcapstone
+else
+	ARCH = x86-64
+	CFLAGS += -m64 -L capstone-linux64
+	STATIC_LIBS = ./capstone-linux64/libcapstone.a
+	LIBS = -L ./capstone-linux64/ -lcapstone
+endif
 
 SRC  = $(wildcard api/*/*.c)
 SRC += $(wildcard src/*.c)
@@ -21,7 +27,6 @@ SRC += $(wildcard src/*/*.c)
 
 OBJ  = $(SRC:%.c=%.o)
 
-ARCH=$(shell uname -m)
 SYSTEM=$(shell uname -s)
 
 EXE = $(PACKAGE)-$(SYSTEM)-$(ARCH)
@@ -44,7 +49,6 @@ $(EXE_STATIC): $(OBJ)
 
 clean:
 	rm $(EXE) $(OBJ)
-	rm *.asc
 	find . -name "*~" -delete
 
 release: $(EXE) $(EXE_STATIC)

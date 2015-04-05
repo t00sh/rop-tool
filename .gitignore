@@ -10,3 +10,5 @@ rop-tool*
 # tmp files
 *~
 *#*
+
+capstone*

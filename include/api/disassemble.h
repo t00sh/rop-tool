@@ -25,7 +25,12 @@
 
 #include "api/utils.h"
 #include "api/binfmt.h"
+
+#ifdef __WINDOWS__
+#include <capstone.h>
+#else
 #include <capstone/capstone.h>
+#endif
 
 typedef csh r_disa_handle_t;
 typedef cs_insn r_disa_instr_t;

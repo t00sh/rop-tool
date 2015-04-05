@@ -23,7 +23,7 @@
 #ifndef DEF_API_BINFMT_H
 #define DEF_API_BINFMT_H
 
-#include <elf.h>
+#include "api/binfmt/elf.h"
 #include "api/utils.h"
 
 #define R_BINFMT_BAD_ADDR ((u64)-1)

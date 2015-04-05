@@ -34,11 +34,14 @@
 #include <getopt.h>
 #include <limits.h>
 #include <assert.h>
+
+#ifdef __linux__
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#endif
 
 /* =========================================================================
    R_UTILS_COLOR_RESET   : a constant used to recover color state
@@ -139,6 +142,13 @@ typedef u8 byte_t;
 typedef u64 addr_t;
 typedef u64 len_t;
 
+/* %zu seem to not be standard */
+#ifdef __WINDOWS__
+#define SIZE_T_FMT "Iu"
+#else
+#define SIZE_T_FMT "zu"
+#endif
+
 void* r_utils_malloc(size_t size);
 void* r_utils_calloc(size_t nmemb, size_t size);
 void* r_utils_realloc(void *ptr, size_t size);
@@ -146,6 +156,8 @@ char* r_utils_strdup(const char *s);
 FILE* r_utils_fopen(const char *path, const char *mode);
 int r_utils_fseek(FILE *stream, long offset, int whence);
 long r_utils_ftell(FILE *stream);
+
+#ifdef __linux__
 int r_utils_open(const char *path, int oflag);
 ssize_t r_utils_read(int fd, void *buf, size_t count);
 ssize_t r_utils_write(int fd, const void *buf, size_t count);
@@ -154,7 +166,7 @@ int r_utils_close(int fildes);
 int r_utils_fstat(int fildes, struct stat *buf);
 pid_t r_utils_fork(void);
 int r_utils_execve(const char *path, char *const argv[], char *const envp[]);
-
+#endif
 
 
 

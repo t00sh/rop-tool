@@ -60,6 +60,8 @@ typedef enum r_binfmt_type {
   R_BINFMT_TYPE_ELF32,
   R_BINFMT_TYPE_ELF64,
   R_BINFMT_TYPE_PE,
+  R_BINFMT_TYPE_MACHO32,
+  R_BINFMT_TYPE_MACHO64,
   R_BINFMT_TYPE_RAW
 }r_binfmt_type_e;
 
@@ -100,6 +102,8 @@ int r_binfmt_mlist_size(r_binfmt_mlist_s *mlist);
 r_binfmt_err_e r_binfmt_pe_load(r_binfmt_s *bin);
 r_binfmt_err_e r_binfmt_elf64_load(r_binfmt_s *bin);
 r_binfmt_err_e r_binfmt_elf32_load(r_binfmt_s *bin);
+r_binfmt_err_e r_binfmt_macho32_load(r_binfmt_s *bin);
+r_binfmt_err_e r_binfmt_macho64_load(r_binfmt_s *bin);
 r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin);
 
 void r_binfmt_free(r_binfmt_s *bin);

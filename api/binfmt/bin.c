@@ -35,9 +35,11 @@ typedef struct r_binfmt_loader {
 
 /* List of supported binary formats */
 static r_binfmt_loader_s r_binfmt_loaders[] = {
-  {"elf32", r_binfmt_elf32_load},
-  {"elf64", r_binfmt_elf64_load},
-  {"pe",    r_binfmt_pe_load},
+  {"elf32",   r_binfmt_elf32_load},
+  {"elf64",   r_binfmt_elf64_load},
+  {"pe",      r_binfmt_pe_load},
+  {"macho32", r_binfmt_macho32_load},
+  {"macho64", r_binfmt_macho64_load},
   {NULL,    NULL}
 };
 
@@ -216,6 +218,10 @@ const char* r_binfmt_type_to_string(r_binfmt_type_e type) {
     return "ELF64";
   case R_BINFMT_TYPE_PE:
     return "PE";
+  case R_BINFMT_TYPE_MACHO32:
+    return "Mach-O (32 bits)";
+  case R_BINFMT_TYPE_MACHO64:
+    return "Mach-O (64 bits)";
   case R_BINFMT_TYPE_RAW:
     return "raw";
   default:
@@ -249,4 +255,7 @@ void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
 
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "Entry point");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%#" PRIx64 "\n", bin->entry);
+
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "Segments");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%d\n", r_binfmt_mlist_size(bin->mlist));
 }

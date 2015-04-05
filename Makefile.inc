@@ -1,2 +1,2 @@
-VERSION = 2.2
+VERSION = 2.1
 PACKAGE = rop-tool

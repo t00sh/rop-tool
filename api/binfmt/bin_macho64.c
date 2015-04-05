@@ -127,7 +127,7 @@ static void r_binfmt_macho64_load_mlist(r_binfmt_s *bin) {
 
 /* Check the fields of the machoXX segment */
 static int r_binfmt_macho64_check_segment(r_binfmt_s *bin, r_binfmt_macho64_segment_s *seg) {
-  u32 filesz, fileoff;
+  u64 filesz, fileoff;
   u64 off;
 
   off = ((byte_t*)seg) - bin->mapped;
@@ -154,7 +154,7 @@ static int r_binfmt_macho64_check_segment(r_binfmt_s *bin, r_binfmt_macho64_segm
 static int r_binfmt_macho64_check(r_binfmt_s *bin) {
   r_binfmt_macho64_header_s *hdr;
   r_binfmt_macho_cmd_s *cmd;
-  u32 tmp, i, cmd_num, off, type;
+  u32 tmp, i, cmd_num, cmd_size, off, type;
 
   /* Already checked in r_binfmt_machoXX_is(),
      but if the check is removed in the future, the
@@ -181,12 +181,15 @@ static int r_binfmt_macho64_check(r_binfmt_s *bin) {
 
     /* Now check command */
     type = r_binfmt_get_int32((byte_t*)&cmd->type, bin->endian);
-    if(type == R_BINFMT_MACHO_CMD_TYPE_SEGMENT) {
+    if(type == R_BINFMT_MACHO_CMD_TYPE_SEGMENT64) {
       if(!r_binfmt_macho64_check_segment(bin, (r_binfmt_macho64_segment_s*)cmd))
 	return 0;
     }
 
-    if(!r_utils_add32(&off, off, r_binfmt_get_int32((byte_t*)&cmd->size, bin->endian)))
+    cmd_size = r_binfmt_get_int32((byte_t*)&cmd->size, bin->endian);
+    if(!cmd_size)
+      return 0;
+    if(!r_utils_add32(&off, off, cmd_size))
       return 0;
   }
 

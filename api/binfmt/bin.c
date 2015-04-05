@@ -81,6 +81,19 @@ static long r_binfmt_get_size(FILE* file) {
   return ret;
 }
 
+static int r_binfmt_file_is_directory(const char *filename) {
+  FILE *f;
+
+  if((f = fopen(filename, "wb")) == NULL) {
+    if(errno == EISDIR)
+      return 1;
+    return 0;
+  }
+
+  fclose(f);
+  return 0;
+}
+
 /* Load binary in memory */
 void r_binfmt_load(r_binfmt_s *bin, const char *filename, int raw) {
   FILE *fd;
@@ -91,11 +104,11 @@ void r_binfmt_load(r_binfmt_s *bin, const char *filename, int raw) {
   assert(bin != NULL);
   assert(filename != NULL);
 
+  if(r_binfmt_file_is_directory(filename))
+    R_UTILS_ERR("File is a directory");
+
   fd = r_utils_fopen(filename, "r");
   size = r_binfmt_get_size(fd);
-
-  if(size > 0xFFFFFFFF)
-    R_UTILS_ERR("File is too big, can't open it !");
 
   /* Load binary in memory */
   bin->mapped = r_utils_malloc(size);

@@ -53,7 +53,7 @@ static const char* r_binfmt_get_err(r_binfmt_err_e err) {
   case R_BINFMT_ERR_NOTSUPPORTED:
     return "not yet supported";
   case R_BINFMT_ERR_MALFORMEDFILE:
-    return "malformed file (3vil or offuscated file ?!)";
+    return "malformed file (3vil or obfuscated file ?!)";
   }
   return "Unknown error";
 }

@@ -156,7 +156,7 @@ void help_usage(void) {
   int i;
 
   printf("%s v%s\n", PACKAGE, VERSION);
-  printf("Help you to make binary exploits.\n\n");
+  printf("Help you make binary exploits.\n\n");
   printf("Usage: %s <cmd> [OPTIONS]\n", PACKAGE);
   printf("\nCommands :\n");
 

@@ -153,7 +153,7 @@ rop-tool search /bin/ls -w 0x90
 - [capstone](http://capstone-engine.org/)
 
 ### RELEASES
-- https://t0x0sh.org/repo/rop-tool/releases/
+- https://t0x0sh.org/rop-tool/releases/
 
 ### LICENSE
 - GPLv3 license : http://www.gnu.org/licenses/gpl-3.0.txt

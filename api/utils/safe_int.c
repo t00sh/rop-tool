@@ -60,7 +60,7 @@ int r_utils_add16(u16 *r, u16 a, u16 b) {
 }
 
 int r_utils_mul64(u64 *r, u64 a, u64 b) {
-  if(UINT64_MAX / a < b)
+  if(a && UINT64_MAX / a < b)
     return 0;
 
   if(r != NULL)
@@ -70,7 +70,7 @@ int r_utils_mul64(u64 *r, u64 a, u64 b) {
 }
 
 int r_utils_mul32(u32 *r, u32 a, u32 b) {
-  if(UINT32_MAX / a < b)
+  if(a && UINT32_MAX / a < b)
     return 0;
 
   if(r != NULL)
@@ -80,7 +80,7 @@ int r_utils_mul32(u32 *r, u32 a, u32 b) {
 }
 
 int r_utils_mul16(u16 *r, u16 a, u16 b) {
-  if(UINT16_MAX / a < b)
+  if(a && UINT16_MAX / a < b)
     return 0;
 
   if(r != NULL)

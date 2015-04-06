@@ -194,12 +194,14 @@ typedef struct _IMAGE_SECTION_HEADER {
 } IMAGE_SECTION_HEADER;
 
 
+#define R_BINFMT_PE_MAGIC 0x4550
+
 /* Get the dos header */
 static IMAGE_DOS_HEADER* pe_get_dos(r_binfmt_s *bin) {
   return (IMAGE_DOS_HEADER*)(bin->mapped);
 }
 
-/* Get the adress of the coff header */
+/* Get the address of the coff header */
 static WORD pe_get_addr_coff(r_binfmt_s *bin) {
   IMAGE_DOS_HEADER *dos;
 
@@ -339,31 +341,133 @@ static r_binfmt_arch_e pe_get_machine(r_binfmt_s *bin) {
 }
 
 /* Check if it's a PE file */
-static int pe_is(r_binfmt_s *bin) {
-  WORD header;
-  LONG elfanew;
-  DWORD pesig;
+static int r_binfmt_pe_is(r_binfmt_s *bin) {
+  IMAGE_DOS_HEADER *hdr;
+  DWORD sig;
 
-  header = *((WORD*)(bin->mapped));
+  if(bin->mapped_size < sizeof(*hdr))
+    return 0;
+
+  hdr = (IMAGE_DOS_HEADER*)(bin->mapped);
 
   /* check MZ header */
-  if (header != MZ)
+  if (hdr->e_magic != MZ)
     return 0;
 
   /* check PE signature */
-  elfanew = *((LONG*)(bin->mapped + sizeof(IMAGE_DOS_HEADER) - sizeof(LONG)));
-  pesig = *((DWORD*)(bin->mapped + elfanew));
+  sig = *((DWORD*)(bin->mapped + hdr->e_lfanew));
 
-  if (pesig != 0x4550) // "PE\0\0"
+  if (sig != R_BINFMT_PE_MAGIC)
     return 0;
+
+  return 1;
+}
+
+static int r_binfmt_pe_check(r_binfmt_s *bin) {
+  IMAGE_DOS_HEADER *dos;
+  IMAGE_COFF_HEADER *coff;
+  IMAGE_SECTION_HEADER *shdr;
+  DWORD addr_optional, addr_sections, numberOfRvaAndSizes;
+  WORD arch;
+  size_t size_optional;
+  u32 tmp, i;
+
+  /********************/
+  /* Check DOS header */
+  /********************/
+  if(bin->mapped_size < sizeof(*dos))
+    return 0;
+
+  dos = (IMAGE_DOS_HEADER*)(bin->mapped);
+
+  /*********************/
+  /* Check COFF header */
+  /*********************/
+  if(bin->mapped_size < (DWORD)dos->e_lfanew)
+    return 0;
+
+  /* COFF+magic+arch */
+  if(!r_utils_add32(&tmp, 8+sizeof(*coff), dos->e_lfanew))
+    return 0;
+
+  if(bin->mapped_size < tmp)
+    return 0;
+
+  coff = pe_get_coff(bin);
+
+  /**************************/
+  /* Check optionnal header */
+  /**************************/
+  arch = pe_get_arch(bin);
+
+  switch(arch) {
+  case PE32:
+    size_optional = sizeof(IMAGE_OPTIONAL_HEADER_32);
+    break;
+  case PE64:
+    size_optional = sizeof(IMAGE_OPTIONAL_HEADER_64);
+    break;
+  default:
+    return 0;
+  }
+
+  if(!r_utils_add32(&tmp, 4+sizeof(*coff)+dos->e_lfanew, size_optional))
+    return 0;
+
+  if(bin->mapped_size < tmp)
+    return 0;
+
+  addr_optional = pe_get_addr_coff(bin) + sizeof(*coff);
+
+  /******************/
+  /* Check sections */
+  /******************/
+  switch(arch) {
+  case PE32:
+    numberOfRvaAndSizes = ((IMAGE_OPTIONAL_HEADER_32*)(bin->mapped + addr_optional))->NumberOfRvaAndSizes;
+    break;
+  case PE64:
+    numberOfRvaAndSizes = ((IMAGE_OPTIONAL_HEADER_32*)(bin->mapped + addr_optional))->NumberOfRvaAndSizes;
+    break;
+  default:
+    return 0;
+  }
+
+  if(!r_utils_mul32(&addr_sections, numberOfRvaAndSizes, sizeof(IMAGE_DATA_DIRECTORY)))
+    return 0;
+
+  if(bin->mapped_size < addr_sections)
+    return 0;
+
+  if(!r_utils_mul32(&tmp, sizeof(IMAGE_SECTION_HEADER), coff->NumberOfSections))
+    return 0;
+
+  if(!r_utils_add32(&tmp, tmp, addr_sections))
+    return 0;
+
+  if(bin->mapped_size < tmp)
+    return 0;
+
+  shdr = (IMAGE_SECTION_HEADER*)(bin->mapped + pe_get_addr_sections(bin));
+
+  for(i = 0; i < coff->NumberOfSections; i++) {
+
+    if(!r_utils_add32(&tmp, shdr[i].PointerToRawData, shdr[i].SizeOfRawData))
+      return 0;
+    if(bin->mapped_size < tmp)
+      return 0;
+  }
 
   return 1;
 }
 
 /* Main/public function : fill the r_binfmt_s structure */
 r_binfmt_err_e r_binfmt_pe_load(r_binfmt_s *bin) {
-  if(!pe_is(bin))
+  if(!r_binfmt_pe_is(bin))
     return R_BINFMT_ERR_UNRECOGNIZED;
+
+  if(!r_binfmt_pe_check(bin))
+    return R_BINFMT_ERR_MALFORMEDFILE;
 
   bin->type = R_BINFMT_TYPE_PE;
   bin->arch = pe_get_machine(bin);

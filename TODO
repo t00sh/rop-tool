@@ -7,9 +7,11 @@
 - Make a tool for format string generator
 - Make a shellcode compiler (translate .s file to opcodes)
 - Handle ARM architecture
+- Port for Mac-OS, *BSD...
+- Package for linux distrubutions (archlinux, ...)
 - ...
 
 DONE:
 - handle --address of patch command
 - Handle MACH-O format
-
+- Port for windows

@@ -29,15 +29,15 @@ fi
 
 
 # Linux
-ARCH=x86 make -f Makefile clean
-ARCH=x86 make -f Makefile release
+ARCH=i686 make -f Makefile clean
+ARCH=i686 make -f Makefile release
 
 ARCH=x86-64 make -f Makefile clean
 ARCH=x86-64 make -f Makefile release
 
 # Windows
-ARCH=x86 make -f Makefile.windows clean
-ARCH=x86 make -f Makefile.windows release
+ARCH=i686 make -f Makefile.windows clean
+ARCH=i686 make -f Makefile.windows release
 
 ARCH=x86-64 make -f Makefile.windows clean
 ARCH=x86-64 make -f Makefile.windows release

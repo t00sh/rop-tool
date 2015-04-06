@@ -10,7 +10,9 @@ CFLAGS += -DVERSION="\"$(VERSION)\"" -DPACKAGE="\"$(PACKAGE)\""
 
 CFLAGS += -I include/
 
-ifeq ($(ARCH), x86)
+ARCH ?= $(shell uname -m)
+
+ifeq ($(ARCH), i686)
 	CFLAGS += -m32 -L capstone-linux32
 	STATIC_LIBS = ./capstone-linux32/libcapstone.a
 	LIBS = -L ./capstone-linux32/ -lcapstone

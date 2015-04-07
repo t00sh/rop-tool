@@ -12,3 +12,7 @@ rop-tool*
 *#*
 
 capstone*
+
+# Test files
+*.stdout
+*.stderr

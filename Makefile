@@ -1,4 +1,4 @@
-.PHONY: clean release
+.PHONY: clean release test
 include Makefile.inc
 
 
@@ -58,3 +58,6 @@ release: $(EXE) $(EXE_STATIC)
 	strip $(EXE_STATIC)
 	gpg --armor --detach-sign $(EXE)
 	gpg --armor --detach-sign $(EXE_STATIC)
+
+test: $(EXE)
+	@bash scripts/test.sh -t

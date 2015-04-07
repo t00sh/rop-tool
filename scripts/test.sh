@@ -64,7 +64,7 @@ function update_tests() {
 
 
     rm $TEST_DIR/*.stderr
-    rm $TEST_DIR/*.stdin
+    rm $TEST_DIR/*.stdout
     
     for F in $TEST_DIR/*.sh
     do

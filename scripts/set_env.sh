@@ -2,6 +2,7 @@
 
 set -e
 
+BINARY_SAMPLES_GITHUB="https://github.com/JonathanSalwan/binary-samples.git"
 CAPSTONE_GITHUB="https://github.com/aquynh/capstone"
 CAPSTONE_DOWNLOAD="www.capstone-engine.org/download"
 
@@ -43,3 +44,13 @@ unzip $CAPSTONE_WIN64_DIR.zip
 
 rm $CAPSTONE_WIN32_DIR.zip $CAPSTONE_WIN64_DIR.zip
  
+
+# Download test suite binaries
+if test ! -d binary-samples
+then
+    git clone $BINARY_SAMPLES_GITHUB binary-samples
+else
+    cd binary-samples
+    git pull
+    cd ..
+fi

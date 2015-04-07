@@ -16,3 +16,5 @@ capstone*
 # Test files
 *.stdout
 *.stderr
+
+binary-samples

@@ -26,7 +26,7 @@ r_gadget_s* r_gadget_new(void) {
   return r_utils_calloc(1, sizeof(r_gadget_s));
 }
 
-int r_gadget_handle_init(r_gadget_handle_s *g_handle, r_binfmt_arch_e arch, r_disa_flavor_e flavor, int filter, int depth, int all) {
+int r_gadget_handle_init(r_gadget_handle_s *g_handle, r_binfmt_arch_e arch, r_disa_flavor_e flavor, int filter, int depth, int all, r_utils_bytes_s *bad) {
   assert(g_handle != NULL);
   assert(depth > 0);
 
@@ -37,6 +37,7 @@ int r_gadget_handle_init(r_gadget_handle_s *g_handle, r_binfmt_arch_e arch, r_di
     return 0;
   }
 
+  g_handle->bad = bad;
   g_handle->depth = depth;
   g_handle->filter = filter;
   g_handle->all = all;
@@ -51,6 +52,28 @@ void r_gadget_handle_close(r_gadget_handle_s *g_handle) {
 
   r_disa_close(&g_handle->disa);
   r_utils_hash_free(&g_handle->g_hash);
+}
+
+static int r_gadget_addr_size(r_binfmt_arch_e arch) {
+  if(arch == R_BINFMT_ARCH_X86)
+    return 4;
+  if(arch == R_BINFMT_ARCH_X86_64)
+    return 8;
+  return 0;
+}
+
+static int r_gadget_is_bad_addr(r_utils_bytes_s *bad, u64 addr, r_binfmt_arch_e arch) {
+  if(bad == NULL)
+    return 0;
+
+  switch(r_gadget_addr_size(arch)) {
+  case 4:
+    return r_utils_bytes_are_in_addr32(bad, (u32)addr);
+  case 8:
+    return r_utils_bytes_are_in_addr64(bad, addr);
+  }
+
+  return 1;
 }
 
 void r_gadget_update(r_gadget_handle_s *g_handle, addr_t addr, u8 *code, u32 code_size) {
@@ -72,13 +95,15 @@ void r_gadget_update(r_gadget_handle_s *g_handle, addr_t addr, u8 *code, u32 cod
 	   r_disa_end_is_ret(&g_handle->disa)) {
 
 	  gadget = r_gadget_new();
+	  gadget->addr_size = r_gadget_addr_size(g_handle->disa.arch);
 	  gadget->addr = addr+i;
 	  gadget->gadget = r_disa_instr_lst_to_str(&g_handle->disa);
 
 	  h_elem = r_utils_hash_elem_new(gadget, (u8*)gadget->gadget, strlen(gadget->gadget));
 
 	  if((!g_handle->filter || r_gadget_filter(gadget->gadget, g_handle->disa.arch, g_handle->disa.flavor)) &&
-	     (g_handle->all || !r_utils_hash_elem_exist(g_handle->g_hash, h_elem->key, h_elem->key_len))) {
+	     (g_handle->all || !r_utils_hash_elem_exist(g_handle->g_hash, h_elem->key, h_elem->key_len)) &&
+	     (!r_gadget_is_bad_addr(g_handle->bad, gadget->addr, g_handle->disa.arch))) {
 	    r_utils_hash_insert(g_handle->g_hash, h_elem);
 	  } else {
 	    free(gadget->gadget);

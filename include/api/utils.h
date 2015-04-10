@@ -194,6 +194,8 @@ r_utils_bytes_s* r_utils_bytes_unhexlify(const char *string);
 char* r_utils_bytes_hexlify(r_utils_bytes_s *bytes);
 void r_utils_free_bytes_seq(r_utils_bytes_s **bytes);
 r_utils_bytes_s* r_utils_new_bytes_seq(size_t len);
+int r_utils_bytes_are_in_addr32(r_utils_bytes_s *bytes, u32 addr);
+int r_utils_bytes_are_in_addr64(r_utils_bytes_s *bytes, u64 addr);
 
 /* =========================================================================
    misc.c

@@ -116,6 +116,9 @@ r_binfmt_arch_e r_binfmt_string_to_arch(const char *str);
 const char* r_binfmt_arch_to_string(r_binfmt_arch_e arch);
 const char* r_binfmt_type_to_string(r_binfmt_type_e type);
 
+int r_binfmt_addr_size(r_binfmt_arch_e arch);
+int r_binfmt_is_bad_addr(r_utils_bytes_s *bad, u64 addr, r_binfmt_arch_e arch);
+
 void r_binfmt_print_infos(r_binfmt_s *bin, int color);
 
 u64 r_binfmt_get_int64(byte_t *p, r_binfmt_endian_e endian);

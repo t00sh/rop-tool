@@ -244,6 +244,25 @@ const char* r_binfmt_endian_to_string(r_binfmt_endian_e endian) {
   return "unknown";
 }
 
+int r_binfmt_addr_size(r_binfmt_arch_e arch) {
+  if(arch == R_BINFMT_ARCH_X86)
+    return 4;
+  if(arch == R_BINFMT_ARCH_X86_64)
+    return 8;
+  return 0;
+}
+
+int r_binfmt_is_bad_addr(r_utils_bytes_s *bad, u64 addr, r_binfmt_arch_e arch) {
+  switch(r_binfmt_addr_size(arch)) {
+  case 4:
+    return r_utils_bytes_are_in_addr32(bad, (u32)addr);
+  case 8:
+    return r_utils_bytes_are_in_addr64(bad, addr);
+  }
+
+  return 1;
+}
+
 void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "Filename");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", bin->filename);

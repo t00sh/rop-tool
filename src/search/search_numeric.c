@@ -28,8 +28,11 @@ void search_print_numeric_in_bin(r_binfmt_s *bin, u64 n, size_t size_of) {
    u64 i;
    int found = 0;
    u64 value;
+   int addr_size;
    const char *format;
 
+
+   addr_size = r_binfmt_addr_size(bin->arch);
 
    for(mem = bin->mlist->head; mem; mem = mem->next) {
      if(mem->flags & R_BINFMT_MEM_FLAG_PROT_R) {
@@ -51,12 +54,18 @@ void search_print_numeric_in_bin(r_binfmt_s *bin, u64 n, size_t size_of) {
 	     format = " %.16" PRIx64 " \n";
 	   }
 
-	   if(value == n) {
-	     R_UTILS_PRINT_BLACK_BG_WHITE(search_options_color, " %s ", flag_str);
-	     R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %.16" PRIx64 " ", (mem->addr + i));
-	     R_UTILS_PRINT_WHITE_BG_BLACK(search_options_color, "-> ");
-	     R_UTILS_PRINT_RED_BG_BLACK(search_options_color, format, value);
-	     found++;
+	   if(!r_binfmt_is_bad_addr(search_options_bad, mem->addr+i, bin->arch)) {
+	     if(value == n) {
+	       R_UTILS_PRINT_BLACK_BG_WHITE(search_options_color, " %s ", flag_str);
+	       if(addr_size == 4) {
+		 R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.8" PRIx32 " ", (u32)(mem->addr + i));
+	       } else {
+		 R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.16" PRIx64 " ", (mem->addr + i));
+	       }
+	       R_UTILS_PRINT_WHITE_BG_BLACK(search_options_color, "-> ");
+	       R_UTILS_PRINT_RED_BG_BLACK(search_options_color, format, value);
+	       found++;
+	     }
 	   }
 	 }
        }

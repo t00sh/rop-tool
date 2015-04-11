@@ -9,6 +9,8 @@
 - Handle ARM architecture
 - Port for Mac-OS, *BSD...
 - Package for linux distrubutions (archlinux, ...)
+- Improve test suite
+- Search with regexp in binary (e.g. --regex "\x90{,10}\xcd\x80")
 - ...
 
 DONE:

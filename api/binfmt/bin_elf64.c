@@ -153,6 +153,25 @@ static addr_t r_binfmt_elf64_getentry(r_binfmt_s *bin) {
   return r_binfmt_get_int64((byte_t*)&ehdr->e_entry, bin->endian);
 }
 
+/* Check if NX bit is enabled */
+static r_binfmt_nx_e r_binfmt_elf64_check_nx(r_binfmt_s *bin) {
+  Elf64_Ehdr *ehdr = (Elf64_Ehdr*)(bin->mapped);
+  Elf64_Phdr *phdr;
+  u32 i, p_type;
+  u16 e_phnum;
+
+  phdr = (Elf64_Phdr*)(bin->mapped + r_binfmt_get_int64((byte_t*)&ehdr->e_phoff, bin->endian));
+
+  e_phnum = r_binfmt_get_int16((byte_t*)&ehdr->e_phnum, bin->endian);
+
+  for(i = 0; i < e_phnum; i++) {
+    p_type = r_binfmt_get_int32((byte_t*)&phdr[i].p_type, bin->endian);
+    if(p_type == PT_GNU_STACK)
+      return R_BINFMT_NX_ENABLED;
+  }
+  return R_BINFMT_NX_DISABLED;
+}
+
 /* Load elf64, and check the binary */
 r_binfmt_err_e r_binfmt_elf64_load(r_binfmt_s *bin) {
 
@@ -173,6 +192,8 @@ r_binfmt_err_e r_binfmt_elf64_load(r_binfmt_s *bin) {
     return R_BINFMT_ERR_MALFORMEDFILE;
 
   bin->entry = r_binfmt_elf64_getentry(bin);
+  bin->nx = r_binfmt_elf64_check_nx(bin);
+
   elf64_load_mlist(bin);
 
   return R_BINFMT_ERR_OK;

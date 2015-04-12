@@ -149,6 +149,25 @@ static addr_t r_binfmt_elf32_getentry(r_binfmt_s *bin) {
   return r_binfmt_get_int32((byte_t*)&ehdr->e_entry, bin->endian);
 }
 
+/* Check if NX bit is enabled */
+static r_binfmt_nx_e r_binfmt_elf32_check_nx(r_binfmt_s *bin) {
+  Elf32_Ehdr *ehdr = (Elf32_Ehdr*)(bin->mapped);
+  Elf32_Phdr *phdr;
+  u32 i, p_type;
+  u16 e_phnum;
+
+  phdr = (Elf32_Phdr*)(bin->mapped + r_binfmt_get_int32((byte_t*)&ehdr->e_phoff, bin->endian));
+
+  e_phnum = r_binfmt_get_int16((byte_t*)&ehdr->e_phnum, bin->endian);
+
+  for(i = 0; i < e_phnum; i++) {
+    p_type = r_binfmt_get_int32((byte_t*)&phdr[i].p_type, bin->endian);
+    if(p_type == PT_GNU_STACK)
+      return R_BINFMT_NX_ENABLED;
+  }
+  return R_BINFMT_NX_DISABLED;
+}
+
 /* Fill the BINFMT structure if it's a correct ELF32 */
 r_binfmt_err_e r_binfmt_elf32_load(r_binfmt_s *bin) {
 
@@ -169,6 +188,8 @@ r_binfmt_err_e r_binfmt_elf32_load(r_binfmt_s *bin) {
     return R_BINFMT_ERR_MALFORMEDFILE;
 
   bin->entry = r_binfmt_elf32_getentry(bin);
+  bin->nx = r_binfmt_elf32_check_nx(bin);
+
   r_binfmt_elf32_load_mlist(bin);
 
   return R_BINFMT_ERR_OK;

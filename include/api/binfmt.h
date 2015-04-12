@@ -77,6 +77,11 @@ typedef enum r_binfmt_arch {
   R_BINFMT_ARCH_X86_64
 }r_binfmt_arch_e;
 
+typedef enum {
+  R_BINFMT_NX_UNKNOWN,
+  R_BINFMT_NX_ENABLED,
+  R_BINFMT_NX_DISABLED
+}r_binfmt_nx_e;
 
 typedef struct binfmt {
   const char *filename;
@@ -88,10 +93,10 @@ typedef struct binfmt {
 
   /* TODO: Symbols list */
 
+  r_binfmt_nx_e nx;
   byte_t *mapped;
   size_t mapped_size;
 }r_binfmt_s;
-
 
 r_binfmt_mlist_s* r_binfmt_mlist_new(void);
 void r_binfmt_mlist_add(r_binfmt_mlist_s *mlist, addr_t addr, byte_t *start, len_t length, u32 flags);

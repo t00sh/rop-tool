@@ -474,6 +474,7 @@ r_binfmt_err_e r_binfmt_pe_load(r_binfmt_s *bin) {
 
   bin->type = R_BINFMT_TYPE_PE;
   bin->arch = pe_get_machine(bin);
+  bin->nx = R_BINFMT_NX_UNKNOWN;
 
   // TODO: check endianness for PE files
   bin->endian = R_BINFMT_ENDIAN_LITTLE;

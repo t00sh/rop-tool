@@ -263,22 +263,34 @@ int r_binfmt_is_bad_addr(r_utils_bytes_s *bad, u64 addr, r_binfmt_arch_e arch) {
   return 1;
 }
 
+const char *r_binfmt_nx_to_string(r_binfmt_nx_e nx) {
+  if(nx == R_BINFMT_NX_ENABLED)
+    return "enabled";
+  if(nx == R_BINFMT_NX_DISABLED)
+    return "disabled";
+  return "unknown";
+}
+
 void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "Filename");
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Filename");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", bin->filename);
 
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "File format");
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "File format");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_type_to_string(bin->type));
 
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "Architecture");
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Architecture");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_arch_to_string(bin->arch));
 
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "Endianess");
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Endianess");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_endian_to_string(bin->endian));
 
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "Entry point");
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Entry point");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%#" PRIx64 "\n", bin->entry);
 
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-20s", "Segments");
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Loadables segments");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%d\n", r_binfmt_mlist_size(bin->mlist));
+
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "NX bit");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_nx_to_string(bin->nx));
+
 }

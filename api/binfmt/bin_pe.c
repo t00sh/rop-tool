@@ -355,6 +355,9 @@ static int r_binfmt_pe_is(r_binfmt_s *bin) {
     return 0;
 
   /* check PE signature */
+  if(bin->mapped_size - 4 < (DWORD)hdr->e_lfanew)
+    return 0;
+
   sig = *((DWORD*)(bin->mapped + hdr->e_lfanew));
 
   if (sig != R_BINFMT_PE_MAGIC)

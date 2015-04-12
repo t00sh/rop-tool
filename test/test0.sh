@@ -1,1 +1,1 @@
-./rop-tool-Linux-x86-64 ./binary-samples/elf-Linux-ia64-bash -g
+./rop-tool-Linux-x86-64 g ./binary-samples/anti-disassembler -B "x32x90x0a"

@@ -1,1 +1,1 @@
-./rop-tool-Linux-x86-64 g ./binary-samples/MachO-OSX-x64-ls
+./rop-tool-Linux-x86-64-static i ./binary-samples/elf-HPUX-ia64-bash

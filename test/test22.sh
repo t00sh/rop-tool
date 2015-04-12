@@ -1,1 +1,1 @@
-./rop-tool-Linux-x86-64 g -r ./binary-samples/elf-Linux-lib-x64.so -a x86-64
+./rop-tool-Linux-x86-64-static s ./binary-samples/elf-Linux-ARM64-bash -a8

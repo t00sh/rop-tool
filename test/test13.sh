@@ -1,1 +1,1 @@
-./rop-tool-Linux-x86-64 g ./binary-samples/pe-Windows-x64-cmd
+./rop-tool-Linux-x86-64 s ./binary-samples/elf-Linux-Alpha-bash -a8

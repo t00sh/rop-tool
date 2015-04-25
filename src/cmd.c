@@ -31,10 +31,18 @@ void gadget_cmd(int argc, char **argv);
 void patch_cmd(int argc, char **argv);
 void info_cmd(int argc, char **argv);
 
+#ifndef __WINDOWS__
+void heap_cmd(int argc, char **argv);
+#endif
+
 void search_help(void);
 void gadget_help(void);
 void patch_help(void);
 void info_help(void);
+
+#ifndef __WINDOWS__
+void heap_help(void);
+#endif
 
 typedef struct command {
 
@@ -49,6 +57,9 @@ command_s command_list[] = {
   {"gadget",      "Search gadgets",          gadget_help,      gadget_cmd},
   {"patch",       "Patch the binary",        patch_help,       patch_cmd},
   {"info",        "Print info about binary", info_help,        info_cmd},
+#ifndef __WINDOWS__
+  {"heap",        "Display heap structure",  heap_help,        heap_cmd},
+#endif
   //  {"disassemble", "Disassemble the binary",  disassemble_help, disassemble_cmd},
   //  {"payload",     "Genere payloads",         payload_help,     payload_cmd},
   {"search",      "Search on binary",        search_help,      search_cmd},

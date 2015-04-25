@@ -36,7 +36,7 @@ $(EXE): $(OBJ)
 	@$(CC) $(CFLAGS) -c $< -o $@ ;
 
 clean:
-	rm $(EXE) $(OBJ)
+	rm -f $(EXE) $(OBJ)
 	find . -name "*~" -delete
 
 release: $(EXE)

@@ -144,9 +144,13 @@ typedef u64 len_t;
 
 /* %zu seem to not be standard */
 #ifdef __WINDOWS__
-#define SIZE_T_FMT "Iu"
+#define SIZE_T_FMT_X "Ix"
+#define SIZE_T_FMT_D "Id"
+#define SIZE_T_FMT_U "Iu"
 #else
-#define SIZE_T_FMT "zu"
+#define SIZE_T_FMT_X "zx"
+#define SIZE_T_FMT_D "zd"
+#define SIZE_T_FMT_U "zu"
 #endif
 
 void* r_utils_malloc(size_t size);

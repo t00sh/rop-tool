@@ -34,7 +34,7 @@ static void search_print_all_strings(r_binfmt_s *bin, r_binfmt_mem_s *mem) {
   addr_size = r_binfmt_addr_size(bin->arch);
 
   for(i = 0; i < mem->length; i++) {
-    if(isgraph(mem->start[i])) {
+    if(isprint(mem->start[i])) {
       cur_len++;
     } else {
 	if(cur_len >= search_options_strlen) {

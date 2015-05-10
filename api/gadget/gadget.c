@@ -70,7 +70,8 @@ void r_gadget_update(r_gadget_handle_s *g_handle, addr_t addr, u8 *code, u32 cod
       if(g_handle->disa.instr_lst.count > 0) {
 	if(r_disa_end_is_call(&g_handle->disa) ||
 	   r_disa_end_is_jmp(&g_handle->disa) ||
-	   r_disa_end_is_ret(&g_handle->disa)) {
+	   r_disa_end_is_ret(&g_handle->disa) ||
+	   r_disa_end_is_syscall(&g_handle->disa)) {
 
 	  gadget = r_gadget_new();
 	  gadget->addr_size = r_binfmt_addr_size(g_handle->disa.arch);

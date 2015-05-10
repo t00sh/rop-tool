@@ -133,6 +133,25 @@ int r_disa_end_is_jmp(r_disa_s *dis) {
   return (!strncmp(dis->instr_lst.head[end].mnemonic, "jmp", 3));
 }
 
+/* Check if last instruction is a syscall */
+int r_disa_end_is_syscall(r_disa_s *dis) {
+  size_t end;
+
+  assert(dis != NULL);
+
+  if(dis->instr_lst.count == 0)
+    return 0;
+
+  end = dis->instr_lst.count-1;
+  if(!strncmp(dis->instr_lst.head[end].mnemonic, "int", 3) && !strncmp(dis->instr_lst.head[end].op_str, "0x80", 4))
+    return 1;
+
+  if(!strncmp(dis->instr_lst.head[end].mnemonic, "syscall", 7))
+    return 1;
+
+  return 0;
+}
+
 /* Check if last instruction is a RET */
 int r_disa_end_is_ret(r_disa_s *dis) {
   size_t end;

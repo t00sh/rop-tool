@@ -1,7 +1,7 @@
 .PHONY: clean release
 include Makefile.inc
 
-ifeq ($(ARCH), x86)
+ifeq ($(ARCH), i686)
 	CC = i686-w64-mingw32-gcc
 	STATIC_LIBS = ./capstone-3.0.2-win32/capstone.dll
 else

@@ -58,7 +58,7 @@ clean:
 	make -f lib/heap/Makefile clean
 	find . -name "*~" -delete
 
-release: $(EXE) $(EXE_STATIC)
+release: $(EXE) $(EXE_STATIC) $(LIB_HEAP)
 	strip $(EXE)
 	strip $(EXE_STATIC)
 	gpg --armor --detach-sign $(EXE)

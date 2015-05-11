@@ -27,8 +27,16 @@ function run_tests() {
 	
 	bash $TEST_DIR/$FILE.sh 1>/tmp/$FILE.stdout 2>/tmp/$FILE.stderr
 
-	diff -u $TEST_DIR/$FILE.stdout /tmp/$FILE.stdout || report_bad_test stdout $FILE
-	diff -u $TEST_DIR/$FILE.stderr /tmp/$FILE.stderr || report_bad_test stderr $FILE
+	if test -f $TEST_DIR/$FILE.stdout
+	then
+	    diff -u $TEST_DIR/$FILE.stdout /tmp/$FILE.stdout || report_bad_test stdout $FILE
+	fi
+
+	if test -f $TEST_DIR/$FILE.stderr
+	then
+	    diff -u $TEST_DIR/$FILE.stderr /tmp/$FILE.stderr || report_bad_test stderr $FILE
+	fi
+	
 	i=$(($i+1))
     done
 }

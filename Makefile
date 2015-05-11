@@ -1,6 +1,4 @@
-.PHONY: clean release test
 include Makefile.inc
-
 
 CC = gcc
 
@@ -33,6 +31,12 @@ EXE = $(PACKAGE)-$(SYSTEM)-$(ARCH)
 EXE_STATIC = $(EXE)-static
 
 LIB_HEAP = libheap-$(ARCH).so
+
+
+
+
+
+.PHONY: clean release test $(LIB_HEAP)
 
 all: $(EXE) $(LIB_HEAP)
 static: $(EXE_STATIC)

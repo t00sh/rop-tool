@@ -27,144 +27,169 @@
 #include <stdio.h>
 #include <string.h>
 
-void* (*heap_fun_malloc)(size_t);
-void* (*heap_fun_realloc)(void*, size_t);
-void* (*heap_fun_calloc)(size_t, size_t);
-void* (*heap_fun_free)(void*);
-
-struct malloc_chunk_header {
+typedef struct {
   size_t prev_size;
   size_t size;
-};
-
-static int libc_initialized = 0;
-static int initialize = 0;
-
-#define TMP_HEAP_SIZE 0x1000
-
-static u8 tmp_heap[TMP_HEAP_SIZE];
-static size_t tmp_heap_allocated = 0;
-
-#define PREV_INUSE 0x1
-#define IS_MMAPED 0x2
-#define NON_MAIN_ARENA 0x4
-
-#define CHUNK_CHECK_FLAG(c,f) (c->size & f)
-#define CHUNK_SIZE(c) (c->size & ~(PREV_INUSE|IS_MMAPED|NON_MAIN_ARENA))
-#define GET_CHUNK(ptr) ((struct malloc_chunk_header*)(ptr - 2*sizeof(size_t)))
-
-#define DUMP_HEAP(...) do {dump_heap();printf(__VA_ARGS__);}while(0)
+}libheap_chunk_s;
 
 
-static struct malloc_chunk_header *first_chunk = NULL;
-static struct malloc_chunk_header *last_chunk = NULL;
+void* (*libheap_malloc)(size_t);
+void* (*libheap_realloc)(void*, size_t);
+void* (*libheap_calloc)(size_t, size_t);
+void* (*libheap_free)(void*);
 
-void dump_chunk(struct malloc_chunk_header *chunk) {
-  printf("+++++++++++++++++++++++++++++++++++++++++++++\n");
-  printf("+ ADDR: %-36p+\n", chunk);
-  printf("+ USER_ADDR: %-31p+\n", ((u8*)(chunk)) + 2*sizeof(size_t));
+static int libheap_initialized = 0;
+static int libheap_under_initialization = 0;
 
-  if(!CHUNK_CHECK_FLAG(chunk, IS_MMAPED) &&
-     !CHUNK_CHECK_FLAG(chunk, PREV_INUSE))
-    printf("+ PREV_SIZE: %-31" SIZE_T_FMT_X "+\n", chunk->prev_size);
-  else
-    printf("+ PREV_SIZE: UNUSED                         +\n");
-  printf("+ SIZE: %-36" SIZE_T_FMT_X "+\n", CHUNK_SIZE(chunk));
-  printf("+ FLAGS: %c%c                                 +\n",
-	 CHUNK_CHECK_FLAG(chunk, IS_MMAPED) ? 'M' : '-',
-	 CHUNK_CHECK_FLAG(chunk, PREV_INUSE) ? 'P' : '-');
+#define LIBHEAP_HEAP_SIZE 0x1000
 
-  printf("+++++++++++++++++++++++++++++++++++++++++++++\n");
+static u8 libheap_heap[LIBHEAP_HEAP_SIZE];
+static size_t libheap_heap_size = 0;
+
+#define LIBHEAP_PREV_INUSE     0x1
+#define LIBHEAP_IS_MMAPED      0x2
+#define LIBHEAP_NON_MAIN_ARENA 0x4
+
+#define LIBHEAP_CHUNK_FLAG(c,f) (c->size & f)
+#define LIBHEAP_CHUNK_SIZE(c) (c->size & ~(LIBHEAP_PREV_INUSE|LIBHEAP_IS_MMAPED|LIBHEAP_NON_MAIN_ARENA))
+#define LIBHEAP_NEXT_CHUNK(c) ((void*)(((u8*)c)+LIBHEAP_CHUNK_SIZE(c)))
+#define LIBHEAP_GET_CHUNK(ptr) ((libheap_chunk_s*)(ptr - 2*sizeof(size_t)))
+#define LIBHEAP_USER_ADDR(c) (((u8*)c) + 2*sizeof(size_t))
+
+#define LIBHEAP_DUMP(...) do {						\
+    R_UTILS_PRINT_RED_BG_BLACK(libheap_options_color, __VA_ARGS__);	\
+    libheap_dump();							\
+  }while(0)
+
+#define LIBHEAP_DUMP_FIELD(f,...) do {					\
+    R_UTILS_PRINT_YELLOW_BG_BLACK(libheap_options_color,f);		\
+    R_UTILS_PRINT_GREEN_BG_BLACK(libheap_options_color,__VA_ARGS__);	\
+  }while(0)
+
+static libheap_chunk_s *libheap_first_chunk = NULL;
+static libheap_chunk_s *libheap_last_chunk  = NULL;
+
+static int libheap_options_color = 1;
+
+static void libheap_dump_chunk(libheap_chunk_s *chunk) {
+  LIBHEAP_DUMP_FIELD("addr: ",  "0x%p, ", chunk);
+  LIBHEAP_DUMP_FIELD("usr_addr: ", "0x%p, ", LIBHEAP_USER_ADDR(chunk));
+
+  if(!LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_IS_MMAPED) &&
+     !LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_PREV_INUSE))
+    LIBHEAP_DUMP_FIELD("prev_size: ", "0x%"SIZE_T_FMT_X", ", chunk->prev_size);
+  LIBHEAP_DUMP_FIELD("size: ", "0x%"SIZE_T_FMT_X", ", LIBHEAP_CHUNK_SIZE(chunk));
+  LIBHEAP_DUMP_FIELD("flags: ", "%c%c%c\n",
+		     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_IS_MMAPED) ? 'M' : '-',
+		     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_PREV_INUSE) ? 'P' : '-',
+		     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_NON_MAIN_ARENA) ? 'A' : '-');
 }
 
-void dump_heap(void) {
-  struct malloc_chunk_header *chunk;
+static void libheap_dump(void) {
+  libheap_chunk_s *chunk;
 
-  printf("\n\n######################\n");
-  printf("#       HEAP         #\n");
-  printf("######################\n");
-
-  chunk = first_chunk;
+  chunk = libheap_first_chunk;
 
   while(chunk != NULL) {
-    dump_chunk(chunk);
+    libheap_dump_chunk(chunk);
+    chunk = LIBHEAP_NEXT_CHUNK(chunk);
 
-    if(((u8*)(chunk))+CHUNK_SIZE(chunk) > (u8*)last_chunk) {
+    if(chunk > libheap_last_chunk) {
       chunk = NULL;
-    } else {
-      chunk = (struct malloc_chunk_header*)(((u8*)(chunk))+CHUNK_SIZE(chunk));
     }
   }
 }
 
-void update_chunk(u8 *ptr) {
-  if(!CHUNK_CHECK_FLAG(GET_CHUNK(ptr), IS_MMAPED)) {
-    if(first_chunk == NULL) {
-      first_chunk = last_chunk = GET_CHUNK(ptr);
-    } else {
-      if(GET_CHUNK(ptr) > last_chunk)
-	last_chunk = GET_CHUNK(ptr);
-    }
+static void libheap_update_chunk(u8 *ptr) {
+  if(libheap_first_chunk == NULL) {
+    libheap_first_chunk = libheap_last_chunk = LIBHEAP_GET_CHUNK(ptr);
+  } else {
+    if(LIBHEAP_GET_CHUNK(ptr) > libheap_last_chunk)
+      libheap_last_chunk = LIBHEAP_GET_CHUNK(ptr);
   }
 }
 
-void initialize_libc(void) {
-  dlerror();
+static void libheap_get_options(void) {
+  char *env;
 
-  if((heap_fun_malloc = dlsym(RTLD_NEXT, "malloc")) == NULL) {
-    fprintf(stderr, "Can't resolve malloc: %s\n", dlerror());
-    exit(EXIT_FAILURE);
+  if((env = getenv("LIBHEAP_COLOR")) == NULL) {
+    R_UTILS_ERR("Can't get LIBHEAP_COLOR environment variable");
   }
+  libheap_options_color = atoi(env);
 
-  dlerror();
-
-  if((heap_fun_realloc = dlsym(RTLD_NEXT, "realloc")) == NULL) {
-    fprintf(stderr, "Can't resolve realloc: %s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
-  dlerror();
-
-  if((heap_fun_calloc = dlsym(RTLD_NEXT, "calloc")) == NULL) {
-    fprintf(stderr, "Can't resolve calloc: %s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
-  dlerror();
-
-  if((heap_fun_free = dlsym(RTLD_NEXT, "free")) == NULL) {
-    fprintf(stderr, "Can't resolve free: %s\n", dlerror());
-    exit(EXIT_FAILURE);
-  }
-
-  libc_initialized = 1;
 }
+
+static void libheap_initialize(void) {
+
+  libheap_get_options();
+  dlerror();
+
+  if((libheap_malloc = dlsym(RTLD_NEXT, "malloc")) == NULL) {
+    fprintf(stderr, "[-] Can't resolve malloc: %s\n", dlerror());
+    exit(EXIT_FAILURE);
+  }
+
+  dlerror();
+
+
+
+  if((libheap_realloc = dlsym(RTLD_NEXT, "realloc")) == NULL) {
+    fprintf(stderr, "[-] Can't resolve realloc: %s\n", dlerror());
+    exit(EXIT_FAILURE);
+  }
+
+  dlerror();
+
+  if((libheap_calloc = dlsym(RTLD_NEXT, "calloc")) == NULL) {
+    fprintf(stderr, "[-] Can't resolve calloc: %s\n", dlerror());
+    exit(EXIT_FAILURE);
+  }
+
+  dlerror();
+
+  if((libheap_free = dlsym(RTLD_NEXT, "free")) == NULL) {
+    fprintf(stderr, "[-] Can't resolve free: %s\n", dlerror());
+    exit(EXIT_FAILURE);
+  }
+
+  libheap_initialized = 1;
+}
+
+
+
+
+
+/**************************************************************************************/
+/* Modified libc functions : malloc, calloc, realloc, free                            */
+/**************************************************************************************/
 
 void* malloc(size_t s) {
   void *p;
 
-  if(!libc_initialized) {
-    if(!initialize) {
-      initialize = 1;
-      initialize_libc();
-      initialize = 0;
-      p = heap_fun_malloc(s);
+  if(!libheap_initialized) {
+    if(!libheap_under_initialization) {
+      libheap_under_initialization = 1;
+      libheap_initialize();
+      libheap_under_initialization = 0;
+      p = libheap_malloc(s);
     } else {
-      if(s > TMP_HEAP_SIZE || s+tmp_heap_allocated > TMP_HEAP_SIZE) {
-	fprintf(stderr, "Temporary heap too small for initialization !\n");
+      if(s > LIBHEAP_HEAP_SIZE || s+libheap_heap_size > LIBHEAP_HEAP_SIZE) {
+	fprintf(stderr, "[-] Temporary heap too small for initialization !\n");
 	exit(EXIT_FAILURE);
       }
 
-      p = tmp_heap + tmp_heap_allocated;
-      tmp_heap_allocated += s;
+      p = libheap_heap + libheap_heap_size;
+      libheap_heap_size += s;
     }
   } else {
-    p = heap_fun_malloc(s);
+    p = libheap_malloc(s);
   }
 
-  if(!initialize) {
-    update_chunk(p);
-    DUMP_HEAP("malloc(%" SIZE_T_FMT_X ") = %p\n", s, p);
+  if(!libheap_under_initialization) {
+    if(!LIBHEAP_CHUNK_FLAG(LIBHEAP_GET_CHUNK(p), LIBHEAP_IS_MMAPED)) {
+      libheap_update_chunk(p);
+      LIBHEAP_DUMP("malloc(%" SIZE_T_FMT_X ") = %p\n", s, p);
+    }
   }
   return p;
 }
@@ -172,17 +197,19 @@ void* malloc(size_t s) {
 void* realloc(void *ptr, size_t s) {
   void *p;
 
-  if(!libc_initialized) {
+  if(!libheap_initialized) {
     p = malloc(s);
     if(p && ptr)
       memmove(p, ptr, s);
   } else {
-    p = heap_fun_realloc(ptr, s);
+    p = libheap_realloc(ptr, s);
   }
 
-  if(!initialize) {
-    update_chunk(p);
-    DUMP_HEAP("realloc(%p,%" SIZE_T_FMT_X ") = %p\n", ptr, s, p);
+  if(!libheap_under_initialization) {
+    if(!LIBHEAP_CHUNK_FLAG(LIBHEAP_GET_CHUNK(p), LIBHEAP_IS_MMAPED)) {
+      libheap_update_chunk(p);
+      LIBHEAP_DUMP("realloc(%p,%" SIZE_T_FMT_X ") = %p\n", ptr, s, p);
+    }
   }
 
   return p;
@@ -191,29 +218,35 @@ void* realloc(void *ptr, size_t s) {
 void* calloc(size_t nmemb, size_t size) {
   void *p;
 
-  if(!libc_initialized) {
+  if(!libheap_initialized) {
     p = malloc(nmemb*size);
     if(p)
       memset(p, 0, nmemb*size);
   } else {
-    p = heap_fun_calloc(nmemb, size);
+    p = libheap_calloc(nmemb, size);
   }
 
-  if(!initialize) {
-    update_chunk(p);
-    DUMP_HEAP("calloc(%" SIZE_T_FMT_X ",%" SIZE_T_FMT_X ") = %p\n", nmemb, size, p);
+  if(!libheap_under_initialization) {
+    if(!LIBHEAP_CHUNK_FLAG(LIBHEAP_GET_CHUNK(p), LIBHEAP_IS_MMAPED)) {
+      libheap_update_chunk(p);
+      LIBHEAP_DUMP("calloc(%" SIZE_T_FMT_X ",%" SIZE_T_FMT_X ") = %p\n", nmemb, size, p);
+    }
   }
   return p;
 }
 
 void free(void *ptr) {
 
-  if(initialize)
+  if(libheap_under_initialization)
     return;
 
-  if(!libc_initialized)
-    initialize_libc();
+  if(!libheap_initialized)
+    libheap_initialize();
 
-  heap_fun_free(ptr);
-  DUMP_HEAP("free(%p)\n", ptr);
+  if(ptr) {
+    if(!LIBHEAP_CHUNK_FLAG(LIBHEAP_GET_CHUNK(ptr), LIBHEAP_IS_MMAPED)) {
+      libheap_free(ptr);
+      LIBHEAP_DUMP("free(%p)\n", ptr);
+    }
+  }
 }

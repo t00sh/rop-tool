@@ -19,7 +19,9 @@ then
     NEW_VERSION=$1
     
     sed -i -r "s/VERSION = .+/VERSION = $NEW_VERSION/g" Makefile.inc
-    
+
+    git add Makefile.inc
+    git commit -m "Set version in Makefile.inc"
     git tag v$NEW_VERSION
     git checkout master
     git merge dev
@@ -43,7 +45,7 @@ ARCH=x86-64 make -f Makefile.windows clean
 ARCH=x86-64 make -f Makefile.windows release
 
 
-if test -z ! $ONLY_BUILD
+if test ! -z $ONLY_BUILD
 then
     rsync -Pravdtze ssh rop-tool* libheap* www-data@t0x0sh.org:~/t0x0sh/rop-tool/releases/$NEW_VERSION/
 fi

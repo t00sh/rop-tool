@@ -1,3 +1,13 @@
+rop-tool v2.2 (2015-05-15)
+- Port project on windows
+- Fix bugs in PE parser
+- Fix bugs in api/utils
+- Add --bad option in gadget and search command, to exclude bad bytes in address
+- Add NX bit on info command (ELF only)
+- New command : heap, used to visualize heap allocations (Linux/glibc only)
+- Fix bad behavior in 'search --all'
+- Gadgets which finished by syscall or int 0x80 instruction are now filtered
+
 rop-tool v2.1 (2015-04-05)
 - Renamed the project to rop-tool
 - Handle Mach-O file format

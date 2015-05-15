@@ -1,4 +1,4 @@
-rop-tool v2.1
+rop-tool v2.2
 ====
 
 A tool to help you writing binary exploits
@@ -7,7 +7,7 @@ A tool to help you writing binary exploits
 ### OPTIONS
 
 ```
-rop-tool v2.1
+rop-tool v2.2
 Help you to make binary exploits.
 
 Usage: rop-tool <cmd> [OPTIONS]
@@ -16,6 +16,7 @@ Commands :
    gadget      Search gadgets
    patch       Patch the binary
    info        Print info about binary
+   heap        Display heap structure
    search      Search on binary
    help        Print help
    version     Print version
@@ -87,8 +88,32 @@ OPTIONS:
 
 ```
 
+#### HEAP COMMAND
+
+```
+Usage : rop-tool heap [OPTIONS] [COMMAND]
+
+OPTIONS:
+  --help, -h               Print this help message
+  --library, -l     <l>    Specify the library path for libheap.so (default : ./libheap-x86-64.so)
+  --no-color, -N           Do not colorize output
+```
+
+**Small explication about output of heap command**
+
+Each line correspond to a malloc chunk, and the heap is dumped
+after each execution of heap functions (free, malloc, realloc, calloc)
+
+* addr: is the real address of the malloc chunk
+
+* usr_addr: is the address returned by malloc functions to user
+
+* size: is the size of the malloc chunk
+
+* flags: P is PREV_INUSE, M is IS_MAPED and A is NON_MAIN_ARENA
+
 ### FEATURES
-* String searching, Gadget searching, patching, info
+* String searching, Gadget searching, patching, info, heap visualization
 * Colored output
 * Intel and AT&T flavor
 * Support of ELF, PE and MACH-O binary format
@@ -100,27 +125,31 @@ OPTIONS:
 
 Basic gadget searching
 
-* rop-tool g ./program 
+* rop-tool gadget ./program 
 
 Display all gadgets with AT&T syntax
 
-* rop-tool g ./program -f att -a
+* rop-tool gadget ./program -f att -a
 
 Search in RAW file (not supported format)
 
-* rop-tool g ./program -r
+* rop-tool gadget ./program -r
 
 Search a "splitted" string in the binary
 
-* rop-tool s ./program -s "/bin/sh"
+* rop-tool search ./program -s "/bin/sh"
 
 Search all strings in binary
 
-* rop-tool s ./program -a
+* rop-tool search ./program -a
 
 Patch binary at offset 0x1000, with "\xaa\xbb\xcc\xdd" and save as "patched" :
 
-* rop-tool p ./program -o 0x1000 -b "\xaa\xbb\xcc\xdd" -O patched
+* rop-tool patch ./program -o 0x1000 -b "\xaa\xbb\xcc\xdd" -O patched
+
+Visualize heap allocation of /bin/ls command :
+
+* rop-tool heap /bin/ls
 
 ### SCREENSHOTS
 
@@ -148,6 +177,11 @@ rop-tool search /bin/ls -w 0x90
 
 ![ScreenShot](https://t0x0sh.org/repo/rop-tool/screens/screen4.png)
 
+```
+rop-tool heap ./a.out
+```
+
+![ScreenShot](https://t0x0sh.org/repo/rop-tool/screens/screen5.png)
 
 ### DEPENDENCIES
 - [capstone](http://capstone-engine.org/)

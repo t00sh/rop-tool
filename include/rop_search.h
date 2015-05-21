@@ -43,7 +43,7 @@ extern search_mode_e search_options_mode;
 extern u64 search_options_numeric;
 extern r_utils_bytes_s *search_options_string;
 extern r_utils_bytes_s *search_options_bad;
-extern int search_options_raw;
+extern r_binfmt_arch_e search_options_arch;
 extern int search_options_color;
 extern const char *search_options_filename;
 extern int search_options_strlen;

@@ -27,12 +27,7 @@
    This file contain the functions for the RAW binary
    ======================================================================= */
 
-r_binfmt_arch_e r_binfmt_raw_get_arch(void) {
-
-  return R_BINFMT_ARCH_X86;
-}
-
-r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin) {
+r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin, r_binfmt_arch_e arch) {
   bin->mlist = r_binfmt_mlist_new();
 
   r_binfmt_mlist_add(bin->mlist,
@@ -42,7 +37,7 @@ r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin) {
 		 R_BINFMT_MEM_FLAG_PROT_X | R_BINFMT_MEM_FLAG_PROT_R | R_BINFMT_MEM_FLAG_PROT_W);
 
   bin->type = R_BINFMT_TYPE_RAW;
-  bin->arch = r_binfmt_raw_get_arch();
+  bin->arch = arch;
   bin->endian = R_BINFMT_ENDIAN_LITTLE;
 
   return R_BINFMT_ERR_OK;

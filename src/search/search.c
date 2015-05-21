@@ -28,7 +28,7 @@ search_mode_e search_options_mode = SEARCH_MODE_UNDEF;
 u64 search_options_numeric = 0;
 r_utils_bytes_s *search_options_string = NULL;
 r_utils_bytes_s *search_options_bad = NULL;
-int search_options_raw = 0;
+r_binfmt_arch_e search_options_arch = R_BINFMT_ARCH_UNDEF;
 int search_options_color = 1;
 const char *search_options_filename = "a.out";
 int search_options_strlen = SEARCH_DEFAULT_OPTIONS_STRLEN;
@@ -101,7 +101,7 @@ void search_options_parse(int argc, char **argv) {
       search_options_numeric = strtoull(optarg, NULL, 0);
       break;
     case 'r':
-      search_options_raw = 1;
+      search_options_arch = R_BINFMT_ARCH_X86;
       break;
     case 's':
       search_options_mode = SEARCH_MODE_STRING_SPLIT;
@@ -132,7 +132,7 @@ void search_cmd(int argc, char **argv) {
 
   search_options_parse(argc, argv);
 
-  r_binfmt_load(&bin, search_options_filename, search_options_raw);
+  r_binfmt_load(&bin, search_options_filename, search_options_arch);
 
   switch(search_options_mode) {
   case SEARCH_MODE_STRING_ALL:

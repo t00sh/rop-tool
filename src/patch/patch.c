@@ -27,7 +27,7 @@ addr_t patch_options_offset = R_BINFMT_BAD_ADDR;
 r_utils_bytes_s *patch_options_bytes = NULL;
 const char *patch_options_filename = "a.out";
 const char *patch_options_output = NULL;
-int patch_options_raw = 0;
+r_binfmt_arch_e patch_options_arch = R_BINFMT_ARCH_UNDEF;
 
 void patch_help(void) {
   printf("Usage : %s patch [OPTIONS] [FILENAME]\n\n", PACKAGE);
@@ -87,7 +87,7 @@ void patch_options_parse(int argc, char **argv) {
       break;
 
     case 'r':
-      patch_options_raw = 1;
+      patch_options_arch = R_BINFMT_ARCH_X86;
       break;
 
     default:
@@ -139,7 +139,7 @@ void patch_cmd(int argc, char **argv) {
 
   patch_options_parse(argc, argv);
 
-  r_binfmt_load(&bin, patch_options_filename, patch_options_raw);
+  r_binfmt_load(&bin, patch_options_filename, patch_options_arch);
 
   if(patch_options_offset != R_BINFMT_BAD_ADDR) {
     patch_offset(&bin,

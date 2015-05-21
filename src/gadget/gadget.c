@@ -122,6 +122,7 @@ void gadget_cmd(int argc, char **argv) {
   gadget_options_parse(argc, argv);
 
   r_binfmt_load(&bin, gadget_options_filename, gadget_options_arch);
+  R_UTILS_PRINT_YELLOW_BG_BLACK(gadget_options_color, "Looking gadgets, please wait...\n");
   gadget_print_search(&bin);
   r_binfmt_free(&bin);
 }

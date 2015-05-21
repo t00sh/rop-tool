@@ -30,6 +30,7 @@ void search_cmd(int argc, char **argv);
 void gadget_cmd(int argc, char **argv);
 void patch_cmd(int argc, char **argv);
 void info_cmd(int argc, char **argv);
+void dis_cmd(int argc, char **argv);
 
 #ifndef __WINDOWS__
 void heap_cmd(int argc, char **argv);
@@ -39,6 +40,7 @@ void search_help(void);
 void gadget_help(void);
 void patch_help(void);
 void info_help(void);
+void dis_help(void);
 
 #ifndef __WINDOWS__
 void heap_help(void);
@@ -60,7 +62,7 @@ command_s command_list[] = {
 #ifndef __WINDOWS__
   {"heap",        "Display heap structure",  heap_help,        heap_cmd},
 #endif
-  //  {"disassemble", "Disassemble the binary",  disassemble_help, disassemble_cmd},
+  {"disassemble", "Disassemble the binary",  dis_help, dis_cmd},
   //  {"payload",     "Genere payloads",         payload_help,     payload_cmd},
   {"search",      "Search on binary",        search_help,      search_cmd},
   {"help",        "Print help",              NULL,             help_cmd},
@@ -172,7 +174,7 @@ void help_usage(void) {
   printf("\nCommands :\n");
 
   for(i = 0; command_list[i].name; i++) {
-    printf("   %-10s  %s\n", command_list[i].name, command_list[i].short_help);
+    printf("   %-15s  %s\n", command_list[i].name, command_list[i].short_help);
   }
 
   printf("\nTry \"%s help <cmd>\" for more informations about a command.\n", PACKAGE);

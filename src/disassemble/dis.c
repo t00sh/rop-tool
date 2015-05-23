@@ -36,10 +36,10 @@ void dis_help(void) {
   printf("OPTIONS:\n");
   printf("  --help, -h               Print this help message\n");
   printf("  --no-color, -N           Do not colorize output\n");
-  printf("  --address, -a            Start disassembling at address\n");
-  printf("  --offset, -o             Start disassembling at offset\n");
-  printf("  --len, -l                Disassemble only <l> bytes\n");
-  printf("  --arch, -A               Select architecture (x86, x86-64)\n");
+  printf("  --address, -a    <a>     Start disassembling at address <a>\n");
+  printf("  --offset, -o     <o>     Start disassembling at offset <o>\n");
+  printf("  --len, -l        <l>     Disassemble only <l> bytes\n");
+  printf("  --arch, -A       <a>     Select architecture (x86, x86-64, arm, arm64)\n");
   printf("\n");
 }
 

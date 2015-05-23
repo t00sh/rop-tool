@@ -36,7 +36,7 @@ const char *gadget_options_filename = "a.out";
 void gadget_help(void) {
   printf("Usage : %s gadget [OPTIONS] [FILENAME]\n\n", PACKAGE);
   printf("OPTIONS:\n");
-  printf("  --arch, -A               Select an architecture (x86, x86-64)\n");
+  printf("  --arch, -A               Select an architecture (x86, x86-64, arm, arm64)\n");
   printf("  --all, -a                Print all gadgets (even gadgets which are not uniq)\n");
   printf("  --bad, -B           [b]  Specify bad chars in address\n");
   printf("  --depth, -d         [d]  Specify the depth for gadget searching (default is %d)\n", GADGET_DEFAULT_DEPTH);

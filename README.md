@@ -1,4 +1,4 @@
-rop-tool v2.2
+rop-tool v2.3
 ====
 
 A tool to help you writing binary exploits
@@ -7,19 +7,20 @@ A tool to help you writing binary exploits
 ### OPTIONS
 
 ```
-rop-tool v2.2
+rop-tool v2.3
 Help you to make binary exploits.
 
 Usage: rop-tool <cmd> [OPTIONS]
 
 Commands :
-   gadget      Search gadgets
-   patch       Patch the binary
-   info        Print info about binary
-   heap        Display heap structure
-   search      Search on binary
-   help        Print help
-   version     Print version
+   gadget        Search gadgets
+   patch         Patch the binary
+   info          Print info about binary
+   heap          Display heap structure
+   disassemble   Disassemble the binary
+   search        Search on binary
+   help          Print help
+   version       Print version
 
 Try "rop-tool help <cmd>" for more informations about a command.
 ```
@@ -30,14 +31,13 @@ Try "rop-tool help <cmd>" for more informations about a command.
 Usage : rop-tool gadget [OPTIONS] [FILENAME]
 
 OPTIONS:
-  --arch, -A               Select an architecture (in raw mode only)
+  --arch, -A               Select an architecture (x86, x86-64, arm, arm64)
   --all, -a                Print all gadgets (even gadgets which are not uniq)
   --depth, -d         [d]  Specify the depth for gadget searching (default is 5)
   --flavor, -f        [f]  Select a flavor (att or intel)
   --no-filter, -F          Do not apply some filters on gadgets
   --help, -h               Print this help message
   --no-color, -n           Do not colorize output
-  --raw, -r                Open file in raw mode (don't considere any file format)
   
 ```
 
@@ -112,13 +112,29 @@ after each execution of heap functions (free, malloc, realloc, calloc)
 
 * flags: P is PREV_INUSE, M is IS_MAPED and A is NON_MAIN_ARENA
 
+
+#### DISASSEMBLE COMMAND
+
+```
+Usage : rop-tool dis [OPTIONS] [FILENAME]
+
+OPTIONS:
+  --help, -h               Print this help message
+  --no-color, -N           Do not colorize output
+  --address, -a    <a>     Start disassembling at address <a>
+  --offset, -o     <o>     Start disassembling at offset <o>
+  --len, -l        <l>     Disassemble only <l> bytes
+  --arch, -A       <a>     Select architecture (x86, x86-64, arm, arm64)
+
+```
+
 ### FEATURES
-* String searching, Gadget searching, patching, info, heap visualization
+* String searching, Gadget searching, patching, info, heap visualization, disassembling
 * Colored output
 * Intel and AT&T flavor
 * Support of ELF, PE and MACH-O binary format
 * Support of big and little endian
-* Support of x86 and x86_64 architecture
+* Support of x86, x86_64, ARM and ARM64 architecture
 
 
 ### EXAMPLES
@@ -151,6 +167,10 @@ Visualize heap allocation of /bin/ls command :
 
 * rop-tool heap /bin/ls
 
+Disassemble 0x100 bytes at address 0x08048452
+
+* rop-tool dis /bin/ls -l 0x100 -a 0x08048452
+
 ### SCREENSHOTS
 
 ```
@@ -182,6 +202,13 @@ rop-tool heap ./a.out
 ```
 
 ![ScreenShot](https://t0x0sh.org/repo/rop-tool/screens/screen5.png)
+
+
+```
+rop-tool dis ./bin  # Many formats
+```
+
+![ScreenShot](https://t0x0sh.org/repo/rop-tool/screens/screen6.png)
 
 ### DEPENDENCIES
 - [capstone](http://capstone-engine.org/)

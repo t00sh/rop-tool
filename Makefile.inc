@@ -1,4 +1,4 @@
-VERSION = 2.2
+VERSION = 2.3
 PACKAGE = rop-tool
 
 ARCH  ?= $(shell uname -m)

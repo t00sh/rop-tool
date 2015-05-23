@@ -125,7 +125,7 @@ OPTIONS:
   --offset, -o     <o>     Start disassembling at offset <o>
   --len, -l        <l>     Disassemble only <l> bytes
   --arch, -A       <a>     Select architecture (x86, x86-64, arm, arm64)
-
+  --flavor, -f     <f>     Change flavor (intel, att)
 ```
 
 ### FEATURES

@@ -90,7 +90,7 @@ typedef struct _IMAGE_DOS_HEADER {
 	WORD e_oeminfo;
 	WORD e_res2[10];
 	LONG e_lfanew;
-} IMAGE_DOS_HEADER;
+} __attribute__((packed)) IMAGE_DOS_HEADER;
 
 typedef struct _IMAGE_FILE_HEADER {
 	WORD Machine;
@@ -100,7 +100,7 @@ typedef struct _IMAGE_FILE_HEADER {
 	DWORD NumberOfSymbols;
 	WORD SizeOfOptionalHeader;
 	WORD Characteristics;
-} IMAGE_FILE_HEADER, IMAGE_COFF_HEADER;
+} __attribute__((packed)) IMAGE_FILE_HEADER, IMAGE_COFF_HEADER;
 
 typedef struct _IMAGE_OPTIONAL_HEADER_32 {
 	WORD Magic;
@@ -134,7 +134,7 @@ typedef struct _IMAGE_OPTIONAL_HEADER_32 {
 	DWORD LoaderFlags;
 	DWORD NumberOfRvaAndSizes;
 	// IMAGE_DATA_DIRECTORY DataDirectory[];
-} IMAGE_OPTIONAL_HEADER_32;
+} __attribute__((packed)) IMAGE_OPTIONAL_HEADER_32;
 
 /* note some fields are quad-words */
 typedef struct _IMAGE_OPTIONAL_HEADER_64 {
@@ -168,7 +168,7 @@ typedef struct _IMAGE_OPTIONAL_HEADER_64 {
 	DWORD LoaderFlags; /* must be zero */
 	DWORD NumberOfRvaAndSizes;
 	// IMAGE_DATA_DIRECTORY DataDirectory[];
-} IMAGE_OPTIONAL_HEADER_64;
+} __attribute__((packed)) IMAGE_OPTIONAL_HEADER_64;
 
 typedef struct _IMAGE_DATA_DIRECTORY {
 	DWORD VirtualAddress;
@@ -257,6 +257,24 @@ static WORD pe_get_addr_sections(r_binfmt_s *bin) {
   return 0;
 }
 
+static u64 pe_get_base_image(r_binfmt_s *bin) {
+  WORD addr_optional;
+  WORD addr_coff;
+  WORD arch;
+
+  addr_coff = pe_get_addr_coff(bin);
+  addr_optional = addr_coff + sizeof(IMAGE_COFF_HEADER);
+  arch = pe_get_arch(bin);
+
+  switch(arch) {
+  case PE32:
+    return  ((IMAGE_OPTIONAL_HEADER_32*)(bin->mapped + addr_optional))->ImageBase;
+  case PE64:
+    return ((IMAGE_OPTIONAL_HEADER_64*)(bin->mapped + addr_optional))->ImageBase;
+  }
+  return 0;
+}
+
 /* Get the entry point */
 static u64 pe_getentry(r_binfmt_s *bin) {
   WORD addr_optional;
@@ -286,6 +304,7 @@ static void pe_load_mlist(r_binfmt_s *bin) {
   IMAGE_SECTION_HEADER *shdr;
   WORD sections_addr;
   int i;
+  u64 addr_base_image;
 
   bin->mlist = r_binfmt_mlist_new();
 
@@ -294,6 +313,7 @@ static void pe_load_mlist(r_binfmt_s *bin) {
   sections_addr = pe_get_addr_sections(bin);
   shdr = (IMAGE_SECTION_HEADER*)(bin->mapped + sections_addr);
 
+  addr_base_image = pe_get_base_image(bin);
 
   /* Load each section */
   for(i = 0; i < coff->NumberOfSections; i++) {
@@ -307,7 +327,7 @@ static void pe_load_mlist(r_binfmt_s *bin) {
       flags |= R_BINFMT_MEM_FLAG_PROT_R;
 
     if(flags)
-      r_binfmt_mlist_add(bin->mlist, shdr[i].VirtualAddress,
+      r_binfmt_mlist_add(bin->mlist, shdr[i].VirtualAddress + addr_base_image,
 			 bin->mapped + shdr[i].PointerToRawData,
 			 shdr[i].SizeOfRawData,
 			 flags);

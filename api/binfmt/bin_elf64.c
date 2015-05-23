@@ -29,7 +29,7 @@
    ======================================================================= */
 
 /* Load the ELF binary in the bin->mlist */
-static void elf64_load_mlist(r_binfmt_s *bin) {
+static void r_binfmt_elf64_load_mlist(r_binfmt_s *bin) {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
   Elf64_Phdr *phdr;
   int i;
@@ -71,7 +71,7 @@ static void elf64_load_mlist(r_binfmt_s *bin) {
 }
 
 /* Check some ELF structure fields */
-static int elf64_check(r_binfmt_s *bin) {
+static int r_binfmt_elf64_check(r_binfmt_s *bin) {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
   Elf64_Phdr *phdr;
   int i;
@@ -112,7 +112,7 @@ static int elf64_check(r_binfmt_s *bin) {
 }
 
 /* Check if it's a ELF64 binary */
-static int elf64_is(r_binfmt_s *bin) {
+static int r_binfmt_elf64_is(r_binfmt_s *bin) {
 
   if(bin->mapped_size < sizeof(Elf64_Ehdr))
      return 0;
@@ -127,7 +127,7 @@ static int elf64_is(r_binfmt_s *bin) {
 }
 
 /* Get the architecture */
-r_binfmt_arch_e elf64_getarch(r_binfmt_s *bin) {
+static r_binfmt_arch_e r_binfmt_elf64_getarch(r_binfmt_s *bin) {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
 
   if(ehdr->e_machine == EM_X86_64 ||
@@ -140,7 +140,7 @@ r_binfmt_arch_e elf64_getarch(r_binfmt_s *bin) {
 }
 
 /* Get the endianess */
-r_binfmt_endian_e elf64_getendian(r_binfmt_s *bin) {
+static r_binfmt_endian_e r_binfmt_elf64_getendian(r_binfmt_s *bin) {
   if(bin->mapped[EI_DATA] == ELFDATA2LSB)
     return R_BINFMT_ENDIAN_LITTLE;
 
@@ -177,12 +177,12 @@ static r_binfmt_nx_e r_binfmt_elf64_check_nx(r_binfmt_s *bin) {
 /* Load elf64, and check the binary */
 r_binfmt_err_e r_binfmt_elf64_load(r_binfmt_s *bin) {
 
-  if(!elf64_is(bin))
+  if(!r_binfmt_elf64_is(bin))
     return R_BINFMT_ERR_UNRECOGNIZED;
 
   bin->type = R_BINFMT_TYPE_ELF64;
-  bin->arch = elf64_getarch(bin);
-  bin->endian = elf64_getendian(bin);
+  bin->arch = r_binfmt_elf64_getarch(bin);
+  bin->endian = r_binfmt_elf64_getendian(bin);
 
   if(bin->arch == R_BINFMT_ARCH_UNDEF)
     return R_BINFMT_ERR_NOTSUPPORTED;
@@ -190,13 +190,13 @@ r_binfmt_err_e r_binfmt_elf64_load(r_binfmt_s *bin) {
   if(bin->endian == R_BINFMT_ENDIAN_UNDEF)
     return R_BINFMT_ERR_NOTSUPPORTED;
 
-  if(!elf64_check(bin))
+  if(!r_binfmt_elf64_check(bin))
     return R_BINFMT_ERR_MALFORMEDFILE;
 
   bin->entry = r_binfmt_elf64_getentry(bin);
   bin->nx = r_binfmt_elf64_check_nx(bin);
 
-  elf64_load_mlist(bin);
+  r_binfmt_elf64_load_mlist(bin);
 
   return R_BINFMT_ERR_OK;
 }

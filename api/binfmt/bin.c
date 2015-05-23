@@ -276,6 +276,7 @@ int r_binfmt_addr_size(r_binfmt_arch_e arch) {
   return 8;
 }
 
+/* Check if address contain bytes */
 int r_binfmt_is_bad_addr(r_utils_bytes_s *bad, u64 addr, r_binfmt_arch_e arch) {
 
   switch(r_binfmt_addr_size(arch)) {
@@ -288,6 +289,7 @@ int r_binfmt_is_bad_addr(r_utils_bytes_s *bad, u64 addr, r_binfmt_arch_e arch) {
   return 1;
 }
 
+/* Convert NX to string */
 const char *r_binfmt_nx_to_string(r_binfmt_nx_e nx) {
   if(nx == R_BINFMT_NX_ENABLED)
     return "enabled";
@@ -296,6 +298,7 @@ const char *r_binfmt_nx_to_string(r_binfmt_nx_e nx) {
   return "unknown";
 }
 
+/* Print info about file */
 void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
   assert(bin != NULL);
 

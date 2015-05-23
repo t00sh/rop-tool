@@ -136,9 +136,9 @@ void dis_address(r_binfmt_s *bin, addr_t addr, u64 len) {
 	if(instr != NULL) {
 
 	  if(r_binfmt_addr_size(bin->arch) == 8) {
-	    R_UTILS_PRINT_WHITE_BG_BLACK(dis_options_color, " %.16"PRIx64"   ", instr->address);
+	    R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.16"PRIx64"   ", instr->address);
 	  } else {
-	    R_UTILS_PRINT_WHITE_BG_BLACK(dis_options_color, " %.8"PRIx32"   ", (u32)(instr->address));
+	    R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.8"PRIx32"   ", (u32)(instr->address));
 	  }
 	  R_UTILS_PRINT_YELLOW_BG_BLACK(dis_options_color, "%-8s ", instr->mnemonic);
 	  R_UTILS_PRINT_RED_BG_BLACK(dis_options_color, "%s\n", instr->op_str);
@@ -146,9 +146,9 @@ void dis_address(r_binfmt_s *bin, addr_t addr, u64 len) {
 	} else {
 	  /* We have failed to disassemble instruction, print the BAD instruction */
 	  if(r_binfmt_addr_size(bin->arch) == 8) {
-	    R_UTILS_PRINT_WHITE_BG_BLACK(dis_options_color, " %.16"PRIx64"   ", addr+length);
+	    R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.16"PRIx64"   ", addr+length);
 	  } else {
-	    R_UTILS_PRINT_WHITE_BG_BLACK(dis_options_color, " %.8"PRIx32"   ", (u32)(addr+length));
+	    R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.8"PRIx32"   ", (u32)(addr+length));
 	  }
 	  R_UTILS_PRINT_YELLOW_BG_BLACK(dis_options_color, "BAD\n");
 	  length += 1;
@@ -184,13 +184,13 @@ void dis_offset(r_binfmt_s *bin, u64 offset, u64 len) {
     /* We have disassembled an instruction */
     if(instr != NULL) {
 
-      R_UTILS_PRINT_WHITE_BG_BLACK(dis_options_color, " %.16"PRIx64"   ", off);
+      R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.16"PRIx64"   ", off);
       R_UTILS_PRINT_YELLOW_BG_BLACK(dis_options_color, "%-8s ", instr->mnemonic);
       R_UTILS_PRINT_RED_BG_BLACK(dis_options_color, "%s\n", instr->op_str);
       length += instr->size;
     } else {
       /* Disassembler failed : print BAD instruction */
-      R_UTILS_PRINT_WHITE_BG_BLACK(dis_options_color, " %.16"PRIx64"   ", off);
+      R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.16"PRIx64"   ", off);
       R_UTILS_PRINT_YELLOW_BG_BLACK(dis_options_color, "BAD\n");
       length += 1;
     }

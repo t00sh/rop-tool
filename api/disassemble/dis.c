@@ -25,19 +25,29 @@
 /* Init the disassembler */
 int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch) {
   int cs_mode;
+  int cs_arch;
 
   assert(dis != NULL);
 
   memset(dis, 0, sizeof(*dis));
 
-  if(arch == R_BINFMT_ARCH_X86_64)
+  if(arch == R_BINFMT_ARCH_X86_64) {
     cs_mode = CS_MODE_64;
-  else if(arch == R_BINFMT_ARCH_X86)
+    cs_arch = CS_ARCH_X86;
+  } else if(arch == R_BINFMT_ARCH_X86) {
     cs_mode = CS_MODE_32;
-  else
+    cs_arch = CS_ARCH_X86;
+  }else if(arch == R_BINFMT_ARCH_ARM) {
+    cs_mode = CS_MODE_ARM;
+    cs_arch = CS_ARCH_ARM;
+  } else if(arch == R_BINFMT_ARCH_ARM64) {
+    cs_mode = CS_MODE_ARM;
+    cs_arch = CS_ARCH_ARM64;
+  } else {
     return 0;
+  }
 
-  if(cs_open(CS_ARCH_X86, cs_mode, &dis->handle) != CS_ERR_OK)
+  if(cs_open(cs_arch, cs_mode, &dis->handle) != CS_ERR_OK)
     return 0;
 
   dis->arch = arch;

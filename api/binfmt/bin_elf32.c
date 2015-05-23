@@ -130,6 +130,8 @@ static r_binfmt_arch_e r_binfmt_elf32_getarch(r_binfmt_s *bin) {
 
   if(ehdr->e_machine == EM_386)
     return R_BINFMT_ARCH_X86;
+  if(ehdr->e_machine == EM_ARM)
+    return R_BINFMT_ARCH_ARM;
 
   return R_BINFMT_ARCH_UNDEF;
 }

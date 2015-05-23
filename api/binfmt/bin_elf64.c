@@ -133,6 +133,8 @@ r_binfmt_arch_e elf64_getarch(r_binfmt_s *bin) {
   if(ehdr->e_machine == EM_X86_64 ||
      ehdr->e_machine == EM_IA_64)
     return R_BINFMT_ARCH_X86_64;
+  if(ehdr->e_machine == EM_AARCH64)
+    return R_BINFMT_ARCH_ARM64;
 
   return R_BINFMT_ARCH_UNDEF;
 }

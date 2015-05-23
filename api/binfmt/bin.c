@@ -161,6 +161,7 @@ r_binfmt_mem_s* r_binfmt_getmem(r_binfmt_s *bin, u32 flags) {
   return NULL;
 }
 
+/* Apply callback to each binary segment, which match flags */
 void r_binfmt_foreach_mem(r_binfmt_s *bin, void (*callback)(r_binfmt_mem_s*), u32 flags) {
   r_binfmt_mem_s *m;
 
@@ -173,6 +174,7 @@ void r_binfmt_foreach_mem(r_binfmt_s *bin, void (*callback)(r_binfmt_mem_s*), u3
   }
 }
 
+/* Get memory flags as a string */
 void r_binfmt_get_mem_flag_str(char str[4], r_binfmt_mem_s *mem) {
   int i;
 
@@ -195,26 +197,39 @@ void r_binfmt_get_mem_flag_str(char str[4], r_binfmt_mem_s *mem) {
   str[i] = '\0';
 }
 
+/* Convert string to binary architecture */
 r_binfmt_arch_e r_binfmt_string_to_arch(const char *str) {
+  assert(str != NULL);
+
   if(!strcmp(str, "x86"))
     return R_BINFMT_ARCH_X86;
   if(!strcmp(str, "x86-64"))
     return R_BINFMT_ARCH_X86_64;
+  if(!strcmp(str, "arm"))
+    return R_BINFMT_ARCH_ARM;
+  if(!strcmp(str, "arm64"))
+    return R_BINFMT_ARCH_ARM64;
   return R_BINFMT_ARCH_UNDEF;
 }
 
+/* Convert binary architecture to string */
 const char* r_binfmt_arch_to_string(r_binfmt_arch_e arch) {
   switch(arch) {
   case R_BINFMT_ARCH_X86:
     return "x86";
   case R_BINFMT_ARCH_X86_64:
     return "x86-64";
+  case R_BINFMT_ARCH_ARM:
+    return "arm";
+  case R_BINFMT_ARCH_ARM64:
+    return "arm64";
   default:
     return "unknown";
   }
   return "unknown";
 }
 
+/* Convert binary type to string */
 const char* r_binfmt_type_to_string(r_binfmt_type_e type) {
   switch(type) {
   case R_BINFMT_TYPE_ELF32:
@@ -235,7 +250,7 @@ const char* r_binfmt_type_to_string(r_binfmt_type_e type) {
   return "unknown";
 }
 
-
+/* Convert binary endianess to string */
 const char* r_binfmt_endian_to_string(r_binfmt_endian_e endian) {
   switch(endian) {
   case R_BINFMT_ENDIAN_BIG:
@@ -248,15 +263,21 @@ const char* r_binfmt_endian_to_string(r_binfmt_endian_e endian) {
   return "unknown";
 }
 
+/* Get address size of binary architecture */
 int r_binfmt_addr_size(r_binfmt_arch_e arch) {
   if(arch == R_BINFMT_ARCH_X86)
     return 4;
   if(arch == R_BINFMT_ARCH_X86_64)
     return 8;
-  return 0;
+  if(arch == R_BINFMT_ARCH_ARM)
+    return 4;
+  if(arch == R_BINFMT_ARCH_ARM64)
+    return 8;
+  return 8;
 }
 
 int r_binfmt_is_bad_addr(r_utils_bytes_s *bad, u64 addr, r_binfmt_arch_e arch) {
+
   switch(r_binfmt_addr_size(arch)) {
   case 4:
     return r_utils_bytes_are_in_addr32(bad, (u32)addr);
@@ -276,6 +297,8 @@ const char *r_binfmt_nx_to_string(r_binfmt_nx_e nx) {
 }
 
 void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
+  assert(bin != NULL);
+
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Filename");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", bin->filename);
 

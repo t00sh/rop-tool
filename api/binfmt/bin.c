@@ -93,6 +93,8 @@ void r_binfmt_load(r_binfmt_s *bin, const char *filename, r_binfmt_arch_e arch) 
   assert(bin != NULL);
   assert(filename != NULL);
 
+  memset(bin, 0, sizeof(*bin));
+
   fd = r_utils_fopen(filename, "r");
   size = r_binfmt_get_size(fd);
 

@@ -27,6 +27,7 @@
 #include "api/utils.h"
 
 #define R_BINFMT_BAD_ADDR ((u64)-1)
+#define R_BINFMT_BAD_OFFSET ((u64)-1)
 
 typedef enum r_binfmt_mem_flag {
   R_BINFMT_MEM_FLAG_NONE=0,

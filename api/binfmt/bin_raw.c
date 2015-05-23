@@ -28,6 +28,7 @@
    ======================================================================= */
 
 r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin, r_binfmt_arch_e arch) {
+
   bin->mlist = r_binfmt_mlist_new();
 
   r_binfmt_mlist_add(bin->mlist,
@@ -39,6 +40,7 @@ r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin, r_binfmt_arch_e arch) {
   bin->type = R_BINFMT_TYPE_RAW;
   bin->arch = arch;
   bin->endian = R_BINFMT_ENDIAN_LITTLE;
+
 
   return R_BINFMT_ERR_OK;
 }

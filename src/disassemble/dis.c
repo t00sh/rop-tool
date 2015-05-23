@@ -165,10 +165,13 @@ void dis_offset(r_binfmt_s *bin, u64 offset, u64 len) {
   u64 length;
   u64 off;
 
+  /* Check offset */
+  if(offset >= bin->mapped_size)
+    R_UTILS_ERR("Offset out of range");
+
   /* Failed to init disassembler */
   if(!r_disa_init(&dis, bin->arch))
     R_UTILS_ERR("Can't init disassembler");
-
 
   /* Len is out of range, adjust it */
   if(len == 0 || len > bin->mapped_size - offset)

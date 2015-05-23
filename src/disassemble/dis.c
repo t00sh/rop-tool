@@ -29,6 +29,7 @@ addr_t dis_options_address = R_BINFMT_BAD_ADDR;
 addr_t dis_options_offset = R_BINFMT_BAD_OFFSET;
 u64 dis_options_len = 0;
 r_binfmt_arch_e dis_options_arch = R_BINFMT_TYPE_UNDEF;
+r_disa_flavor_e dis_options_flavor = R_DISA_FLAVOR_INTEL;
 
 /* Print disassemble help */
 void dis_help(void) {
@@ -40,6 +41,7 @@ void dis_help(void) {
   printf("  --offset, -o     <o>     Start disassembling at offset <o>\n");
   printf("  --len, -l        <l>     Disassemble only <l> bytes\n");
   printf("  --arch, -A       <a>     Select architecture (x86, x86-64, arm, arm64)\n");
+  printf("  --flavor, -f     <f>     Change flavor (intel, att)\n");
   printf("\n");
 }
 
@@ -51,6 +53,7 @@ void dis_options_parse(int argc, char **argv) {
   const struct option opts[] = {
     {"address",       required_argument, NULL, 'a'},
     {"arch",          required_argument, NULL, 'A'},
+    {"flavor",        required_argument, NULL, 'f'},
     {"help",          no_argument,       NULL, 'h'},
     {"len",           required_argument, NULL, 'l'},
     {"no-color",      no_argument,       NULL, 'N'},
@@ -58,7 +61,7 @@ void dis_options_parse(int argc, char **argv) {
     {NULL,            0,                 NULL, 0  }
   };
 
-  while((opt = getopt_long(argc, argv, "a:A:hl:No:", opts, NULL)) != -1) {
+  while((opt = getopt_long(argc, argv, "a:A:f:hl:No:", opts, NULL)) != -1) {
     switch(opt) {
 
     case 'a':
@@ -69,6 +72,12 @@ void dis_options_parse(int argc, char **argv) {
       dis_options_arch = r_binfmt_string_to_arch(optarg);
       if(dis_options_arch == R_BINFMT_ARCH_UNDEF)
 	R_UTILS_ERR("%s: bad architecture.", optarg);
+      break;
+
+    case 'f':
+      dis_options_flavor = r_disa_string_to_flavor(optarg);
+      if(dis_options_flavor == R_DISA_FLAVOR_UNDEF)
+	R_UTILS_ERR("%s: bad flavor.", optarg);
       break;
 
     case 'h':
@@ -104,16 +113,11 @@ void dis_options_parse(int argc, char **argv) {
 }
 
 /* Disassemble binary at specified address */
-void dis_address(r_binfmt_s *bin, addr_t addr, u64 len) {
-  r_disa_s dis;
+void dis_address(r_disa_s *dis, r_binfmt_s *bin, addr_t addr, u64 len) {
   r_binfmt_mem_s *m;
   r_disa_instr_t *instr;
   u64 length;
   u64 off;
-
-  /* Initialize disassembler */
-  if(!r_disa_init(&dis, bin->arch))
-    R_UTILS_ERR("Can't init disassembler");
 
   /* Test every loadable segment */
   for(m = bin->mlist->head; m; m = m->next) {
@@ -129,8 +133,8 @@ void dis_address(r_binfmt_s *bin, addr_t addr, u64 len) {
 
       while(length < len) {
 	off = (addr - m->addr) + length;
-	r_disa_code(&dis, m->start+off, m->length-off, m->addr+off, 1);
-	instr = r_disa_next_instr(&dis);
+	r_disa_code(dis, m->start+off, m->length-off, m->addr+off, 1);
+	instr = r_disa_next_instr(dis);
 
 	/* We have disassembled the instruction, now print it ! */
 	if(instr != NULL) {
@@ -159,8 +163,7 @@ void dis_address(r_binfmt_s *bin, addr_t addr, u64 len) {
 }
 
 /* Disassemble binary in range [offset, offset+len] */
-void dis_offset(r_binfmt_s *bin, u64 offset, u64 len) {
-  r_disa_s dis;
+void dis_offset(r_disa_s *dis, r_binfmt_s *bin, u64 offset, u64 len) {
   r_disa_instr_t *instr;
   u64 length;
   u64 off;
@@ -168,10 +171,6 @@ void dis_offset(r_binfmt_s *bin, u64 offset, u64 len) {
   /* Check offset */
   if(offset >= bin->mapped_size)
     R_UTILS_ERR("Offset out of range");
-
-  /* Failed to init disassembler */
-  if(!r_disa_init(&dis, bin->arch))
-    R_UTILS_ERR("Can't init disassembler");
 
   /* Len is out of range, adjust it */
   if(len == 0 || len > bin->mapped_size - offset)
@@ -181,8 +180,8 @@ void dis_offset(r_binfmt_s *bin, u64 offset, u64 len) {
 
   while(length < len) {
     off = offset + length;
-    r_disa_code(&dis, bin->mapped+off, bin->mapped_size-off, off, 1);
-    instr = r_disa_next_instr(&dis);
+    r_disa_code(dis, bin->mapped+off, bin->mapped_size-off, off, 1);
+    instr = r_disa_next_instr(dis);
 
     /* We have disassembled an instruction */
     if(instr != NULL) {
@@ -203,26 +202,35 @@ void dis_offset(r_binfmt_s *bin, u64 offset, u64 len) {
 /* Main function of disassemble command */
 void dis_cmd(int argc, char **argv) {
   r_binfmt_s bin;
+  r_disa_s dis;
 
   dis_options_parse(argc, argv);
 
   r_binfmt_load(&bin, dis_options_filename, dis_options_arch);
 
+  /* Init disassembler */
+  if(!r_disa_init(&dis, bin.arch))
+    R_UTILS_ERR("Can't init disassembler");
+
+  if(!r_disa_set_flavor(&dis, dis_options_flavor))
+    R_UTILS_ERR("Can't set flavor");
+
   /* First, try disassemble at offset */
   if(dis_options_offset != R_BINFMT_BAD_OFFSET) {
-    dis_offset(&bin, dis_options_offset, dis_options_len);
+    dis_offset(&dis, &bin, dis_options_offset, dis_options_len);
   } else {
     /* Now check if address if specified */
     if(dis_options_address != R_BINFMT_BAD_ADDR) {
-      dis_address(&bin, dis_options_address, dis_options_len);
+      dis_address(&dis, &bin, dis_options_address, dis_options_len);
     /* If not, try to disassemble starting at entry point */
     } else if(bin.entry != 0) {
-      dis_address(&bin, bin.entry, dis_options_len);
+      dis_address(&dis, &bin, bin.entry, dis_options_len);
     /* Entry point is bad...Start at beginning of the file */
     } else {
-      dis_offset(&bin, 0, dis_options_len);
+      dis_offset(&dis, &bin, 0, dis_options_len);
     }
   }
 
   r_binfmt_free(&bin);
+  r_disa_close(&dis);
 }

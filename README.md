@@ -147,9 +147,9 @@ Display all gadgets with AT&T syntax
 
 * rop-tool gadget ./program -f att -a
 
-Search in RAW file (not supported format)
+Search in RAW x86 file
 
-* rop-tool gadget ./program -r
+* rop-tool gadget ./program -A x86
 
 Search a "splitted" string in the binary
 
@@ -209,6 +209,13 @@ rop-tool dis ./bin  # Many formats
 ```
 
 ![ScreenShot](https://t0x0sh.org/repo/rop-tool/screens/screen6.png)
+
+### HOW TO CONTRIBUTE
+- Programming (see TODO file if you need ideas)
+- Report bugs
+- Improve documentation
+- Submit new ideas
+- ...
 
 ### DEPENDENCIES
 - [capstone](http://capstone-engine.org/)

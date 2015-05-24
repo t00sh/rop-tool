@@ -11,4 +11,5 @@
 - Search with regexp in binary (e.g. --regex "\x90{,10}\xcd\x80")
 - A tool to trace heap allocation
 - A stack-viewer
+- Optimize gadget searching algorithm
 - ...

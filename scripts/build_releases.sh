@@ -11,7 +11,9 @@ then
     ONLY_BUILD=1
 fi
 
-rm *.asc
+rm -f *.asc
+rm -f rop-tool*
+rm -f libheap*
 
 if test ! -z $ONLY_BUILD
 then

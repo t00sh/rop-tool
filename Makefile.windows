@@ -1,13 +1,15 @@
 .PHONY: clean release
 include Makefile.inc
 
+CAPSTONE_VERSION=$(shell sed -rn "s/^Version:\s(.*)/\1/p" ./capstone-linux32/capstone.pc)
+
 ifeq ($(ARCH), i686)
 	CC = i686-w64-mingw32-gcc
-	STATIC_LIBS = ./capstone-3.0.2-win32/capstone.dll
+	STATIC_LIBS = ./capstone-$(CAPSTONE_VERSION)-win32/capstone.dll
 else
 	CC = x86_64-w64-mingw32-gcc
 	ARCH = x86-64
-	STATIC_LIBS = ./capstone-3.0.2-win64/capstone.dll	
+	STATIC_LIBS = ./capstone-$(CAPSTONE_VERSION)-win64/capstone.dll	
 endif
 
 CFLAGS = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized

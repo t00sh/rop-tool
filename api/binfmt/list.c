@@ -20,62 +20,25 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with rop-tool.  If not, see <http://www.gnu.org/licenses/>     */
 /************************************************************************/
-#include "api/gadget.h"
+#include "api/binfmt.h"
+
 
 /* =========================================================================
-   This file implement operations on r_gadget_list_s
+   This file contain some functions on various binary lists
    ======================================================================= */
 
-void r_gadget_list_init(r_gadget_list_s *l) {
-  assert(l != NULL);
-
-  memset(l, 0, sizeof(*l));
+r_binfmt_sym_s* r_binfmt_sym_new(void) {
+  return r_utils_malloc(sizeof(r_binfmt_sym_s));
 }
 
-void r_gadget_list_alloc(r_gadget_list_s *l, size_t n) {
-  assert(l != NULL);
-  assert(n > 0);
-
-  l->num = n;
-  l->list = r_utils_calloc(n, sizeof(r_gadget_s*));
+r_binfmt_section_s* r_binfmt_section_new(void) {
+  return r_utils_malloc(sizeof(r_binfmt_section_s));
 }
 
-void r_gadget_list_realloc(r_gadget_list_s *l, size_t n) {
-  assert(l != NULL);
-  assert(n > 0);
-
-  l->num = n;
-  l->list = r_utils_realloc(l->list, n*sizeof(r_gadget_s*));
+void r_binfmt_sections_free(r_binfmt_s *bin) {
+  r_utils_list_free(&bin->sections, free);
 }
 
-void r_gadget_list_push(r_gadget_list_s *l, r_gadget_s *g) {
-  assert(l != NULL);
-  assert(g != NULL);
-
-  if(l->head >= l->num) {
-    r_gadget_list_realloc(l, l->num+1);
-  }
-
-  l->list[l->head++] = g;
-}
-
-r_gadget_s* r_gadget_list_pop(r_gadget_list_s *l) {
-  r_gadget_s *g;
-
-  assert(l != NULL);
-
-  if(l->head == 0) {
-    g = NULL;
-  } else {
-    g = l->list[--l->head];
-  }
-
-  return g;
-}
-
-void r_gadget_list_free(r_gadget_list_s *l) {
-  assert(l != NULL);
-
-  if(l->num > 0)
-    free(l->list);
+void r_binfmt_syms_free(r_binfmt_s *bin) {
+  r_utils_list_free(&bin->syms, free);
 }

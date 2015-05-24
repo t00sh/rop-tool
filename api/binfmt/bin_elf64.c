@@ -21,7 +21,7 @@
 /* along with rop-tool.  If not, see <http://www.gnu.org/licenses/>     */
 /************************************************************************/
 #include "api/binfmt.h"
-
+#include "api/binfmt/elf.h"
 
 
 /* =========================================================================
@@ -68,6 +68,88 @@ static void r_binfmt_elf64_load_mlist(r_binfmt_s *bin) {
 			flags);
     }
   }
+}
+
+/* Get the section name, with the e_shstrndx and the sh_name */
+static const char* r_binfmt_elf64_get_section_name(r_binfmt_s *bin, Elf64_Shdr *shstrndx, u32 sh_name) {
+  u64 offset;
+
+  offset = r_binfmt_get_int64((byte_t*)&shstrndx->sh_offset, bin->endian);
+
+  return (const char*)(bin->mapped + offset + sh_name);
+}
+
+/* Fill bin->sections structure */
+static void r_binfmt_elf64_load_sections(r_binfmt_s *bin) {
+  r_binfmt_section_s *section;
+  Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
+  Elf64_Shdr *shdr;
+  u64 sh_addr, sh_size;
+  u32 sh_name;
+  u16 e_shnum, e_shstrndx;
+  u32 i;
+
+  shdr = (Elf64_Shdr*)(bin->mapped + r_binfmt_get_int64((byte_t*)&ehdr->e_shoff, bin->endian));
+
+  e_shnum = r_binfmt_get_int16((byte_t*)&ehdr->e_shnum, bin->endian);
+  e_shstrndx = r_binfmt_get_int16((byte_t*)&ehdr->e_shstrndx, bin->endian);
+
+  for(i = 0; i < e_shnum; i++) {
+    sh_addr = r_binfmt_get_int64((byte_t*)&shdr[i].sh_addr, bin->endian);
+    sh_size = r_binfmt_get_int64((byte_t*)&shdr[i].sh_size, bin->endian);
+    sh_name = r_binfmt_get_int64((byte_t*)&shdr[i].sh_name, bin->endian);
+    section = r_binfmt_section_new();
+    section->addr = sh_addr;
+    section->size = sh_size;
+    section->name = r_binfmt_elf64_get_section_name(bin, &shdr[e_shstrndx], sh_name);
+
+    r_utils_list_push(&bin->sections, section);
+  }
+}
+
+/* Check fields for sections */
+static int r_binfmt_elf64_check_sections(r_binfmt_s *bin) {
+  Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
+  Elf64_Shdr *shdr;
+  u64 e_shoff, e_shstrndx;
+  u32 sh_name;
+  u16 e_shnum;
+  u32 i;
+
+  /* Get some fields */
+  e_shoff = r_binfmt_get_int64((byte_t*)&ehdr->e_shoff, bin->endian);
+  e_shnum = r_binfmt_get_int16((byte_t*)&ehdr->e_shnum, bin->endian);
+  e_shstrndx = r_binfmt_get_int16((byte_t*)&ehdr->e_shstrndx, bin->endian);
+
+  /* Check if section table isn't out of range */
+  if(!r_utils_add64(NULL, e_shoff, e_shnum*sizeof(Elf64_Shdr)))
+    return 0;
+
+  if(e_shoff + e_shnum*sizeof(Elf64_Shdr) > bin->mapped_size)
+    return 0;
+
+  /* Check the STRTAB section */
+  if(e_shstrndx >= e_shnum)
+    return 0;
+
+
+  shdr = (Elf64_Shdr*)(bin->mapped + e_shoff);
+
+  if(!r_utils_add64(NULL, shdr[e_shstrndx].sh_offset, shdr[e_shstrndx].sh_size))
+    return 0;
+
+  if(shdr[e_shstrndx].sh_offset + shdr[e_shstrndx].sh_size > bin->mapped_size)
+    return 0;
+
+  /* Check sh_name of each section */
+  for(i = 0; i < e_shnum; i++) {
+    sh_name = r_binfmt_get_int32((byte_t*)&shdr[i].sh_name, bin->endian);
+
+    if(sh_name > shdr[e_shstrndx].sh_size)
+      return 0;
+  }
+
+  return 1;
 }
 
 /* Check some ELF structure fields */
@@ -197,6 +279,9 @@ r_binfmt_err_e r_binfmt_elf64_load(r_binfmt_s *bin) {
   bin->nx = r_binfmt_elf64_check_nx(bin);
 
   r_binfmt_elf64_load_mlist(bin);
+
+  if(r_binfmt_elf64_check_sections(bin))
+    r_binfmt_elf64_load_sections(bin);
 
   return R_BINFMT_ERR_OK;
 }

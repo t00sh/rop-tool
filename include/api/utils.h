@@ -238,4 +238,22 @@ r_utils_hash_elem_s* r_utils_hash_find_elem(const r_utils_hash_s *h, int (*cmp)(
 int r_utils_hash_elem_exist(r_utils_hash_s *h, u8 *key, u32 key_len);
 u32 r_utils_hash_size(r_utils_hash_s *h);
 
+
+/* =========================================================================
+   list.c
+   ======================================================================= */
+
+typedef struct {
+  void **list;
+  size_t num;
+  size_t head;
+}r_utils_list_s;
+
+void r_utils_list_init(r_utils_list_s *l);
+void r_utils_list_push(r_utils_list_s *l, void *e);
+void* r_utils_list_pop(r_utils_list_s *l);
+void *r_utils_list_access(r_utils_list_s *l, size_t i);
+size_t r_utils_list_size(r_utils_list_s *l);
+void r_utils_list_free(r_utils_list_s *l, void (*free_cb)(void*));
+
 #endif

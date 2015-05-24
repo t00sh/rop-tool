@@ -147,6 +147,8 @@ void r_binfmt_write(r_binfmt_s *bin, const char *filename) {
 /* Free the r_binfmt structure */
 void r_binfmt_free(r_binfmt_s *bin) {
   r_binfmt_mlist_free(&bin->mlist);
+  r_binfmt_sections_free(bin);
+  r_binfmt_syms_free(bin);
   free(bin->mapped);
 }
 
@@ -299,6 +301,23 @@ const char *r_binfmt_nx_to_string(r_binfmt_nx_e nx) {
 }
 
 /* Print info about file */
+static void r_binfmt_print_sections(r_binfmt_s *bin, int color) {
+  r_binfmt_section_s *s;
+  size_t i;
+  size_t num;
+
+  num = r_utils_list_size(&bin->sections);
+
+  R_UTILS_PRINT_RED_BG_BLACK(color, "NAME                     ADDR                  SIZE\n");
+
+  for(i = 0; i < num; i++) {
+    s = r_utils_list_access(&bin->sections, i);
+
+    R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", s->name);
+    R_UTILS_PRINT_WHITE_BG_BLACK(color, "%.16" PRIx64 "      %.8" PRIx64 "\n", s->addr, s->size);
+  }
+}
+
 void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
   assert(bin != NULL);
 
@@ -323,4 +342,8 @@ void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "NX bit");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_nx_to_string(bin->nx));
 
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Sections");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%"SIZE_T_FMT_D"\n\n", r_utils_list_size(&bin->sections));
+
+  r_binfmt_print_sections(bin, color);
 }

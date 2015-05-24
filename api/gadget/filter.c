@@ -284,13 +284,14 @@ static const char *att_x86_64_filters[] = {
 
 
 /* Return true if the instruction match the filter */
-static int r_gadget_filter_strncmp(const char *gadget, const char *filter, int len) {
+int r_gadget_filter_strncmp(const char *gadget, const char *filter, int len) {
   const char *p1 = filter;
   const char *p2 = gadget;
   int i;
 
   i = 0;
-  while(i < len && *p1 != '\0' && p2[i] != '\0') {
+  while((len == 0 || i < len)
+	&& *p1 != '\0' && p2[i] != '\0') {
     if(*p1 == '%') {
 
       p1++;

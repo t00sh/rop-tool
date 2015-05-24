@@ -22,6 +22,10 @@
 /************************************************************************/
 #include "api/gadget.h"
 
+/* =========================================================================
+   This file implement functions for gadget searching
+   ======================================================================= */
+
 r_gadget_s* r_gadget_new(void) {
   return r_utils_calloc(1, sizeof(r_gadget_s));
 }

@@ -33,6 +33,12 @@ typedef struct r_gadget {
   addr_t addr;
 }r_gadget_s;
 
+typedef struct r_gadget_list {
+  r_gadget_s **list;
+  size_t num;
+  size_t head;
+}r_gadget_list_s;
+
 typedef struct r_gadget_handle {
   r_utils_hash_s *g_hash;
   r_disa_s disa;
@@ -42,10 +48,23 @@ typedef struct r_gadget_handle {
   r_utils_bytes_s *bad;
 }r_gadget_handle_s;
 
+/* gadget.c */
 int r_gadget_handle_init(r_gadget_handle_s *g_handle, r_binfmt_arch_e arch, r_disa_flavor_e flavor, int filter, int depth, int all, r_utils_bytes_s *bad);
 void r_gadget_handle_close(r_gadget_handle_s *g_handle);
 void r_gadget_update(r_gadget_handle_s *g_handle, addr_t addr, u8 *code, u32 code_size);
 
+
+/* filter.c */
 int r_gadget_filter(const char *gadget, r_binfmt_arch_e arch, r_disa_flavor_e flavor);
+int r_gadget_filter_strncmp(const char *gadget, const char *filter, int len);
+
+
+/* list.c */
+void r_gadget_list_init(r_gadget_list_s *l);
+void r_gadget_list_alloc(r_gadget_list_s *l, size_t n);
+void r_gadget_list_realloc(r_gadget_list_s *l, size_t n);
+void r_gadget_list_push(r_gadget_list_s *l, r_gadget_s *g);
+r_gadget_s* r_gadget_list_pop(r_gadget_list_s *l);
+void r_gadget_list_free(r_gadget_list_s *l);
 
 #endif

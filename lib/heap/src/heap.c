@@ -52,18 +52,24 @@ static size_t libheap_heap_size = 0;
 
 #define LIBHEAP_CHUNK_FLAG(c,f) (c->size & f)
 #define LIBHEAP_CHUNK_SIZE(c) (c->size & ~(LIBHEAP_PREV_INUSE|LIBHEAP_IS_MMAPED|LIBHEAP_NON_MAIN_ARENA))
-#define LIBHEAP_NEXT_CHUNK(c) ((void*)(((u8*)c)+LIBHEAP_CHUNK_SIZE(c)))
+#define LIBHEAP_NEXT_CHUNK(c) ((libheap_chunk_s*)(((u8*)c)+LIBHEAP_CHUNK_SIZE(c)))
 #define LIBHEAP_GET_CHUNK(ptr) ((libheap_chunk_s*)(ptr - 2*sizeof(size_t)))
 #define LIBHEAP_USER_ADDR(c) (((u8*)c) + 2*sizeof(size_t))
+#define LIBHEAP_CHUNK_INUSE(c) (LIBHEAP_NEXT_CHUNK(c) > libheap_last_chunk ? 1 : LIBHEAP_CHUNK_FLAG(LIBHEAP_NEXT_CHUNK(c), LIBHEAP_PREV_INUSE))
 
 #define LIBHEAP_DUMP(...) do {						\
     R_UTILS_PRINT_RED_BG_BLACK(libheap_options_color, __VA_ARGS__);	\
     libheap_dump();							\
   }while(0)
 
-#define LIBHEAP_DUMP_FIELD(f,...) do {					\
-    R_UTILS_PRINT_YELLOW_BG_BLACK(libheap_options_color,f);		\
-    R_UTILS_PRINT_GREEN_BG_BLACK(libheap_options_color,__VA_ARGS__);	\
+#define LIBHEAP_DUMP_FIELD(u,f,...) do {				\
+    if(u) {								\
+      R_UTILS_PRINT_YELLOW_BG_BLACK(libheap_options_color,f);		\
+      R_UTILS_PRINT_GREEN_BG_BLACK(libheap_options_color,__VA_ARGS__);	\
+    } else {								\
+      R_UTILS_PRINT_WHITE_BG_BLACK(libheap_options_color,f);		\
+      R_UTILS_PRINT_GREEN_BG_BLACK(libheap_options_color,__VA_ARGS__);	\
+    }									\
   }while(0)
 
 static libheap_chunk_s *libheap_first_chunk = NULL;
@@ -72,14 +78,16 @@ static libheap_chunk_s *libheap_last_chunk  = NULL;
 static int libheap_options_color = 1;
 
 static void libheap_dump_chunk(libheap_chunk_s *chunk) {
-  LIBHEAP_DUMP_FIELD("addr: ",  "0x%p, ", chunk);
-  LIBHEAP_DUMP_FIELD("usr_addr: ", "0x%p, ", LIBHEAP_USER_ADDR(chunk));
+  int inuse = LIBHEAP_CHUNK_INUSE(chunk);
+
+  LIBHEAP_DUMP_FIELD(inuse, "addr: ",  "%p, ", chunk);
+  LIBHEAP_DUMP_FIELD(inuse, "usr_addr: ", "%p, ", LIBHEAP_USER_ADDR(chunk));
 
   if(!LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_IS_MMAPED) &&
      !LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_PREV_INUSE))
-    LIBHEAP_DUMP_FIELD("prev_size: ", "0x%"SIZE_T_FMT_X", ", chunk->prev_size);
-  LIBHEAP_DUMP_FIELD("size: ", "0x%"SIZE_T_FMT_X", ", LIBHEAP_CHUNK_SIZE(chunk));
-  LIBHEAP_DUMP_FIELD("flags: ", "%c%c%c\n",
+    LIBHEAP_DUMP_FIELD(inuse, "prev_size: ", "0x%"SIZE_T_FMT_X", ", chunk->prev_size);
+  LIBHEAP_DUMP_FIELD(inuse, "size: ", "0x%"SIZE_T_FMT_X", ", LIBHEAP_CHUNK_SIZE(chunk));
+  LIBHEAP_DUMP_FIELD(inuse, "flags: ", "%c%c%c\n",
 		     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_IS_MMAPED) ? 'M' : '-',
 		     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_PREV_INUSE) ? 'P' : '-',
 		     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_NON_MAIN_ARENA) ? 'A' : '-');
@@ -92,11 +100,19 @@ static void libheap_dump(void) {
 
   while(chunk != NULL) {
     libheap_dump_chunk(chunk);
+
+    /*
+     * Avoid infinite loop if chunk size is
+     * corrupted
+     */
+    if(LIBHEAP_CHUNK_SIZE(chunk) == 0)
+      return;
+
     chunk = LIBHEAP_NEXT_CHUNK(chunk);
 
-    if(chunk > libheap_last_chunk) {
-      chunk = NULL;
-    }
+    /* Chunk is out of allocated space */
+    if(chunk > libheap_last_chunk)
+      return;
   }
 }
 

@@ -95,7 +95,7 @@ Usage : rop-tool heap [OPTIONS] [COMMAND]
 
 OPTIONS:
   --help, -h               Print this help message
-  --library, -l     <l>    Specify the library path for libheap.so (default : ./libheap-x86-64.so)
+  --tmp, -t         <d>    Specify the writable directory, to dump the library (default: /tmp/)
   --no-color, -N           Do not colorize output
 ```
 

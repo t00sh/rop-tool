@@ -22,22 +22,22 @@
 /************************************************************************/
 #ifndef __WINDOWS__
 #include "rop_heap.h"
+#include "api/libheap.h"
 
-#define HEAP_DEFAULT_LIBPATH "./libheap-" ARCHITECTURE ".so"
+#define HEAP_DEFAULT_TMPPATH "/tmp/"
 
 char **heap_options_command = NULL;
-const char *heap_options_libpath = HEAP_DEFAULT_LIBPATH;
+const char *heap_options_tmppath = HEAP_DEFAULT_TMPPATH;
 const char *heap_options_color = "1";
 
 void heap_help(void) {
   printf("Usage : %s heap [OPTIONS] [COMMAND]\n\n", PACKAGE);
   printf("OPTIONS:\n");
   printf("  --help, -h               Print this help message\n");
-  printf("  --library, -l     <l>    Specify the library path for libheap.so (default : %s)\n", HEAP_DEFAULT_LIBPATH);
+  printf("  --tmp, -t     <d>        Specify the writable directory, to dump the library (default: %s)\n", HEAP_DEFAULT_TMPPATH);
   printf("  --no-color, -N           Do not colorize output\n");
   printf("\n");
 }
-
 
 /* Parse command line options */
 void heap_options_parse(int argc, char **argv) {
@@ -45,12 +45,12 @@ void heap_options_parse(int argc, char **argv) {
 
   const struct option opts[] = {
     {"help",          no_argument,       NULL, 'h'},
-    {"library",       required_argument, NULL, 'l'},
+    {"tmp",           required_argument, NULL, 't'},
     {"no-color",      no_argument,       NULL, 'N'},
     {NULL,            0,                 NULL, 0  }
   };
 
-  while((opt = getopt_long(argc, argv, "+f:hl:NO:", opts, NULL)) != -1) {
+  while((opt = getopt_long(argc, argv, "+ht:N", opts, NULL)) != -1) {
     switch(opt) {
 
 
@@ -59,8 +59,8 @@ void heap_options_parse(int argc, char **argv) {
       exit(EXIT_FAILURE);
       break;
 
-   case 'l':
-      heap_options_libpath = optarg;
+   case 't':
+      heap_options_tmppath = optarg;
       break;
 
     case 'N':
@@ -81,10 +81,40 @@ void heap_options_parse(int argc, char **argv) {
   }
 }
 
+static void heap_dump_lib(char *filename) {
+  FILE *f;
+
+  if((f = fopen(filename, "w")) == NULL)
+    R_UTILS_ERR("Can't open %s", filename);
+
+  fwrite(r_lib_heap, 1, sizeof(r_lib_heap), f);
+
+  fclose(f);
+}
+
 void heap_cmd(int argc, char **argv) {
+  char libname[72];
+  int len;
+
   heap_options_parse(argc, argv);
 
-  if(setenv("LD_PRELOAD", heap_options_libpath, 1) == -1) {
+  len = strlen(heap_options_tmppath);
+
+  if(len > 64 || len <= 0)
+    R_UTILS_ERRX("Bad tmp path len ! (can't excess 64 chars)");
+
+  strcpy(libname, heap_options_tmppath);
+
+  if(libname[len-1] != '/') {
+    libname[len] = '/';
+    libname[len+1] = 0;
+    len++;
+  }
+
+  strcat(libname, "libheap_tmp.so");
+  heap_dump_lib(libname);
+
+  if(setenv("LD_PRELOAD", libname, 1) == -1) {
     fprintf(stderr, "Can't set LD_PRELOAD environment variable\n");
     exit(EXIT_FAILURE);
   }

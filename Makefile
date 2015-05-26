@@ -38,7 +38,7 @@ LIB_HEAP = libheap-$(ARCH).so
 
 .PHONY: clean release test $(LIB_HEAP)
 
-all: $(EXE) $(LIB_HEAP)
+all: $(LIB_HEAP) $(EXE) 
 static: $(EXE_STATIC)
 
 $(EXE): $(OBJ)
@@ -52,22 +52,24 @@ $(EXE_STATIC): $(OBJ)
 $(LIB_HEAP):
 	@echo " MAKE $@"
 	@make -f lib/heap/Makefile
-
-%.o:%.c
-	@echo " CC $@" ;
-	@$(CC) $(CFLAGS) -c $< -o $@ ;
+	@strip $(LIB_HEAP)
+	@perl scripts/dumplibheap.pl $(ARCH)
 
 clean:
 	rm -f $(EXE) $(EXE_STATIC) $(OBJ)
 	make -f lib/heap/Makefile clean
 	find . -name "*~" -delete
 
-release: $(EXE) $(EXE_STATIC) $(LIB_HEAP)
+release: $(LIB_HEAP) $(EXE) $(EXE_STATIC)
 	strip $(EXE)
 	strip $(EXE_STATIC)
 	gpg --armor --detach-sign $(EXE)
 	gpg --armor --detach-sign $(EXE_STATIC)
-	gpg --armor --detach-sign $(LIB_HEAP)	
 
 test: $(EXE)
 	@bash scripts/test.sh -t
+
+
+%.o:%.c
+	@echo " CC $@" ;
+	@$(CC) $(CFLAGS) -c $< -o $@ ;

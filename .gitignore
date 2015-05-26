@@ -20,4 +20,8 @@ capstone*
 binary-samples
 
 # Custom library
-libheap*
+*.so
+
+# Generated files
+api/lib/libheap.c
+include/api/libheap.h

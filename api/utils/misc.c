@@ -22,6 +22,8 @@
 /************************************************************************/
 #include "api/utils.h"
 
+#include <time.h>
+
 /* Convert 'a' -> 10 */
 int r_utils_hexchar_to_dec(int c) {
   assert((c >= '0' && c <= '9') ||
@@ -55,4 +57,26 @@ void* r_utils_memsearch(void *src, u64 src_len, void *dst, u64 dst_len) {
     src_len--;
   }
   return NULL;
+}
+
+char* r_utils_alea_filename(char *file, int len) {
+  static int seeded = 0;
+  const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+  int i;
+
+  assert(len > 0);
+  assert(file != NULL);
+
+  if(!seeded) {
+    srand(time(NULL));
+    seeded = 1;
+  }
+
+  for(i = 0; i < len; i++) {
+    file[i] = charset[rand() % (sizeof(charset)-1)];
+  }
+
+  file[len-1] = 0;
+
+  return file;
 }

@@ -27,9 +27,13 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef struct {
+typedef struct libheap_chunk {
   size_t prev_size;
   size_t size;
+
+  struct libheap_chunk *fd;
+  struct libheap_chunk *bk;
+
 }libheap_chunk_s;
 
 
@@ -84,8 +88,13 @@ static void libheap_dump_chunk(libheap_chunk_s *chunk) {
   LIBHEAP_DUMP_FIELD(inuse, "usr_addr: ", "%p, ", LIBHEAP_USER_ADDR(chunk));
 
   if(!LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_IS_MMAPED) &&
-     !LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_PREV_INUSE))
+     !LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_PREV_INUSE)) {
     LIBHEAP_DUMP_FIELD(inuse, "prev_size: ", "0x%"SIZE_T_FMT_X", ", chunk->prev_size);
+  }
+  if(!inuse) {
+    LIBHEAP_DUMP_FIELD(inuse, "fd: ", "%p, ", chunk->fd);
+    LIBHEAP_DUMP_FIELD(inuse, "bk: ", "%p, ", chunk->bk);
+  }
   LIBHEAP_DUMP_FIELD(inuse, "size: ", "0x%"SIZE_T_FMT_X", ", LIBHEAP_CHUNK_SIZE(chunk));
   LIBHEAP_DUMP_FIELD(inuse, "flags: ", "%c%c%c\n",
 		     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_IS_MMAPED) ? 'M' : '-',

@@ -116,6 +116,7 @@ void dis_options_parse(int argc, char **argv) {
 void dis_address(r_disa_s *dis, r_binfmt_s *bin, addr_t addr, u64 len) {
   r_binfmt_mem_s *m;
   r_disa_instr_t *instr;
+  const char *sym;
   u64 length;
   u64 off;
 
@@ -138,6 +139,11 @@ void dis_address(r_disa_s *dis, r_binfmt_s *bin, addr_t addr, u64 len) {
 
 	/* We have disassembled the instruction, now print it ! */
 	if(instr != NULL) {
+
+	  /* Print symbol, if it exists */
+	  if((sym = r_binfmt_get_sym_by_addr(bin, instr->address)) != NULL) {
+	    R_UTILS_PRINT_YELLOW_BG_BLACK(dis_options_color, "\n<%s>:\n", sym);
+	  }
 
 	  if(r_binfmt_addr_size(bin->arch) == 8) {
 	    R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.16"PRIx64"   ", instr->address);

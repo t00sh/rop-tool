@@ -28,6 +28,20 @@
 #define R_BINFMT_BAD_ADDR ((u64)-1)
 #define R_BINFMT_BAD_OFFSET ((u64)-1)
 
+#define R_BINFMT_ASSERT(expr) do {					\
+    if(!(expr)) {							\
+      R_UTILS_WARN("%s:%d -> assertion failed (malformed file) : `%s`", __FILE__, __LINE__, #expr); \
+      return;								\
+    }									\
+  } while(0)
+
+#define R_BINFMT_ASSERT_RET(ret,expr) do {				\
+    if(!(expr)) {							\
+      R_UTILS_WARN("%s:%d -> assertion failed (malformed file) : `%s`", __FILE__, __LINE__, #expr); \
+      return ret;								\
+    }									\
+  } while(0)
+
 typedef enum r_binfmt_mem_flag {
   R_BINFMT_MEM_FLAG_NONE=0,
   R_BINFMT_MEM_FLAG_PROT_X=1,
@@ -92,7 +106,7 @@ typedef enum {
 }r_binfmt_ssp_e;
 
 typedef struct {
-  const char *sym;
+  const char *name;
   u64 addr;
 }r_binfmt_sym_s;
 
@@ -152,6 +166,9 @@ const char* r_binfmt_arch_to_string(r_binfmt_arch_e arch);
 const char* r_binfmt_type_to_string(r_binfmt_type_e type);
 int r_binfmt_addr_size(r_binfmt_arch_e arch);
 int r_binfmt_is_bad_addr(r_utils_bytes_s *bad, u64 addr, r_binfmt_arch_e arch);
+void r_binfmt_print_segments(r_binfmt_s *bin, int color);
+void r_binfmt_print_sections(r_binfmt_s *bin, int color);
+void r_binfmt_print_syms(r_binfmt_s *bin, int color);
 void r_binfmt_print_infos(r_binfmt_s *bin, int color);
 
 /* ==============================================
@@ -163,11 +180,18 @@ u16 r_binfmt_get_int16(byte_t *p, r_binfmt_endian_e endian);
 
 
 /* ==============================================
-   list.c
+   syms.c
    ============================================== */
 r_binfmt_sym_s* r_binfmt_sym_new(void);
+void r_binfmt_syms_free(r_binfmt_s *bin);
+void r_binfmt_syms_sort(r_binfmt_s *bin);
+const char* r_binfmt_get_sym_by_addr(r_binfmt_s *bin, addr_t addr);
+
+
+/* ==============================================
+   sections.c
+   ============================================== */
 r_binfmt_section_s* r_binfmt_section_new(void);
 void r_binfmt_sections_free(r_binfmt_s *bin);
-void r_binfmt_syms_free(r_binfmt_s *bin);
 
 #endif

@@ -24,12 +24,8 @@
 
 
 /* =========================================================================
-   This file contain some functions on various binary lists
+   This file contain some functions about binary sections
    ======================================================================= */
-
-r_binfmt_sym_s* r_binfmt_sym_new(void) {
-  return r_utils_malloc(sizeof(r_binfmt_sym_s));
-}
 
 r_binfmt_section_s* r_binfmt_section_new(void) {
   return r_utils_malloc(sizeof(r_binfmt_section_s));
@@ -37,8 +33,4 @@ r_binfmt_section_s* r_binfmt_section_new(void) {
 
 void r_binfmt_sections_free(r_binfmt_s *bin) {
   r_utils_list_free(&bin->sections, free);
-}
-
-void r_binfmt_syms_free(r_binfmt_s *bin) {
-  r_utils_list_free(&bin->syms, free);
 }

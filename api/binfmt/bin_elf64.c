@@ -28,21 +28,30 @@
    This file contain the functions for loading ELF64 binaries
    ======================================================================= */
 
-/* Load the ELF binary in the bin->mlist */
+
+/* Fill bin->mlist structure */
 static void r_binfmt_elf64_load_mlist(r_binfmt_s *bin) {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
   Elf64_Phdr *phdr;
   int i;
-  uint64_t flags;
-  uint64_t p_vaddr, p_offset, p_filesz;
-  uint32_t p_type, p_flags;
-  uint16_t e_phnum;
+  u64 p_vaddr, p_offset, p_filesz, e_phoff;
+  u32 flags;
+  u32 p_type, p_flags;
+  u16 e_phnum;
+
+  R_BINFMT_ASSERT(bin->mapped_size >= sizeof(Elf64_Ehdr));
 
   bin->mlist = r_binfmt_mlist_new();
 
-  phdr = (Elf64_Phdr*)(bin->mapped + r_binfmt_get_int64((byte_t*)&ehdr->e_phoff, bin->endian));
+  e_phoff = r_binfmt_get_int64((byte_t*)&ehdr->e_phoff, bin->endian);
+  R_BINFMT_ASSERT(e_phoff < bin->mapped_size);
+
+  phdr = (Elf64_Phdr*)(bin->mapped + e_phoff);
 
   e_phnum = r_binfmt_get_int16((byte_t*)&ehdr->e_phnum, bin->endian);
+
+  R_BINFMT_ASSERT(r_utils_add64(NULL, e_phnum*sizeof(Elf64_Phdr), e_phoff) &&
+		  e_phnum*sizeof(Elf64_Phdr) + e_phoff <= bin->mapped_size);
 
   for(i = 0; i < e_phnum; i++) {
     p_type = r_binfmt_get_int32((byte_t*)&phdr[i].p_type, bin->endian);
@@ -50,6 +59,9 @@ static void r_binfmt_elf64_load_mlist(r_binfmt_s *bin) {
     p_vaddr = r_binfmt_get_int64((byte_t*)&phdr[i].p_vaddr, bin->endian);
     p_offset = r_binfmt_get_int64((byte_t*)&phdr[i].p_offset, bin->endian);
     p_filesz = r_binfmt_get_int64((byte_t*)&phdr[i].p_filesz, bin->endian);
+
+    R_BINFMT_ASSERT(r_utils_add64(NULL, p_offset, p_filesz) &&
+		    p_offset + p_filesz <= bin->mapped_size);
 
     if(p_type == PT_LOAD) {
 
@@ -62,21 +74,80 @@ static void r_binfmt_elf64_load_mlist(r_binfmt_s *bin) {
 	flags |= R_BINFMT_MEM_FLAG_PROT_W;
 
       r_binfmt_mlist_add(bin->mlist,
-			p_vaddr,
-			bin->mapped + p_offset,
-			p_filesz,
-			flags);
+		     p_vaddr,
+		     bin->mapped + p_offset,
+		     p_filesz,
+		     flags);
     }
   }
 }
 
 /* Get the section name, with the e_shstrndx and the sh_name */
-static const char* r_binfmt_elf64_get_section_name(r_binfmt_s *bin, Elf64_Shdr *shstrndx, u32 sh_name) {
+static const char* r_binfmt_elf64_get_name(r_binfmt_s *bin, u32 section_id, u32 name) {
+  Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
+  Elf64_Shdr *shdr;
   u64 offset;
 
-  offset = r_binfmt_get_int64((byte_t*)&shstrndx->sh_offset, bin->endian);
+  shdr = (Elf64_Shdr*)(bin->mapped + r_binfmt_get_int32((byte_t*)&ehdr->e_shoff, bin->endian));
 
-  return (const char*)(bin->mapped + offset + sh_name);
+  offset = r_binfmt_get_int64((byte_t*)&shdr[section_id].sh_offset, bin->endian);
+
+  return (const char*)(bin->mapped + offset + name);
+}
+
+static void r_binfmt_elf64_load_syms(r_binfmt_s *bin) {
+  Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
+  Elf64_Shdr *shdr;
+  Elf64_Sym *symhdr;
+  u64 e_shoff, sh_size, sh_offset, link_off;
+  u32 i, j, sh_type, st_name, sh_link;
+  u64 num;
+  u16 e_shnum;
+  r_binfmt_sym_s *sym;
+
+  R_BINFMT_ASSERT(bin->mapped_size >= sizeof(Elf64_Ehdr));
+
+  e_shoff = r_binfmt_get_int64((byte_t*)&ehdr->e_shoff, bin->endian);
+
+  R_BINFMT_ASSERT(e_shoff < bin->mapped_size);
+
+  shdr = (Elf64_Shdr*)(bin->mapped + e_shoff);
+
+  e_shnum = r_binfmt_get_int16((byte_t*)&ehdr->e_shnum, bin->endian);
+
+  R_BINFMT_ASSERT(r_utils_add64(NULL, e_shnum*sizeof(Elf64_Shdr), e_shoff) &&
+		  e_shnum*sizeof(Elf64_Shdr) + e_shoff <= bin->mapped_size);
+
+  for(i = 0; i < e_shnum; i++) {
+    sh_type = r_binfmt_get_int32((byte_t*)&shdr[i].sh_type, bin->endian);
+
+    if(sh_type == SHT_SYMTAB || sh_type == SHT_DYNSYM) {
+      sh_size = r_binfmt_get_int64((byte_t*)&shdr[i].sh_size, bin->endian);
+      num = sh_size / sizeof(Elf64_Sym);
+      sh_offset = r_binfmt_get_int64((byte_t*)&shdr[i].sh_offset, bin->endian);
+
+      R_BINFMT_ASSERT(r_utils_add64(NULL, sh_offset, sh_size) &&
+		      sh_offset + sh_size <= bin->mapped_size);
+
+      symhdr = (Elf64_Sym*)(bin->mapped + sh_offset);
+      sh_link = r_binfmt_get_int32((byte_t*)&shdr[i].sh_link, bin->endian);
+
+      R_BINFMT_ASSERT(sh_link < e_shnum);
+
+      for(j = 0; j < num; j++) {
+	st_name = r_binfmt_get_int32((byte_t*)&symhdr[j].st_name, bin->endian);
+	link_off = r_binfmt_get_int64((byte_t*)&shdr[sh_link].sh_offset, bin->endian);
+
+	R_BINFMT_ASSERT(r_utils_add64(NULL, link_off, st_name) &&
+			link_off + st_name <= bin->mapped_size);
+
+	sym = r_binfmt_sym_new();
+	sym->name = r_binfmt_elf64_get_name(bin, sh_link, st_name);
+	sym->addr = symhdr[j].st_value;
+	r_utils_list_push(&bin->syms, sym);
+      }
+    }
+  }
 }
 
 /* Fill bin->sections structure */
@@ -84,113 +155,45 @@ static void r_binfmt_elf64_load_sections(r_binfmt_s *bin) {
   r_binfmt_section_s *section;
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
   Elf64_Shdr *shdr;
-  u64 sh_addr, sh_size;
   u32 sh_name;
+  u64 sh_addr, sh_size, e_shoff, strndx_off;
   u16 e_shnum, e_shstrndx;
   u32 i;
 
-  shdr = (Elf64_Shdr*)(bin->mapped + r_binfmt_get_int64((byte_t*)&ehdr->e_shoff, bin->endian));
+  R_BINFMT_ASSERT(bin->mapped_size >= sizeof(Elf64_Ehdr));
+
+  e_shoff = r_binfmt_get_int64((byte_t*)&ehdr->e_shoff, bin->endian);
+
+  R_BINFMT_ASSERT(e_shoff <= bin->mapped_size);
+
+  shdr = (Elf64_Shdr*)(bin->mapped + e_shoff);
 
   e_shnum = r_binfmt_get_int16((byte_t*)&ehdr->e_shnum, bin->endian);
   e_shstrndx = r_binfmt_get_int16((byte_t*)&ehdr->e_shstrndx, bin->endian);
+
+  R_BINFMT_ASSERT(r_utils_add64(NULL, e_shnum*sizeof(Elf64_Shdr), e_shoff) &&
+		  e_shnum*sizeof(Elf64_Shdr) + e_shoff <= bin->mapped_size);
+
+  R_BINFMT_ASSERT(e_shstrndx < e_shnum);
+
+  strndx_off = r_binfmt_get_int64((byte_t*)&shdr[e_shstrndx].sh_offset, bin->endian);
 
   for(i = 0; i < e_shnum; i++) {
     sh_addr = r_binfmt_get_int64((byte_t*)&shdr[i].sh_addr, bin->endian);
     sh_size = r_binfmt_get_int64((byte_t*)&shdr[i].sh_size, bin->endian);
-    sh_name = r_binfmt_get_int64((byte_t*)&shdr[i].sh_name, bin->endian);
+    sh_name = r_binfmt_get_int32((byte_t*)&shdr[i].sh_name, bin->endian);
+
+    R_BINFMT_ASSERT(r_utils_add64(NULL, strndx_off, sh_name) &&
+		    strndx_off + sh_name <= bin->mapped_size);
+
     section = r_binfmt_section_new();
     section->addr = sh_addr;
     section->size = sh_size;
-    section->name = r_binfmt_elf64_get_section_name(bin, &shdr[e_shstrndx], sh_name);
+    section->name = r_binfmt_elf64_get_name(bin, e_shstrndx, sh_name);
+
 
     r_utils_list_push(&bin->sections, section);
   }
-}
-
-/* Check fields for sections */
-static int r_binfmt_elf64_check_sections(r_binfmt_s *bin) {
-  Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
-  Elf64_Shdr *shdr;
-  u64 e_shoff, e_shstrndx;
-  u32 sh_name;
-  u16 e_shnum;
-  u32 i;
-
-  /* Get some fields */
-  e_shoff = r_binfmt_get_int64((byte_t*)&ehdr->e_shoff, bin->endian);
-  e_shnum = r_binfmt_get_int16((byte_t*)&ehdr->e_shnum, bin->endian);
-  e_shstrndx = r_binfmt_get_int16((byte_t*)&ehdr->e_shstrndx, bin->endian);
-
-  /* Check if section table isn't out of range */
-  if(!r_utils_add64(NULL, e_shoff, e_shnum*sizeof(Elf64_Shdr)))
-    return 0;
-
-  if(e_shoff + e_shnum*sizeof(Elf64_Shdr) > bin->mapped_size)
-    return 0;
-
-  /* Check the STRTAB section */
-  if(e_shstrndx >= e_shnum)
-    return 0;
-
-
-  shdr = (Elf64_Shdr*)(bin->mapped + e_shoff);
-
-  if(!r_utils_add64(NULL, shdr[e_shstrndx].sh_offset, shdr[e_shstrndx].sh_size))
-    return 0;
-
-  if(shdr[e_shstrndx].sh_offset + shdr[e_shstrndx].sh_size > bin->mapped_size)
-    return 0;
-
-  /* Check sh_name of each section */
-  for(i = 0; i < e_shnum; i++) {
-    sh_name = r_binfmt_get_int32((byte_t*)&shdr[i].sh_name, bin->endian);
-
-    if(sh_name > shdr[e_shstrndx].sh_size)
-      return 0;
-  }
-
-  return 1;
-}
-
-/* Check some ELF structure fields */
-static int r_binfmt_elf64_check(r_binfmt_s *bin) {
-  Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
-  Elf64_Phdr *phdr;
-  int i;
-  uint64_t r1, r2;
-  uint64_t e_phoff, p_offset, p_filesz;
-  uint16_t e_phnum;
-
-  e_phoff = r_binfmt_get_int64((byte_t*)&ehdr->e_phoff, bin->endian);
-  e_phnum = r_binfmt_get_int16((byte_t*)&ehdr->e_phnum, bin->endian);
-
-  /* Check some ehdr fields */
-  if(e_phoff >= bin->mapped_size)
-    return 0;
-
-  if(!r_utils_mul64(&r1, e_phnum, sizeof(Elf64_Phdr)))
-    return 0;
-
-  if(!r_utils_add64(&r2, e_phoff, e_phnum*sizeof(Elf64_Phdr)))
-    return 0;
-
-  if(r1 + r2 >= bin->mapped_size)
-    return 0;
-
-  /* check some phdr fields; */
-  phdr = (Elf64_Phdr*)(bin->mapped + e_phoff);
-
-  for(i = 0; i < e_phnum; i++) {
-    p_offset = r_binfmt_get_int64((byte_t*)&phdr[i].p_offset, bin->endian);
-    p_filesz = r_binfmt_get_int64((byte_t*)&phdr[i].p_filesz, bin->endian);
-
-    if(!r_utils_add64(&r1, p_offset, p_filesz))
-      return 0;
-    if(r1 >= bin->mapped_size)
-      return 0;
-  }
-
-  return 1;
 }
 
 /* Check if it's a ELF64 binary */
@@ -210,6 +213,8 @@ static int r_binfmt_elf64_is(r_binfmt_s *bin) {
 
 /* Get the architecture */
 static r_binfmt_arch_e r_binfmt_elf64_getarch(r_binfmt_s *bin) {
+  R_BINFMT_ASSERT_RET(R_BINFMT_ENDIAN_UNDEF, bin->mapped_size >= sizeof(Elf64_Ehdr));
+
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
 
   if(ehdr->e_machine == EM_X86_64 ||
@@ -221,11 +226,12 @@ static r_binfmt_arch_e r_binfmt_elf64_getarch(r_binfmt_s *bin) {
   return R_BINFMT_ARCH_UNDEF;
 }
 
-/* Get the endianess */
+/* Get the endianness */
 static r_binfmt_endian_e r_binfmt_elf64_getendian(r_binfmt_s *bin) {
+  R_BINFMT_ASSERT_RET(R_BINFMT_ENDIAN_UNDEF, bin->mapped_size >= sizeof(Elf64_Ehdr));
+
   if(bin->mapped[EI_DATA] == ELFDATA2LSB)
     return R_BINFMT_ENDIAN_LITTLE;
-
   if(bin->mapped[EI_DATA] == ELFDATA2MSB)
     return R_BINFMT_ENDIAN_BIG;
 
@@ -233,7 +239,10 @@ static r_binfmt_endian_e r_binfmt_elf64_getendian(r_binfmt_s *bin) {
 }
 
 static addr_t r_binfmt_elf64_getentry(r_binfmt_s *bin) {
+  R_BINFMT_ASSERT_RET(0, bin->mapped_size >= sizeof(Elf64_Ehdr));
+
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)(bin->mapped);
+
   return r_binfmt_get_int64((byte_t*)&ehdr->e_entry, bin->endian);
 }
 
@@ -241,12 +250,21 @@ static addr_t r_binfmt_elf64_getentry(r_binfmt_s *bin) {
 static r_binfmt_nx_e r_binfmt_elf64_check_nx(r_binfmt_s *bin) {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)(bin->mapped);
   Elf64_Phdr *phdr;
+  u64 e_phoff;
   u32 i, p_type;
   u16 e_phnum;
 
-  phdr = (Elf64_Phdr*)(bin->mapped + r_binfmt_get_int64((byte_t*)&ehdr->e_phoff, bin->endian));
+  R_BINFMT_ASSERT_RET(R_BINFMT_NX_UNKNOWN, bin->mapped_size >= sizeof(Elf64_Ehdr));
+
+  e_phoff = r_binfmt_get_int64((byte_t*)&ehdr->e_phoff, bin->endian);
+  R_BINFMT_ASSERT_RET(R_BINFMT_NX_UNKNOWN, e_phoff < bin->mapped_size);
+
+  phdr = (Elf64_Phdr*)(bin->mapped + e_phoff);
 
   e_phnum = r_binfmt_get_int16((byte_t*)&ehdr->e_phnum, bin->endian);
+
+  R_BINFMT_ASSERT_RET(R_BINFMT_NX_UNKNOWN, r_utils_add64(NULL, e_phnum*sizeof(Elf64_Phdr), e_phoff) &&
+		  e_phnum*sizeof(Elf64_Phdr) + e_phoff <= bin->mapped_size);
 
   for(i = 0; i < e_phnum; i++) {
     p_type = r_binfmt_get_int32((byte_t*)&phdr[i].p_type, bin->endian);
@@ -256,32 +274,28 @@ static r_binfmt_nx_e r_binfmt_elf64_check_nx(r_binfmt_s *bin) {
   return R_BINFMT_NX_DISABLED;
 }
 
-/* Load elf64, and check the binary */
+
+/* Fill the BINFMT structure if it's a correct ELF64 */
 r_binfmt_err_e r_binfmt_elf64_load(r_binfmt_s *bin) {
 
   if(!r_binfmt_elf64_is(bin))
     return R_BINFMT_ERR_UNRECOGNIZED;
 
+  r_binfmt_elf64_load_mlist(bin);
+  r_binfmt_elf64_load_sections(bin);
+  r_binfmt_elf64_load_syms(bin);
+
   bin->type = R_BINFMT_TYPE_ELF64;
   bin->arch = r_binfmt_elf64_getarch(bin);
   bin->endian = r_binfmt_elf64_getendian(bin);
+  bin->entry = r_binfmt_elf64_getentry(bin);
+  bin->nx = r_binfmt_elf64_check_nx(bin);
 
   if(bin->arch == R_BINFMT_ARCH_UNDEF)
     return R_BINFMT_ERR_NOTSUPPORTED;
 
   if(bin->endian == R_BINFMT_ENDIAN_UNDEF)
     return R_BINFMT_ERR_NOTSUPPORTED;
-
-  if(!r_binfmt_elf64_check(bin))
-    return R_BINFMT_ERR_MALFORMEDFILE;
-
-  bin->entry = r_binfmt_elf64_getentry(bin);
-  bin->nx = r_binfmt_elf64_check_nx(bin);
-
-  r_binfmt_elf64_load_mlist(bin);
-
-  if(r_binfmt_elf64_check_sections(bin))
-    r_binfmt_elf64_load_sections(bin);
 
   return R_BINFMT_ERR_OK;
 }

@@ -79,3 +79,11 @@ void r_utils_list_free(r_utils_list_s *l, void (*free_cb)(void*)) {
   l->head = 0;
   l->num = 0;
 }
+
+void r_utils_list_sort(r_utils_list_s *l, int (*cmp)(const void*, const void*)) {
+  assert(l != NULL);
+  assert(cmp != NULL);
+
+  if(l->head > 0)
+    qsort(l->list, l->head, sizeof(void*), cmp);
+}

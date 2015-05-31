@@ -208,6 +208,7 @@ int r_utils_bytes_are_in_addr64(r_utils_bytes_s *bytes, u64 addr);
 int r_utils_dec_to_hexchar(int c);
 int r_utils_hexchar_to_dec(int c);
 void* r_utils_memsearch(void *src, u64 src_len, void *dst, u64 dst_len);
+char* r_utils_alea_filename(char *file, int len);
 
 
 /* =========================================================================
@@ -255,5 +256,6 @@ void* r_utils_list_pop(r_utils_list_s *l);
 void *r_utils_list_access(r_utils_list_s *l, size_t i);
 size_t r_utils_list_size(r_utils_list_s *l);
 void r_utils_list_free(r_utils_list_s *l, void (*free_cb)(void*));
+void r_utils_list_sort(r_utils_list_s *l, int (*cmp)(const void*, const void*));
 
 #endif

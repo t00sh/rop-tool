@@ -129,6 +129,8 @@ void r_binfmt_load(r_binfmt_s *bin, const char *filename, r_binfmt_arch_e arch) 
   if(r_binfmt_loaders[i].load == NULL)
     R_UTILS_ERR("Format not supported");
 
+  r_binfmt_syms_sort(bin);
+
   fclose(fd);
 }
 
@@ -301,13 +303,14 @@ const char *r_binfmt_nx_to_string(r_binfmt_nx_e nx) {
 }
 
 /* Print info about file */
-static void r_binfmt_print_sections(r_binfmt_s *bin, int color) {
+void r_binfmt_print_sections(r_binfmt_s *bin, int color) {
   r_binfmt_section_s *s;
   size_t i;
   size_t num;
 
   num = r_utils_list_size(&bin->sections);
 
+  R_UTILS_PRINT_YELLOW_BG_BLACK(color, "\n\n ===== SECTIONS ===== \n");
   R_UTILS_PRINT_RED_BG_BLACK(color, "NAME                     ADDR                  SIZE\n");
 
   for(i = 0; i < num; i++) {
@@ -318,8 +321,49 @@ static void r_binfmt_print_sections(r_binfmt_s *bin, int color) {
   }
 }
 
+void r_binfmt_print_segments(r_binfmt_s *bin, int color) {
+  r_binfmt_mem_s *m;
+  u32 i;
+
+  R_UTILS_PRINT_YELLOW_BG_BLACK(color, "\n\n ===== SEGMENTS ===== \n");
+  R_UTILS_PRINT_RED_BG_BLACK(color, "ID                       ADDR                 SIZE                FLAGS\n");
+
+  i = 0;
+
+  for(m = bin->mlist->head; m; m = m->next) {
+    R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25d", i);
+    R_UTILS_PRINT_WHITE_BG_BLACK(color, "%.16" PRIx64, m->addr);
+    R_UTILS_PRINT_WHITE_BG_BLACK(color, "     %.16" PRIx64, m->length);
+    R_UTILS_PRINT_WHITE_BG_BLACK(color, "    %c%c%c\n",
+				 (m->flags & R_BINFMT_MEM_FLAG_PROT_R) ? 'R' : '-',
+				 (m->flags & R_BINFMT_MEM_FLAG_PROT_W) ? 'W' : '-',
+				 (m->flags & R_BINFMT_MEM_FLAG_PROT_X) ? 'X' : '-');
+    i++;
+  }
+}
+
+void r_binfmt_print_syms(r_binfmt_s *bin, int color) {
+  r_binfmt_sym_s *s;
+  size_t i;
+  size_t num;
+
+  num = r_utils_list_size(&bin->syms);
+
+  R_UTILS_PRINT_YELLOW_BG_BLACK(color, "\n\n ===== SYMBOLS ===== \n");
+  R_UTILS_PRINT_RED_BG_BLACK(color, "NAME                                    ADDR\n");
+
+  for(i = 0; i < num; i++) {
+    s = r_utils_list_access(&bin->syms, i);
+
+    R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-40s", s->name);
+    R_UTILS_PRINT_WHITE_BG_BLACK(color, "%.16" PRIx64 "\n", s->addr);
+  }
+}
+
 void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
   assert(bin != NULL);
+
+  R_UTILS_PRINT_YELLOW_BG_BLACK(color, "\n\n ===== INFOS ===== \n");
 
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Filename");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", bin->filename);
@@ -344,6 +388,4 @@ void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
 
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Sections");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%"SIZE_T_FMT_D"\n\n", r_utils_list_size(&bin->sections));
-
-  r_binfmt_print_sections(bin, color);
 }

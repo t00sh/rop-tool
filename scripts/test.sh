@@ -14,8 +14,8 @@ function usage() {
 function report_bad_test() {
 
     echo "[-] Test failed !"
-    echo "[-] $1 differe in command \"" $(cat $TEST_DIR/$2.sh) "\" ($2.sh)" 
-    exit 1
+    echo "[-] $1 differe in command \"" $(cat $TEST_DIR/$2.sh) "\" ($2.sh)"
+    printf "\n\n\n\n"
 }
 
 function run_tests() {

@@ -1,3 +1,13 @@
+rop-tool v2.3 (2015-06-01)
+- New command : 'disassemble'
+- Fix bug when handling RAW mode for gadgets
+- Handle ARM and ARM64 architectures
+- Handle ELF symbols and sections
+- libheap.so is now added staticly to binary
+- New options for 'info' command : --all, --syms, --sections, --segments
+- Some improvments in libheap.so
+- Fix some bugs
+
 rop-tool v2.2 (2015-05-15)
 - Port project on windows
 - Fix bugs in PE parser

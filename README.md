@@ -82,10 +82,14 @@ OPTIONS:
 Usage : rop-tool info [OPTIONS] [FILENAME]
 
 OPTIONS:
+  --all, -a                Show all infos
+  --segments, -l           Show segments
+  --sections, -s           Show sections
+  --syms, -S               Show symbols
   --filename, -f      [f]  Specify the filename
   --help, -h               Print this help message
   --no-color, -n           Disable colors
-
+  
 ```
 
 #### HEAP COMMAND

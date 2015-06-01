@@ -25,9 +25,9 @@ then
     git add Makefile.inc
     git commit -m "Set version in Makefile.inc"
     git tag v$NEW_VERSION
-    git checkout master
+    git checkout master -f
     git merge dev
-    git push --tags
+    git push origin v$NEW_VERSION
     git push
 fi
 

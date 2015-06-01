@@ -30,6 +30,7 @@ addr_t dis_options_offset = R_BINFMT_BAD_OFFSET;
 u64 dis_options_len = 0;
 r_binfmt_arch_e dis_options_arch = R_BINFMT_TYPE_UNDEF;
 r_disa_flavor_e dis_options_flavor = R_DISA_FLAVOR_INTEL;
+const char *dis_options_sym = NULL;
 
 /* Print disassemble help */
 void dis_help(void) {
@@ -39,6 +40,7 @@ void dis_help(void) {
   printf("  --no-color, -N           Do not colorize output\n");
   printf("  --address, -a    <a>     Start disassembling at address <a>\n");
   printf("  --offset, -o     <o>     Start disassembling at offset <o>\n");
+  printf("  --sym, -s        <s>     Disassemble symbol\n");
   printf("  --len, -l        <l>     Disassemble only <l> bytes\n");
   printf("  --arch, -A       <a>     Select architecture (x86, x86-64, arm, arm64)\n");
   printf("  --flavor, -f     <f>     Change flavor (intel, att)\n");
@@ -53,6 +55,7 @@ void dis_options_parse(int argc, char **argv) {
   const struct option opts[] = {
     {"address",       required_argument, NULL, 'a'},
     {"arch",          required_argument, NULL, 'A'},
+    {"sym",           required_argument, NULL, 's'},
     {"flavor",        required_argument, NULL, 'f'},
     {"help",          no_argument,       NULL, 'h'},
     {"len",           required_argument, NULL, 'l'},
@@ -61,11 +64,15 @@ void dis_options_parse(int argc, char **argv) {
     {NULL,            0,                 NULL, 0  }
   };
 
-  while((opt = getopt_long(argc, argv, "a:A:f:hl:No:", opts, NULL)) != -1) {
+  while((opt = getopt_long(argc, argv, "a:A:s:f:hl:No:", opts, NULL)) != -1) {
     switch(opt) {
 
     case 'a':
       dis_options_address = strtoull(optarg, NULL, 0);
+      break;
+
+    case 's':
+      dis_options_sym = optarg;
       break;
 
     case 'A':
@@ -106,19 +113,16 @@ void dis_options_parse(int argc, char **argv) {
   if(optind < argc) {
     dis_options_filename = argv[optind];
   }
-
-  if(dis_options_offset != R_BINFMT_BAD_OFFSET &&
-     dis_options_address != R_BINFMT_BAD_ADDR)
-    R_UTILS_ERR("You must specify offset or address, not twice !");
 }
 
 /* Disassemble binary at specified address */
-void dis_address(r_disa_s *dis, r_binfmt_s *bin, addr_t addr, u64 len) {
+void dis_address(r_disa_s *dis, r_binfmt_s *bin, addr_t addr, u64 len, int stop_next_sym) {
   r_binfmt_mem_s *m;
   r_disa_instr_t *instr;
   const char *sym;
   u64 length;
   u64 off;
+  int sym_processed = 0;
 
   /* Test every loadable segment */
   for(m = bin->mlist->head; m; m = m->next) {
@@ -142,6 +146,12 @@ void dis_address(r_disa_s *dis, r_binfmt_s *bin, addr_t addr, u64 len) {
 
 	  /* Print symbol, if it exists */
 	  if((sym = r_binfmt_get_sym_by_addr(bin, instr->address)) != NULL) {
+	    if(stop_next_sym) {
+	      if(sym_processed > 0)
+		return;
+	      else
+		sym_processed++;
+	    }
 	    R_UTILS_PRINT_YELLOW_BG_BLACK(dis_options_color, "\n<%s>:\n", sym);
 	  }
 
@@ -207,6 +217,8 @@ void dis_offset(r_disa_s *dis, r_binfmt_s *bin, u64 offset, u64 len) {
 
 /* Main function of disassemble command */
 void dis_cmd(int argc, char **argv) {
+  int stop_next_sym = 0;
+  addr_t sym;
   r_binfmt_s bin;
   r_disa_s dis;
 
@@ -221,16 +233,29 @@ void dis_cmd(int argc, char **argv) {
   if(!r_disa_set_flavor(&dis, dis_options_flavor))
     R_UTILS_ERR("Can't set flavor");
 
+  /* Try to find symbol, if option is set */
+  if(dis_options_sym != NULL) {
+    if((sym = r_binfmt_get_sym_by_name(&bin, dis_options_sym)) == R_BINFMT_BAD_ADDR)
+      R_UTILS_ERR("Symbol <%s> not found", dis_options_sym);
+    dis_options_address = sym;
+    stop_next_sym = 1;
+  }
+
+  /* Can't disassemble offset + address at the same time */
+  if(dis_options_offset != R_BINFMT_BAD_OFFSET &&
+     dis_options_address != R_BINFMT_BAD_ADDR)
+    R_UTILS_ERR("You must specify offset or address, not twice !");
+
   /* First, try disassemble at offset */
   if(dis_options_offset != R_BINFMT_BAD_OFFSET) {
     dis_offset(&dis, &bin, dis_options_offset, dis_options_len);
   } else {
     /* Now check if address if specified */
     if(dis_options_address != R_BINFMT_BAD_ADDR) {
-      dis_address(&dis, &bin, dis_options_address, dis_options_len);
+      dis_address(&dis, &bin, dis_options_address, dis_options_len, stop_next_sym);
     /* If not, try to disassemble starting at entry point */
     } else if(bin.entry != 0) {
-      dis_address(&dis, &bin, bin.entry, dis_options_len);
+      dis_address(&dis, &bin, bin.entry, dis_options_len, stop_next_sym);
     /* Entry point is bad...Start at beginning of the file */
     } else {
       dis_offset(&dis, &bin, 0, dis_options_len);

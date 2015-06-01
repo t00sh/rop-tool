@@ -127,6 +127,7 @@ OPTIONS:
   --no-color, -N           Do not colorize output
   --address, -a    <a>     Start disassembling at address <a>
   --offset, -o     <o>     Start disassembling at offset <o>
+  --sym, -s        <s>     Disassemble symbol
   --len, -l        <l>     Disassemble only <l> bytes
   --arch, -A       <a>     Select architecture (x86, x86-64, arm, arm64)
   --flavor, -f     <f>     Change flavor (intel, att)

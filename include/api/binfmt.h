@@ -186,7 +186,7 @@ r_binfmt_sym_s* r_binfmt_sym_new(void);
 void r_binfmt_syms_free(r_binfmt_s *bin);
 void r_binfmt_syms_sort(r_binfmt_s *bin);
 const char* r_binfmt_get_sym_by_addr(r_binfmt_s *bin, addr_t addr);
-
+addr_t r_binfmt_get_sym_by_name(r_binfmt_s *bin, const char *name);
 
 /* ==============================================
    sections.c

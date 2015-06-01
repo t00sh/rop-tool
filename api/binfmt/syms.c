@@ -47,6 +47,21 @@ static int r_binfmt_syms_cmp(const void* s1, const void* s2) {
   return 0;
 }
 
+addr_t r_binfmt_get_sym_by_name(r_binfmt_s *bin, const char *name) {
+  int i;
+  r_binfmt_sym_s *sym;
+
+  i = 0;
+
+  while((sym = r_utils_list_access(&bin->syms, i))) {
+    if(!strcmp(name, sym->name))
+      return sym->addr;
+    i++;
+  }
+
+  return R_BINFMT_BAD_ADDR;
+}
+
 /* Dichotomy research - symbols must be sorted in ascending order */
 const char* r_binfmt_get_sym_by_addr(r_binfmt_s *bin, addr_t addr) {
   size_t start, end, cur;

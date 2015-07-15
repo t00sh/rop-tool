@@ -1,3 +1,7 @@
+rop-tool v2.3.1 (2015-07-15)
+- Fix a security bug in Capstone library
+- 'heap' command print now on stderr instead of stdout
+
 rop-tool v2.3 (2015-06-01)
 - New command : 'disassemble'
 - Fix bug when handling RAW mode for gadgets

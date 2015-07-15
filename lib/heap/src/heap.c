@@ -62,17 +62,17 @@ static size_t libheap_heap_size = 0;
 #define LIBHEAP_CHUNK_INUSE(c) (LIBHEAP_NEXT_CHUNK(c) > libheap_last_chunk ? 1 : LIBHEAP_CHUNK_FLAG(LIBHEAP_NEXT_CHUNK(c), LIBHEAP_PREV_INUSE))
 
 #define LIBHEAP_DUMP(...) do {						\
-    R_UTILS_PRINT_RED_BG_BLACK(libheap_options_color, __VA_ARGS__);	\
+    R_UTILS_FPRINT_RED_BG_BLACK(stderr, libheap_options_color, __VA_ARGS__); \
     libheap_dump();							\
   }while(0)
 
 #define LIBHEAP_DUMP_FIELD(u,f,...) do {				\
     if(u) {								\
-      R_UTILS_PRINT_YELLOW_BG_BLACK(libheap_options_color,f);		\
-      R_UTILS_PRINT_GREEN_BG_BLACK(libheap_options_color,__VA_ARGS__);	\
+      R_UTILS_FPRINT_YELLOW_BG_BLACK(stderr, libheap_options_color,f);	\
+      R_UTILS_FPRINT_GREEN_BG_BLACK(stderr, libheap_options_color,__VA_ARGS__); \
     } else {								\
-      R_UTILS_PRINT_WHITE_BG_BLACK(libheap_options_color,f);		\
-      R_UTILS_PRINT_GREEN_BG_BLACK(libheap_options_color,__VA_ARGS__);	\
+      R_UTILS_FPRINT_WHITE_BG_BLACK(stderr, libheap_options_color,f);	\
+      R_UTILS_FPRINT_GREEN_BG_BLACK(stderr, libheap_options_color,__VA_ARGS__); \
     }									\
   }while(0)
 

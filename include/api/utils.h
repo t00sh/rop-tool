@@ -70,15 +70,18 @@
 #define R_UTILS_BG_COLOR_CYAN     "\033[46m"
 #define R_UTILS_BG_COLOR_WHITE    "\033[47m"
 
-#define R_UTILS_PRINT_COLORED(color,c_str,...) do {	\
-    if(color) {						\
-      printf(c_str);					\
-      printf(__VA_ARGS__);				\
-      printf(R_UTILS_COLOR_RESET);			\
-    } else {						\
-      printf(__VA_ARGS__);				\
-    }							\
+#define R_UTILS_FPRINT_COLORED(stream,color,c_str,...) do {	\
+    if(color) {							\
+      fprintf(stream, c_str);					\
+      fprintf(stream,__VA_ARGS__);				\
+      fprintf(stream, R_UTILS_COLOR_RESET);			\
+    } else {							\
+      fprintf(stream,__VA_ARGS__);				\
+    }								\
   }while(0);
+
+#define R_UTILS_PRINT_COLORED(color,c_str,...) do { R_UTILS_FPRINT_COLORED(stdout, color, c_str, __VA_ARGS__); } while(0)
+
 
 
 #define R_UTILS_PRINT_WHITE_BG_BLACK(c,...) R_UTILS_PRINT_COLORED(c, R_UTILS_FG_COLOR_WHITE R_UTILS_BG_COLOR_BLACK, __VA_ARGS__)
@@ -87,6 +90,13 @@
 #define R_UTILS_PRINT_GREEN_BG_BLACK(c,...) R_UTILS_PRINT_COLORED(c, R_UTILS_FG_COLOR_GREEN R_UTILS_BG_COLOR_BLACK, __VA_ARGS__)
 #define R_UTILS_PRINT_YELLOW_BG_BLACK(c,...) R_UTILS_PRINT_COLORED(c, R_UTILS_FG_COLOR_YELLOW R_UTILS_BG_COLOR_BLACK, __VA_ARGS__)
 #define R_UTILS_PRINT_BLUE_BG_WHITE(c,...) R_UTILS_PRINT_COLORED(c, R_UTILS_FG_COLOR_BLUE R_UTILS_BG_COLOR_WHITE, __VA_ARGS__)
+
+#define R_UTILS_FPRINT_WHITE_BG_BLACK(s,c,...) R_UTILS_FPRINT_COLORED(s,c, R_UTILS_FG_COLOR_WHITE R_UTILS_BG_COLOR_BLACK, __VA_ARGS__)
+#define R_UTILS_FPRINT_BLACK_BG_WHITE(s,c,...) R_UTILS_FPRINT_COLORED(s,c, R_UTILS_FG_COLOR_BLACK R_UTILS_BG_COLOR_WHITE, __VA_ARGS__)
+#define R_UTILS_FPRINT_RED_BG_BLACK(s,c,...) R_UTILS_FPRINT_COLORED(s,c, R_UTILS_FG_COLOR_RED R_UTILS_BG_COLOR_BLACK, __VA_ARGS__)
+#define R_UTILS_FPRINT_GREEN_BG_BLACK(s,c,...) R_UTILS_FPRINT_COLORED(s,c, R_UTILS_FG_COLOR_GREEN R_UTILS_BG_COLOR_BLACK, __VA_ARGS__)
+#define R_UTILS_FPRINT_YELLOW_BG_BLACK(s,c,...) R_UTILS_FPRINT_COLORED(s,c, R_UTILS_FG_COLOR_YELLOW R_UTILS_BG_COLOR_BLACK, __VA_ARGS__)
+#define R_UTILS_FPRINT_BLUE_BG_WHITE(s,c,...) R_UTILS_FPRINT_COLORED(s,c, R_UTILS_FG_COLOR_BLUE R_UTILS_BG_COLOR_WHITE, __VA_ARGS__)
 
 
 /* =========================================================================

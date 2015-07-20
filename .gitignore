@@ -22,6 +22,6 @@ binary-samples
 # Custom library
 *.so
 
-# Generated files
+# Auto generated files
 api/lib/libheap.c
 include/api/libheap.h

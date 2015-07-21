@@ -38,7 +38,7 @@ OPTIONS:
   --no-filter, -F          Do not apply some filters on gadgets
   --help, -h               Print this help message
   --no-color, -n           Do not colorize output
-  
+
 ```
 
 #### SEARCH COMMAND
@@ -89,7 +89,7 @@ OPTIONS:
   --filename, -f      [f]  Specify the filename
   --help, -h               Print this help message
   --no-color, -n           Disable colors
-  
+
 ```
 
 #### HEAP COMMAND
@@ -98,8 +98,14 @@ OPTIONS:
 Usage : rop-tool heap [OPTIONS] [COMMAND]
 
 OPTIONS:
+  --calloc, -C             Trace calloc calls
+  --free, -F               Trace free calls
+  --realloc, -R            Trace realloc calls
+  --malloc, -M             Trace malloc calls
+  --dumpdata, -d           Dump chunk's data
+  --output, -O             Output in a file
   --help, -h               Print this help message
-  --tmp, -t         <d>    Specify the writable directory, to dump the library (default: /tmp/)
+  --tmp, -t        <d>     Specify the writable directory, to dump the library (default: /tmp/)
   --no-color, -N           Do not colorize output
 ```
 
@@ -146,7 +152,7 @@ OPTIONS:
 
 Basic gadget searching
 
-* rop-tool gadget ./program 
+* rop-tool gadget ./program
 
 Display all gadgets with AT&T syntax
 
@@ -232,7 +238,6 @@ rop-tool dis ./bin  # Many formats
 - GPLv3 license : http://www.gnu.org/licenses/gpl-3.0.txt
 
 ### AUTHOR
-Tosh 
+Tosh
 
 tosh -at- t0x0sh ~dot~ org
-

@@ -30,7 +30,7 @@
 
 /*
  * %X  : hexadécimal value
- * %Q : qword (64bits) register (rax, rbx, rcx, rdx, rsi, rdi, rsp);
+ * %Q : qword (64bits) register (r8, r9, r10, r11, r12, r13, r14, r15,rax, rbx, rcx, rdx, rsi, rdi, rsp);
  * %D : dword (32bits) register (eax, ebx, ecx, edx, esi, edi, esp, ebp)
  * %W : word (16bits) register (ax, bx, cx, dx, si, di)
  * %B : byte (8bits) register (al, bl, cl, dl)
@@ -291,71 +291,79 @@ int r_gadget_filter_strncmp(const char *gadget, const char *filter, int len) {
 
   i = 0;
   while((len == 0 || i < len)
-	&& *p1 != '\0' && p2[i] != '\0') {
+        && *p1 != '\0' && p2[i] != '\0') {
     if(*p1 == '%') {
 
       p1++;
       if(*p1 == '%') {
-	if(p2[i] != '%')
-	  break;
+        if(p2[i] != '%')
+          break;
       }
       if(*p1 == 'X') {
-	if(p2[i] == '-')
-	  i++;
-	if(p2[i] != '0' && p2[i+1] != 'x')
-	  break;
+        if(p2[i] == '-')
+          i++;
+        if(p2[i] != '0' && p2[i+1] != 'x')
+          break;
 	i += 2;
 	while(isxdigit(p2[i]))
 	  i++;
 	i--;
       }
       if(*p1 == 'Q') {
-	if(strncmp("rax", p2+i, 3) &&
-	   strncmp("rbx", p2+i, 3) &&
-	   strncmp("rcx", p2+i, 3) &&
-	   strncmp("rdx", p2+i, 3) &&
-	   strncmp("rsp", p2+i, 3) &&
-	   strncmp("rbp", p2+i, 3) &&
-	   strncmp("rsi", p2+i, 3) &&
-	   strncmp("rdi", p2+i, 3))
-	  break;
-	i += 2;
+        if(strncmp("r8", p2+i,2)   &&
+           strncmp("r9", p2+i,2)   &&
+           strncmp("r10", p2+i,3)  &&
+           strncmp("r11", p2+i,3)  &&
+           strncmp("r12", p2+i,3)  &&
+           strncmp("r13", p2+i,3)  &&
+           strncmp("r14", p2+i,3)  &&
+           strncmp("r15", p2+i,3)  &&
+           strncmp("rax", p2+i, 3) &&
+           strncmp("rbx", p2+i, 3) &&
+           strncmp("rcx", p2+i, 3) &&
+           strncmp("rdx", p2+i, 3) &&
+           strncmp("rsp", p2+i, 3) &&
+           strncmp("rbp", p2+i, 3) &&
+           strncmp("rsi", p2+i, 3) &&
+           strncmp("rdi", p2+i, 3))
+          break;
+        i += 2;
       }
       if(*p1 == 'D') {
-	if(strncmp("eax", p2+i, 3) &&
-	   strncmp("ebx", p2+i, 3) &&
-	   strncmp("ecx", p2+i, 3) &&
-	   strncmp("edx", p2+i, 3) &&
-	   strncmp("esp", p2+i, 3) &&
-	   strncmp("ebp", p2+i, 3) &&
-	   strncmp("esi", p2+i, 3) &&
-	   strncmp("edi", p2+i, 3))
-	  break;
+        if(strncmp("eax", p2+i, 3) &&
+           strncmp("ebx", p2+i, 3) &&
+           strncmp("ecx", p2+i, 3) &&
+           strncmp("edx", p2+i, 3) &&
+           strncmp("esp", p2+i, 3) &&
+           strncmp("ebp", p2+i, 3) &&
+           strncmp("esi", p2+i, 3) &&
+           strncmp("edi", p2+i, 3))
+          break;
 	i += 2;
       }
       if(*p1 == 'W') {
-	if(strncmp("ax", p2+i, 2) &&
-	   strncmp("bx", p2+i, 2) &&
-	   strncmp("cx", p2+i, 2) &&
-	   strncmp("dx", p2+i, 2) &&
-	   strncmp("di", p2+i, 2) &&
-	   strncmp("si", p2+i, 2))
-	  break;
-	i++;
+        if(strncmp("ax", p2+i, 2) &&
+           strncmp("bx", p2+i, 2) &&
+           strncmp("cx", p2+i, 2) &&
+           strncmp("dx", p2+i, 2) &&
+           strncmp("di", p2+i, 2) &&
+           strncmp("si", p2+i, 2))
+          break;
+        i++;
       }
 
       if(*p1 == 'B') {
-	if(strncmp("al", p2+i, 2) &&
-	   strncmp("bl", p2+i, 2) &&
-	   strncmp("cl", p2+i, 2) &&
-	   strncmp("dl", p2+i, 2))
-	  break;
-	i++;
+        if(strncmp("al", p2+i, 2) &&
+           strncmp("bl", p2+i, 2) &&
+           strncmp("cl", p2+i, 2) &&
+           strncmp("dl", p2+i, 2))
+          break;
+        i++;
 
       }
     } else {
       if(*p1 != p2[i])
-	break;
+        break;
     }
     p1++;
     i++;

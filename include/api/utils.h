@@ -268,4 +268,10 @@ size_t r_utils_list_size(r_utils_list_s *l);
 void r_utils_list_free(r_utils_list_s *l, void (*free_cb)(void*));
 void r_utils_list_sort(r_utils_list_s *l, int (*cmp)(const void*, const void*));
 
+/* =========================================================================
+   hexdump.c
+   ======================================================================= */
+
+void r_utils_hexdump(FILE *stream, int color, u8 *code, u64 length, u64 offset);
+
 #endif

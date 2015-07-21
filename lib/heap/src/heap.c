@@ -22,6 +22,7 @@
 /************************************************************************/
 #define _GNU_SOURCE
 #include "rop.h"
+#include "libheap.h"
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -59,32 +60,43 @@ static size_t libheap_heap_size = 0;
 #define LIBHEAP_NEXT_CHUNK(c) ((libheap_chunk_s*)(((u8*)c)+LIBHEAP_CHUNK_SIZE(c)))
 #define LIBHEAP_GET_CHUNK(ptr) ((libheap_chunk_s*)(ptr - 2*sizeof(size_t)))
 #define LIBHEAP_USER_ADDR(c) (((u8*)c) + 2*sizeof(size_t))
+#define LIBHEAP_ADDR(c) (((u8*)c) + sizeof(size_t))
 #define LIBHEAP_CHUNK_INUSE(c) (LIBHEAP_NEXT_CHUNK(c) > libheap_last_chunk ? 1 : LIBHEAP_CHUNK_FLAG(LIBHEAP_NEXT_CHUNK(c), LIBHEAP_PREV_INUSE))
 
 #define LIBHEAP_DUMP(...) do {						\
-    R_UTILS_FPRINT_RED_BG_BLACK(stderr, libheap_options_color, __VA_ARGS__); \
+    R_UTILS_FPRINT_RED_BG_BLACK(libheap_options_stream, libheap_options_color, __VA_ARGS__);  \
     libheap_dump();							\
   }while(0)
 
 #define LIBHEAP_DUMP_FIELD(u,f,...) do {				\
     if(u) {								\
-      R_UTILS_FPRINT_YELLOW_BG_BLACK(stderr, libheap_options_color,f);	\
-      R_UTILS_FPRINT_GREEN_BG_BLACK(stderr, libheap_options_color,__VA_ARGS__); \
+      R_UTILS_FPRINT_YELLOW_BG_BLACK(libheap_options_stream, libheap_options_color,f);	\
+      R_UTILS_FPRINT_GREEN_BG_BLACK(libheap_options_stream, libheap_options_color,__VA_ARGS__); \
     } else {								\
-      R_UTILS_FPRINT_WHITE_BG_BLACK(stderr, libheap_options_color,f);	\
-      R_UTILS_FPRINT_GREEN_BG_BLACK(stderr, libheap_options_color,__VA_ARGS__); \
+      R_UTILS_FPRINT_WHITE_BG_BLACK(libheap_options_stream, libheap_options_color,f);	\
+      R_UTILS_FPRINT_GREEN_BG_BLACK(libheap_options_stream, libheap_options_color,__VA_ARGS__); \
     }									\
   }while(0)
 
 static libheap_chunk_s *libheap_first_chunk = NULL;
 static libheap_chunk_s *libheap_last_chunk  = NULL;
 
+#define LIBHEAP_TRACE_NONE 0
+#define LIBHEAP_TRACE_FREE 1
+#define LIBHEAP_TRACE_MALLOC 2
+#define LIBHEAP_TRACE_REALLOC 4
+#define LIBHEAP_TRACE_CALLOC 8
+#define LIBHEAP_TRACE_ALL (8|4|2|1)
+
+static FILE* libheap_options_stream = NULL;
 static int libheap_options_color = 1;
+static int libheap_options_trace = LIBHEAP_TRACE_ALL;
+static int libheap_options_dumpdata = 0;
 
 static void libheap_dump_chunk(libheap_chunk_s *chunk) {
   int inuse = LIBHEAP_CHUNK_INUSE(chunk);
 
-  LIBHEAP_DUMP_FIELD(inuse, "addr: ",  "%p, ", chunk);
+  LIBHEAP_DUMP_FIELD(inuse, "addr: ",  "%p, ", LIBHEAP_ADDR(chunk));
   LIBHEAP_DUMP_FIELD(inuse, "usr_addr: ", "%p, ", LIBHEAP_USER_ADDR(chunk));
 
   if(!LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_IS_MMAPED) &&
@@ -100,6 +112,10 @@ static void libheap_dump_chunk(libheap_chunk_s *chunk) {
 		     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_IS_MMAPED) ? 'M' : '-',
 		     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_PREV_INUSE) ? 'P' : '-',
 		     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_NON_MAIN_ARENA) ? 'A' : '-');
+
+  if(libheap_options_dumpdata) {
+    libheap_hexdump(libheap_options_stream, libheap_options_color, LIBHEAP_ADDR(chunk), LIBHEAP_CHUNK_SIZE(chunk), (u64)(LIBHEAP_ADDR(chunk)));
+  }
 }
 
 static void libheap_dump(void) {
@@ -134,14 +150,49 @@ static void libheap_update_chunk(u8 *ptr) {
   }
 }
 
+FILE* libheap_fopen_stream(const char *filename) {
+  FILE *f;
+
+  if((f = fopen(filename, "w")) == NULL) {
+    R_UTILS_ERRX("Failed to open libheap output stream");
+  }
+
+  return f;
+}
+
 static void libheap_get_options(void) {
+  int trace = 0;
   char *env;
 
-  if((env = getenv("LIBHEAP_COLOR")) == NULL) {
-    R_UTILS_ERR("Can't get LIBHEAP_COLOR environment variable");
-  }
-  libheap_options_color = atoi(env);
+  libheap_options_stream = stderr;
 
+  if((env = getenv("LIBHEAP_COLOR")) != NULL) {
+    libheap_options_color = atoi(env);
+  }
+
+  if((env = getenv("LIBHEAP_TRACE_FREE")) != NULL) {
+    trace |= (atoi(env) % 2) * LIBHEAP_TRACE_FREE;
+  }
+  if((env = getenv("LIBHEAP_TRACE_MALLOC")) != NULL) {
+    trace |= (atoi(env) % 2) * LIBHEAP_TRACE_MALLOC;
+  }
+  if((env = getenv("LIBHEAP_TRACE_CALLOC")) != NULL) {
+    trace |= (atoi(env) % 2) * LIBHEAP_TRACE_CALLOC;
+  }
+  if((env = getenv("LIBHEAP_TRACE_REALLOC")) != NULL) {
+    trace |= (atoi(env) % 2) * LIBHEAP_TRACE_REALLOC;
+  }
+
+  if(trace != 0)
+    libheap_options_trace = trace;
+
+  if((env = getenv("LIBHEAP_DUMPDATA")) != NULL) {
+    libheap_options_dumpdata = atoi(env);
+  }
+
+  if((env = getenv("LIBHEAP_OUTPUT")) != NULL) {
+    libheap_options_stream = libheap_fopen_stream(env);
+  }
 }
 
 static void libheap_initialize(void) {
@@ -199,8 +250,8 @@ void* malloc(size_t s) {
       p = libheap_malloc(s);
     } else {
       if(s > LIBHEAP_HEAP_SIZE || s+libheap_heap_size > LIBHEAP_HEAP_SIZE) {
-	fprintf(stderr, "[-] Temporary heap too small for initialization !\n");
-	exit(EXIT_FAILURE);
+        fprintf(stderr, "[-] Temporary heap too small for initialization !\n");
+        exit(EXIT_FAILURE);
       }
 
       p = libheap_heap + libheap_heap_size;
@@ -213,7 +264,8 @@ void* malloc(size_t s) {
   if(!libheap_under_initialization) {
     if(!LIBHEAP_CHUNK_FLAG(LIBHEAP_GET_CHUNK(p), LIBHEAP_IS_MMAPED)) {
       libheap_update_chunk(p);
-      LIBHEAP_DUMP("malloc(%" SIZE_T_FMT_X ") = %p\n", s, p);
+      if(libheap_options_trace & LIBHEAP_TRACE_MALLOC)
+        LIBHEAP_DUMP("malloc(%" SIZE_T_FMT_X ") = %p\n", s, p);
     }
   }
   return p;
@@ -233,7 +285,8 @@ void* realloc(void *ptr, size_t s) {
   if(!libheap_under_initialization) {
     if(!LIBHEAP_CHUNK_FLAG(LIBHEAP_GET_CHUNK(p), LIBHEAP_IS_MMAPED)) {
       libheap_update_chunk(p);
-      LIBHEAP_DUMP("realloc(%p,%" SIZE_T_FMT_X ") = %p\n", ptr, s, p);
+      if(libheap_options_trace & LIBHEAP_TRACE_REALLOC)
+        LIBHEAP_DUMP("realloc(%p,%" SIZE_T_FMT_X ") = %p\n", ptr, s, p);
     }
   }
 
@@ -254,7 +307,8 @@ void* calloc(size_t nmemb, size_t size) {
   if(!libheap_under_initialization) {
     if(!LIBHEAP_CHUNK_FLAG(LIBHEAP_GET_CHUNK(p), LIBHEAP_IS_MMAPED)) {
       libheap_update_chunk(p);
-      LIBHEAP_DUMP("calloc(%" SIZE_T_FMT_X ",%" SIZE_T_FMT_X ") = %p\n", nmemb, size, p);
+      if(libheap_options_trace & LIBHEAP_TRACE_CALLOC)
+        LIBHEAP_DUMP("calloc(%" SIZE_T_FMT_X ",%" SIZE_T_FMT_X ") = %p\n", nmemb, size, p);
     }
   }
   return p;
@@ -271,7 +325,8 @@ void free(void *ptr) {
   if(ptr) {
     if(!LIBHEAP_CHUNK_FLAG(LIBHEAP_GET_CHUNK(ptr), LIBHEAP_IS_MMAPED)) {
       libheap_free(ptr);
-      LIBHEAP_DUMP("free(%p)\n", ptr);
+      if(libheap_options_trace & LIBHEAP_TRACE_FREE)
+        LIBHEAP_DUMP("free(%p)\n", ptr);
     }
   }
 }

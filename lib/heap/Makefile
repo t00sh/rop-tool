@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized
 CFLAGS += -Wunreachable-code -g -fstack-protector-all
 
-CFLAGS += -I include/
+CFLAGS += -I include/ -I lib/heap/include
 
 ifeq ($(ARCH), i686)
 	CFLAGS += -m32

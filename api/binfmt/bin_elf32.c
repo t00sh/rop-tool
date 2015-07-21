@@ -27,6 +27,8 @@
    This file implement functions for parsing ELF32 binaries
    ======================================================================= */
 
+r_binfmt_ssp_e r_binfmt_elf_check_ssp(r_binfmt_s *bin);
+
 /* Fill bin->mlist structure */
 static void r_binfmt_elf32_load_mlist(r_binfmt_s *bin) {
   Elf32_Ehdr *ehdr = (Elf32_Ehdr*)bin->mapped;
@@ -269,6 +271,7 @@ static r_binfmt_nx_e r_binfmt_elf32_check_nx(r_binfmt_s *bin) {
 }
 
 
+
 /* Fill the BINFMT structure if it's a correct ELF32 */
 r_binfmt_err_e r_binfmt_elf32_load(r_binfmt_s *bin) {
 
@@ -284,6 +287,7 @@ r_binfmt_err_e r_binfmt_elf32_load(r_binfmt_s *bin) {
   bin->endian = r_binfmt_elf32_getendian(bin);
   bin->entry = r_binfmt_elf32_getentry(bin);
   bin->nx = r_binfmt_elf32_check_nx(bin);
+  bin->ssp = r_binfmt_elf_check_ssp(bin);
 
   if(bin->arch == R_BINFMT_ARCH_UNDEF)
     return R_BINFMT_ERR_NOTSUPPORTED;

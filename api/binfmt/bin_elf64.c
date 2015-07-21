@@ -28,6 +28,7 @@
    This file contain the functions for loading ELF64 binaries
    ======================================================================= */
 
+r_binfmt_ssp_e r_binfmt_elf_check_ssp(r_binfmt_s *bin);
 
 /* Fill bin->mlist structure */
 static void r_binfmt_elf64_load_mlist(r_binfmt_s *bin) {
@@ -290,6 +291,7 @@ r_binfmt_err_e r_binfmt_elf64_load(r_binfmt_s *bin) {
   bin->endian = r_binfmt_elf64_getendian(bin);
   bin->entry = r_binfmt_elf64_getentry(bin);
   bin->nx = r_binfmt_elf64_check_nx(bin);
+  bin->ssp = r_binfmt_elf_check_ssp(bin);
 
   if(bin->arch == R_BINFMT_ARCH_UNDEF)
     return R_BINFMT_ERR_NOTSUPPORTED;

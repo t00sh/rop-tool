@@ -302,6 +302,15 @@ const char *r_binfmt_nx_to_string(r_binfmt_nx_e nx) {
   return "unknown";
 }
 
+/* Convert SSP to string */
+const char *r_binfmt_ssp_to_string(r_binfmt_ssp_e ssp) {
+  if(ssp == R_BINFMT_SSP_ENABLED)
+    return "enabled";
+  if(ssp == R_BINFMT_SSP_DISABLED)
+    return "disabled";
+  return "unknown";
+}
+
 /* Print info about file */
 void r_binfmt_print_sections(r_binfmt_s *bin, int color) {
   r_binfmt_section_s *s;
@@ -385,6 +394,9 @@ void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
 
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "NX bit");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_nx_to_string(bin->nx));
+
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "SSP");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_ssp_to_string(bin->ssp));
 
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Sections");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%"SIZE_T_FMT_D"\n\n", r_utils_list_size(&bin->sections));

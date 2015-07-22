@@ -1,0 +1,22 @@
+rop-tool source code tree :
+
+|_____ api                   => Functions in API are so generic as possible.
+|      |_____ binfmt         => r_binfmt_* functions, generic functions used to manipulate binary files (ELF, PE, MACH-O...)
+|      |_____ disassemble    => r_dis_* functions. Disassemble code.
+|      |_____ gadget         => r_gadget_* functions, to manipulate gadgets (find, filter, ...)
+|      |_____ lib            => extern libraries, included in the final executable
+|      |_____ utils          => r_utils_* functions. Everything you need !
+|
+|_____ lib                   => Extern libraries which are not include to API
+|      |_____ heap           => Library used to trace malloc's functions (loaded via LD_PRELOAD)
+|
+|_____ include               => C includes files for rop-tool
+|      |_____ api            => Headers for API
+|      |_____ rop.h          => Main header file, to be included in all tools
+|      |_____ rop_*.h        => One header file per tool
+|
+|_____ src                   => Sources of rop-tool. Each tool have its own directory
+|
+|_____ scripts               => Miscellious scripts, to automate dev tasks (build releases, setup environment, genere files...)
+|
+|_____ test                  => Test files

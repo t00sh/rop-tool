@@ -12,4 +12,5 @@
 - A tool to trace heap allocation
 - A stack-viewer
 - Optimize gadget searching algorithm
+- 'env' command, to get informations on the current system (ASLR, mmap_min_addr, /dev/ksyms)
 - ...

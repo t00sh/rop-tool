@@ -28,14 +28,17 @@
    ======================================================================= */
 
 r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin, r_binfmt_arch_e arch) {
+  r_binfmt_segment_s *seg;
 
-  bin->mlist = r_binfmt_mlist_new();
+  seg = r_binfmt_segment_new();
 
-  r_binfmt_mlist_add(bin->mlist,
-		 0,
-		 bin->mapped,
-		 bin->mapped_size,
-		 R_BINFMT_MEM_FLAG_PROT_X | R_BINFMT_MEM_FLAG_PROT_R | R_BINFMT_MEM_FLAG_PROT_W);
+  seg->flags = R_BINFMT_MEM_FLAG_PROT_X | R_BINFMT_MEM_FLAG_PROT_R | R_BINFMT_MEM_FLAG_PROT_W;
+  seg->addr = 0;
+  seg->start = bin->mapped;
+  seg->length = bin->mapped_size;
+
+  r_utils_list_push(&bin->segments, seg);
+
 
   bin->type = R_BINFMT_TYPE_RAW;
   bin->arch = arch;

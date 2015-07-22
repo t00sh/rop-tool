@@ -110,17 +110,22 @@ void patch_options_parse(int argc, char **argv) {
 
 
 static void patch_address(r_binfmt_s *bin, addr_t addr, void *bytes, u64 len) {
-  r_binfmt_mem_s *m;
+  r_binfmt_segment_s *seg;
   u64 off;
+  size_t i, num;
 
-  for(m = bin->mlist->head; m; m = m->next) {
-    if(addr >= m->addr && addr <= m->addr+m->length) {
-      if(addr+len >= m->addr+m->length) {
+  num = r_utils_list_size(&bin->segments);
+
+  for(i = 0; i < num; i++) {
+    seg = r_utils_list_access(&bin->segments, i);
+
+    if(addr >= seg->addr && addr <= seg->addr+seg->length) {
+      if(addr+len >= seg->addr+seg->length) {
 	R_UTILS_ERR("Too many bytes to copy !");
       }
 
-      off = addr - m->addr;
-      memcpy(m->start+off, bytes, len);
+      off = addr - seg->addr;
+      memcpy(seg->start+off, bytes, len);
       return;
     }
   }

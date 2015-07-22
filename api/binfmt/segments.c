@@ -23,59 +23,37 @@
 #include "api/binfmt.h"
 
 
-/* ============================================================
-   This file implement functions for manipulate mlist objects
-   (memory segments)
-   ============================================================ */
+/* =========================================================================
+   This file contain some functions about binary segments
+   ======================================================================= */
 
-/* Allocate a mlist */
-r_binfmt_mlist_s* r_binfmt_mlist_new(void) {
-  return r_utils_calloc(1, sizeof(r_binfmt_mlist_s));
+r_binfmt_segment_s* r_binfmt_segment_new(void) {
+  return r_utils_malloc(sizeof(r_binfmt_segment_s));
 }
 
-/* Add a mlist to the head */
-void r_binfmt_mlist_add(r_binfmt_mlist_s *mlist, addr_t addr, byte_t *start, len_t length, u32 flags) {
-  r_binfmt_mem_s *new;
-
-  new = r_utils_malloc(sizeof(*new));
-
-  new->addr = addr;
-  new->start = start;
-  new->length = length;
-  new->flags = flags;
-
-  new->next = mlist->head;
-
-  mlist->head = new;
-
-  mlist->size++;
+void r_binfmt_segments_free(r_binfmt_s *bin) {
+  r_utils_list_free(&bin->segments, free);
 }
 
-/* Free the mlist */
-void r_binfmt_mlist_free(r_binfmt_mlist_s **mlist) {
-  r_binfmt_mem_s *m, *tmp;
+/* Get memory flags as a string */
+void r_binfmt_get_segment_flag_str(char str[4], r_binfmt_segment_s *seg) {
+  int i;
 
-  m = (*mlist)->head;
-  while(m != NULL) {
-    tmp = m->next;
-    free(m);
-    m = tmp;
-  }
+  assert(seg != NULL);
 
-  free(*mlist);
-  *mlist = NULL;
-}
+  i = 0;
+  if(seg->flags & R_BINFMT_MEM_FLAG_PROT_R)
+    str[i++] = 'R';
+  else
+    str[i++] = '-';
+  if(seg->flags & R_BINFMT_MEM_FLAG_PROT_W)
+    str[i++] = 'W';
+  else
+    str[i++] = '-';
+  if(seg->flags & R_BINFMT_MEM_FLAG_PROT_X)
+    str[i++] = 'X';
+  else
+    str[i++] = '-';
 
-/* Call the callback for each element in the mlist */
-void r_binfmt_mlist_foreach(r_binfmt_mlist_s *mlist, void (*callback)(r_binfmt_mem_s*)) {
-  r_binfmt_mem_s *m;
-
-  for(m = mlist->head; m != NULL; m = m->next) {
-    callback(m);
-  }
-}
-
-/* Return the mlist size */
-int r_binfmt_mlist_size(r_binfmt_mlist_s *mlist) {
-  return mlist->size;
+  str[i] = '\0';
 }

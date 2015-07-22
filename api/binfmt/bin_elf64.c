@@ -30,19 +30,17 @@
 
 r_binfmt_ssp_e r_binfmt_elf_check_ssp(r_binfmt_s *bin);
 
-/* Fill bin->mlist structure */
-static void r_binfmt_elf64_load_mlist(r_binfmt_s *bin) {
+/* Fill bin->segments structure */
+static void r_binfmt_elf64_load_segments(r_binfmt_s *bin) {
   Elf64_Ehdr *ehdr = (Elf64_Ehdr*)bin->mapped;
   Elf64_Phdr *phdr;
+  r_binfmt_segment_s *seg;
   int i;
   u64 p_vaddr, p_offset, p_filesz, e_phoff;
-  u32 flags;
   u32 p_type, p_flags;
   u16 e_phnum;
 
   R_BINFMT_ASSERT(bin->mapped_size >= sizeof(Elf64_Ehdr));
-
-  bin->mlist = r_binfmt_mlist_new();
 
   e_phoff = r_binfmt_get_int64((byte_t*)&ehdr->e_phoff, bin->endian);
   R_BINFMT_ASSERT(e_phoff < bin->mapped_size);
@@ -65,20 +63,21 @@ static void r_binfmt_elf64_load_mlist(r_binfmt_s *bin) {
 		    p_offset + p_filesz <= bin->mapped_size);
 
     if(p_type == PT_LOAD) {
+      seg = r_binfmt_segment_new();
 
-      flags = 0;
+      seg->flags = 0;
       if(p_flags & PF_X)
-	flags |= R_BINFMT_MEM_FLAG_PROT_X;
+        seg->flags |= R_BINFMT_MEM_FLAG_PROT_X;
       if(p_flags & PF_R)
-	flags |= R_BINFMT_MEM_FLAG_PROT_R;
+        seg->flags |= R_BINFMT_MEM_FLAG_PROT_R;
       if(p_flags & PF_W)
-	flags |= R_BINFMT_MEM_FLAG_PROT_W;
+        seg->flags |= R_BINFMT_MEM_FLAG_PROT_W;
 
-      r_binfmt_mlist_add(bin->mlist,
-		     p_vaddr,
-		     bin->mapped + p_offset,
-		     p_filesz,
-		     flags);
+      seg->addr = p_vaddr;
+      seg->length = p_filesz;
+      seg->start = bin->mapped + p_offset;
+
+      r_utils_list_push(&bin->segments, seg);
     }
   }
 }
@@ -282,7 +281,7 @@ r_binfmt_err_e r_binfmt_elf64_load(r_binfmt_s *bin) {
   if(!r_binfmt_elf64_is(bin))
     return R_BINFMT_ERR_UNRECOGNIZED;
 
-  r_binfmt_elf64_load_mlist(bin);
+  r_binfmt_elf64_load_segments(bin);
   r_binfmt_elf64_load_sections(bin);
   r_binfmt_elf64_load_syms(bin);
 

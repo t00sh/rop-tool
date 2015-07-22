@@ -78,14 +78,17 @@ static r_binfmt_endian_e r_binfmt_macho32_getendian(r_binfmt_s *bin) {
   return R_BINFMT_ENDIAN_UNDEF;
 }
 
-static void r_binfmt_macho32_load_segment(r_binfmt_s *bin, r_binfmt_macho32_segment_s *seg) {
+static void r_binfmt_macho32_load_segment(r_binfmt_s *bin, r_binfmt_macho32_segment_s *s) {
+  r_binfmt_segment_s *seg;
   u32 vaddr, filesz, fileoff, initprot;
   u32 flags;
 
-  vaddr    = r_binfmt_get_int32((byte_t*)&seg->vm_addr, bin->endian);
-  filesz   = r_binfmt_get_int32((byte_t*)&seg->file_size, bin->endian);
-  fileoff  = r_binfmt_get_int32((byte_t*)&seg->file_off, bin->endian);
-  initprot = r_binfmt_get_int32((byte_t*)&seg->init_prot, bin->endian);
+  seg = r_binfmt_segment_new();
+
+  vaddr    = r_binfmt_get_int32((byte_t*)&s->vm_addr, bin->endian);
+  filesz   = r_binfmt_get_int32((byte_t*)&s->file_size, bin->endian);
+  fileoff  = r_binfmt_get_int32((byte_t*)&s->file_off, bin->endian);
+  initprot = r_binfmt_get_int32((byte_t*)&s->init_prot, bin->endian);
 
   flags = 0;
   if(initprot & R_BINFMT_MACHO_PROT_R)
@@ -95,19 +98,18 @@ static void r_binfmt_macho32_load_segment(r_binfmt_s *bin, r_binfmt_macho32_segm
   if(initprot & R_BINFMT_MACHO_PROT_X)
     flags |= R_BINFMT_MEM_FLAG_PROT_X;
 
-  r_binfmt_mlist_add(bin->mlist,
-		     vaddr,
-		     bin->mapped + fileoff,
-		     filesz,
-		     flags);
+  seg->flags = flags;
+  seg->addr = vaddr;
+  seg->start = bin->mapped + fileoff;
+  seg->length = filesz;
+
+  r_utils_list_push(&bin->segments, seg);
 }
 
-static void r_binfmt_macho32_load_mlist(r_binfmt_s *bin) {
+static void r_binfmt_macho32_load_segments(r_binfmt_s *bin) {
   r_binfmt_macho32_header_s *hdr;
   r_binfmt_macho_cmd_s *cmd;
   u32 i, cmd_num, type, off;
-
-  bin->mlist = r_binfmt_mlist_new();
 
   hdr = (r_binfmt_macho32_header_s*)(bin->mapped);
   cmd_num = r_binfmt_get_int32((byte_t*)&hdr->h_cmd_num, bin->endian);
@@ -217,7 +219,7 @@ r_binfmt_err_e r_binfmt_macho32_load(r_binfmt_s *bin) {
     return R_BINFMT_ERR_MALFORMEDFILE;
 
   bin->entry = 0;
-  r_binfmt_macho32_load_mlist(bin);
+  r_binfmt_macho32_load_segments(bin);
 
   return R_BINFMT_ERR_OK;
 }

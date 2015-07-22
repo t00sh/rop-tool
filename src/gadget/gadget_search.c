@@ -35,15 +35,20 @@ void gadget_print_gadget(r_utils_hash_elem_s *elem) {
 }
 
 void gadget_print_search(r_binfmt_s *bin) {
-  r_binfmt_mem_s *m;
+  r_binfmt_segment_s *seg;
   r_gadget_handle_s g_handle;
+  size_t i, num;
+
+  num = r_utils_list_size(&bin->segments);
 
   if(!r_gadget_handle_init(&g_handle, bin->arch, gadget_options_flavor, gadget_options_filter, gadget_options_depth, gadget_options_all, gadget_options_bad))
     R_UTILS_ERR("Can't init gadget handle !");
 
-  for(m = bin->mlist->head; m; m = m->next) {
-    if(m->flags & R_BINFMT_MEM_FLAG_PROT_X) {
-      r_gadget_update(&g_handle, m->addr, m->start, m->length);
+  for(i = 0; i < num; i++) {
+    seg = r_utils_list_access(&bin->segments, i);
+
+    if(seg->flags & R_BINFMT_MEM_FLAG_PROT_X) {
+      r_gadget_update(&g_handle, seg->addr, seg->start, seg->length);
     }
   }
 

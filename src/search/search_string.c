@@ -22,27 +22,27 @@
 /************************************************************************/
 #include "rop_search.h"
 
-static void search_print_string(r_binfmt_s *bin, r_binfmt_mem_s *mem, r_utils_bytes_s *bytes) {
+static void search_print_string(r_binfmt_s *bin, r_binfmt_segment_s *seg, r_utils_bytes_s *bytes) {
    char flag_str[4];
    u64 i;
    int found = 0;
    char *string;
    int addr_size;
 
-   r_binfmt_get_mem_flag_str(flag_str, mem);
+   r_binfmt_get_segment_flag_str(flag_str, seg);
    addr_size = r_binfmt_addr_size(bin->arch);
 
-   if(mem->length >= bytes->len) {
-     for(i = 0; i < mem->length - bytes->len; i++) {
-       if(!r_binfmt_is_bad_addr(search_options_bad, mem->addr+i, bin->arch)) {
-	 if(!memcmp(mem->start+i, bytes->bytes, bytes->len)) {
+   if(seg->length >= bytes->len) {
+     for(i = 0; i < seg->length - bytes->len; i++) {
+       if(!r_binfmt_is_bad_addr(search_options_bad, seg->addr+i, bin->arch)) {
+	 if(!memcmp(seg->start+i, bytes->bytes, bytes->len)) {
 	   string = r_utils_bytes_hexlify(bytes);
 
 	   R_UTILS_PRINT_BLACK_BG_WHITE(search_options_color, " %s ", flag_str);
 	   if(addr_size == 4) {
-	     R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.8" PRIx32 " ", (u32)(mem->addr + i));
+	     R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.8" PRIx32 " ", (u32)(seg->addr + i));
 	   } else {
-	     R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.16" PRIx64 " ", (mem->addr + i));
+	     R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.16" PRIx64 " ", (seg->addr + i));
 	   }
 	   R_UTILS_PRINT_WHITE_BG_BLACK(search_options_color, "-> ");
 	   R_UTILS_PRINT_RED_BG_BLACK(search_options_color, "%s\n", string);
@@ -57,10 +57,15 @@ static void search_print_string(r_binfmt_s *bin, r_binfmt_mem_s *mem, r_utils_by
 }
 
 void search_print_string_in_bin(r_binfmt_s *bin, r_utils_bytes_s *bytes) {
-  r_binfmt_mem_s *m;
+  r_binfmt_segment_s *seg;
+  size_t num, i;
 
-  for(m = bin->mlist->head; m; m = m->next) {
-    if(m->flags & R_BINFMT_MEM_FLAG_PROT_R)
-      search_print_string(bin, m, bytes);
+  num = r_utils_list_size(&bin->segments);
+
+  for(i = 0; i < num; i++) {
+    seg = r_utils_list_access(&bin->segments, i);
+
+    if(seg->flags & R_BINFMT_MEM_FLAG_PROT_R)
+      search_print_string(bin, seg, bytes);
   }
 }

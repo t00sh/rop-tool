@@ -25,43 +25,49 @@
 
 
 int search_print_bytes_in_mem(r_binfmt_s *bin, byte_t *bytes, u64 len) {
-  r_binfmt_mem_s *m;
+  r_binfmt_segment_s *seg;
   r_utils_bytes_s b;
   char *string;
   char flag_str[4];
   int addr_size;
   u64 i;
+  size_t j, num;
+
+  num = r_utils_list_size(&bin->segments);
 
   addr_size = r_binfmt_addr_size(bin->arch);
 
-  for(m = bin->mlist->head; m != NULL; m = m->next) {
-    if(m->flags & R_BINFMT_MEM_FLAG_PROT_R) {
-      if(len <= m->length) {
+  for(j = 0; j < num; j++) {
 
-	r_binfmt_get_mem_flag_str(flag_str, m);
-	for(i = 0; i < m->length - len; i++) {
+    seg = r_utils_list_access(&bin->segments, j);
 
-	  if(!r_binfmt_is_bad_addr(search_options_bad, m->addr+i, bin->arch)) {
-	    if(!memcmp(m->start+i, bytes, len)) {
-	      b.bytes = bytes;
-	      b.len = len;
-	      string = r_utils_bytes_hexlify(&b);
+    if(seg->flags & R_BINFMT_MEM_FLAG_PROT_R) {
+      if(len <= seg->length) {
 
-	      R_UTILS_PRINT_BLACK_BG_WHITE(search_options_color, " %s ", flag_str);
+        r_binfmt_get_segment_flag_str(flag_str, seg);
+        for(i = 0; i < seg->length - len; i++) {
 
-	      if(addr_size == 4) {
-		R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.8" PRIx32 " ", (u32)(m->addr + i));
-	      } else {
-		R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.16" PRIx64 " ", m->addr + i);
-	      }
+          if(!r_binfmt_is_bad_addr(search_options_bad, seg->addr+i, bin->arch)) {
+            if(!memcmp(seg->start+i, bytes, len)) {
+              b.bytes = bytes;
+              b.len = len;
+              string = r_utils_bytes_hexlify(&b);
 
-	      R_UTILS_PRINT_WHITE_BG_BLACK(search_options_color, "-> ");
-	      R_UTILS_PRINT_RED_BG_BLACK(search_options_color, "%s\n", string);
-	      free(string);
-	      return 1;
-	    }
-	  }
-	}
+              R_UTILS_PRINT_BLACK_BG_WHITE(search_options_color, " %s ", flag_str);
+
+              if(addr_size == 4) {
+                R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.8" PRIx32 " ", (u32)(seg->addr + i));
+              } else {
+                R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.16" PRIx64 " ", seg->addr + i);
+              }
+
+              R_UTILS_PRINT_WHITE_BG_BLACK(search_options_color, "-> ");
+              R_UTILS_PRINT_RED_BG_BLACK(search_options_color, "%s\n", string);
+              free(string);
+              return 1;
+            }
+          }
+        }
       }
     }
   }
@@ -79,9 +85,9 @@ void search_print_split_rec(r_binfmt_s *bin, byte_t *bytes, u64 len) {
     if(max_len == 1) {
       R_UTILS_PRINT_BLACK_BG_WHITE(search_options_color, " --- ");
       if(r_binfmt_addr_size(bin->arch) == 4) {
-	R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.8" PRIx32 " ", (u32)R_BINFMT_BAD_ADDR);
+        R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.8" PRIx32 " ", (u32)R_BINFMT_BAD_ADDR);
       } else {
-	R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.16" PRIx64 " ", R_BINFMT_BAD_ADDR);
+        R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.16" PRIx64 " ", R_BINFMT_BAD_ADDR);
       }
       R_UTILS_PRINT_WHITE_BG_BLACK(search_options_color, "-> ");
       R_UTILS_PRINT_BLACK_BG_WHITE(search_options_color, "byte %#.2x (NOT FOUND)\n", *bytes);

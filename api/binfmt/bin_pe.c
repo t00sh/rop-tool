@@ -297,16 +297,15 @@ static u64 pe_getentry(r_binfmt_s *bin) {
   return 0;
 }
 
-/* Load the PE file in the bin->mlist */
-static void pe_load_mlist(r_binfmt_s *bin) {
+/* Load the PE file in the bin->segments */
+static void pe_load_segments(r_binfmt_s *bin) {
   uint32_t flags;
   IMAGE_COFF_HEADER *coff;
   IMAGE_SECTION_HEADER *shdr;
   WORD sections_addr;
+  r_binfmt_segment_s *seg;
   int i;
   u64 addr_base_image;
-
-  bin->mlist = r_binfmt_mlist_new();
 
   /* Get sections table */
   coff = (IMAGE_COFF_HEADER*)(pe_get_addr_coff(bin) + bin->mapped);
@@ -326,13 +325,16 @@ static void pe_load_mlist(r_binfmt_s *bin) {
     if(shdr[i].Characteristics & IMAGE_SCN_MEM_READ)
       flags |= R_BINFMT_MEM_FLAG_PROT_R;
 
-    if(flags)
-      r_binfmt_mlist_add(bin->mlist, shdr[i].VirtualAddress + addr_base_image,
-			 bin->mapped + shdr[i].PointerToRawData,
-			 shdr[i].SizeOfRawData,
-			 flags);
-  }
+    if(flags) {
+      seg = r_binfmt_segment_new();
+      seg->flags = flags;
+      seg->addr = shdr[i].VirtualAddress + addr_base_image;
+      seg->start = bin->mapped + shdr[i].PointerToRawData;
+      seg->length = shdr[i].SizeOfRawData;
 
+      r_utils_list_push(&bin->segments, seg);
+    }
+  }
 }
 
 /* Get the machine type */
@@ -501,7 +503,7 @@ r_binfmt_err_e r_binfmt_pe_load(r_binfmt_s *bin) {
 
   // TODO: handle PE entry point
   bin->entry = pe_getentry(bin);
-  pe_load_mlist(bin);
+  pe_load_segments(bin);
 
   return R_BINFMT_ERR_OK;
 }

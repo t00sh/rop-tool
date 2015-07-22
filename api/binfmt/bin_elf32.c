@@ -29,18 +29,16 @@
 
 r_binfmt_ssp_e r_binfmt_elf_check_ssp(r_binfmt_s *bin);
 
-/* Fill bin->mlist structure */
-static void r_binfmt_elf32_load_mlist(r_binfmt_s *bin) {
+/* Fill bin->segments structure */
+static void r_binfmt_elf32_load_segments(r_binfmt_s *bin) {
   Elf32_Ehdr *ehdr = (Elf32_Ehdr*)bin->mapped;
   Elf32_Phdr *phdr;
+  r_binfmt_segment_s *seg;
   int i;
-  u32 flags;
   u32 p_type, p_flags, p_vaddr, p_offset, p_filesz, e_phoff;
   u16 e_phnum;
 
   R_BINFMT_ASSERT(bin->mapped_size >= sizeof(Elf32_Ehdr));
-
-  bin->mlist = r_binfmt_mlist_new();
 
   e_phoff = r_binfmt_get_int32((byte_t*)&ehdr->e_phoff, bin->endian);
   R_BINFMT_ASSERT(e_phoff < bin->mapped_size);
@@ -50,7 +48,7 @@ static void r_binfmt_elf32_load_mlist(r_binfmt_s *bin) {
   e_phnum = r_binfmt_get_int16((byte_t*)&ehdr->e_phnum, bin->endian);
 
   R_BINFMT_ASSERT(r_utils_add32(NULL, e_phnum*sizeof(Elf32_Phdr), e_phoff) &&
-		  e_phnum*sizeof(Elf32_Phdr) + e_phoff <= bin->mapped_size);
+                  e_phnum*sizeof(Elf32_Phdr) + e_phoff <= bin->mapped_size);
 
   for(i = 0; i < e_phnum; i++) {
     p_type = r_binfmt_get_int32((byte_t*)&phdr[i].p_type, bin->endian);
@@ -60,23 +58,24 @@ static void r_binfmt_elf32_load_mlist(r_binfmt_s *bin) {
     p_filesz = r_binfmt_get_int32((byte_t*)&phdr[i].p_filesz, bin->endian);
 
     R_BINFMT_ASSERT(r_utils_add32(NULL, p_offset, p_filesz) &&
-		    p_offset + p_filesz <= bin->mapped_size);
+                    p_offset + p_filesz <= bin->mapped_size);
 
     if(p_type == PT_LOAD) {
+      seg = r_binfmt_segment_new();
 
-      flags = 0;
+      seg->flags = 0;
       if(p_flags & PF_X)
-	flags |= R_BINFMT_MEM_FLAG_PROT_X;
+        seg->flags |= R_BINFMT_MEM_FLAG_PROT_X;
       if(p_flags & PF_R)
-	flags |= R_BINFMT_MEM_FLAG_PROT_R;
+        seg->flags |= R_BINFMT_MEM_FLAG_PROT_R;
       if(p_flags & PF_W)
-	flags |= R_BINFMT_MEM_FLAG_PROT_W;
+        seg->flags |= R_BINFMT_MEM_FLAG_PROT_W;
 
-      r_binfmt_mlist_add(bin->mlist,
-		     p_vaddr,
-		     bin->mapped + p_offset,
-		     p_filesz,
-		     flags);
+      seg->addr = p_vaddr;
+      seg->length = p_filesz;
+      seg->start = bin->mapped + p_offset;
+
+      r_utils_list_push(&bin->segments, seg);
     }
   }
 }
@@ -210,7 +209,7 @@ static int r_binfmt_elf32_is(r_binfmt_s *bin) {
 }
 
 /* Get the architecture */
-static r_binfmt_arch_e r_binfmt_elf32_getarch(r_binfmt_s *bin) {
+ static r_binfmt_arch_e r_binfmt_elf32_getarch(r_binfmt_s *bin) {
   R_BINFMT_ASSERT_RET(R_BINFMT_ARCH_UNDEF, bin->mapped_size >= sizeof(Elf32_Ehdr));
 
   Elf32_Ehdr *ehdr = (Elf32_Ehdr*)bin->mapped;
@@ -273,12 +272,12 @@ static r_binfmt_nx_e r_binfmt_elf32_check_nx(r_binfmt_s *bin) {
 
 
 /* Fill the BINFMT structure if it's a correct ELF32 */
-r_binfmt_err_e r_binfmt_elf32_load(r_binfmt_s *bin) {
+ r_binfmt_err_e r_binfmt_elf32_load(r_binfmt_s *bin) {
 
   if(!r_binfmt_elf32_is(bin))
     return R_BINFMT_ERR_UNRECOGNIZED;
 
-  r_binfmt_elf32_load_mlist(bin);
+  r_binfmt_elf32_load_segments(bin);
   r_binfmt_elf32_load_sections(bin);
   r_binfmt_elf32_load_syms(bin);
 

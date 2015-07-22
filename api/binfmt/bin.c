@@ -148,57 +148,28 @@ void r_binfmt_write(r_binfmt_s *bin, const char *filename) {
 
 /* Free the r_binfmt structure */
 void r_binfmt_free(r_binfmt_s *bin) {
-  r_binfmt_mlist_free(&bin->mlist);
+  r_binfmt_segments_free(bin);
   r_binfmt_sections_free(bin);
   r_binfmt_syms_free(bin);
   free(bin->mapped);
 }
 
 /* Get the first memory segment which match flags */
-r_binfmt_mem_s* r_binfmt_getmem(r_binfmt_s *bin, u32 flags) {
-  r_binfmt_mem_s *m;
+r_binfmt_segment_s* r_binfmt_getsegment(r_binfmt_s *bin, u32 flags) {
+  r_binfmt_segment_s *seg;
+  size_t i;
+  size_t num;
 
-  for(m = bin->mlist->head; m != NULL; m = m->next) {
-    if(m->flags == flags)
-      return m;
+  num = r_utils_list_size(&bin->segments);
+
+  for(i = 0; i < num; i++) {
+    seg = r_utils_list_access(&bin->segments, i);
+
+    if(seg->flags == flags)
+      return seg;
   }
+
   return NULL;
-}
-
-/* Apply callback to each binary segment, which match flags */
-void r_binfmt_foreach_mem(r_binfmt_s *bin, void (*callback)(r_binfmt_mem_s*), u32 flags) {
-  r_binfmt_mem_s *m;
-
-  assert(bin != NULL);
-  assert(callback != NULL);
-
-  for(m = bin->mlist->head; m != NULL; m = m->next) {
-    if(m->flags & flags)
-      callback(m);
-  }
-}
-
-/* Get memory flags as a string */
-void r_binfmt_get_mem_flag_str(char str[4], r_binfmt_mem_s *mem) {
-  int i;
-
-  assert(mem != NULL);
-
-  i = 0;
-  if(mem->flags & R_BINFMT_MEM_FLAG_PROT_R)
-    str[i++] = 'R';
-  else
-    str[i++] = '-';
-  if(mem->flags & R_BINFMT_MEM_FLAG_PROT_W)
-    str[i++] = 'W';
-  else
-    str[i++] = '-';
-  if(mem->flags & R_BINFMT_MEM_FLAG_PROT_X)
-    str[i++] = 'X';
-  else
-    str[i++] = '-';
-
-  str[i] = '\0';
 }
 
 /* Convert string to binary architecture */
@@ -331,23 +302,24 @@ void r_binfmt_print_sections(r_binfmt_s *bin, int color) {
 }
 
 void r_binfmt_print_segments(r_binfmt_s *bin, int color) {
-  r_binfmt_mem_s *m;
-  u32 i;
+  r_binfmt_segment_s *seg;
+  size_t i, num;
+  char flag_str[4];
+
+  num = r_utils_list_size(&bin->segments);
 
   R_UTILS_PRINT_YELLOW_BG_BLACK(color, "\n\n ===== SEGMENTS ===== \n");
   R_UTILS_PRINT_RED_BG_BLACK(color, "ID                       ADDR                 SIZE                FLAGS\n");
 
-  i = 0;
+  for(i = 0; i < num; i++) {
 
-  for(m = bin->mlist->head; m; m = m->next) {
-    R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25d", i);
-    R_UTILS_PRINT_WHITE_BG_BLACK(color, "%.16" PRIx64, m->addr);
-    R_UTILS_PRINT_WHITE_BG_BLACK(color, "     %.16" PRIx64, m->length);
-    R_UTILS_PRINT_WHITE_BG_BLACK(color, "    %c%c%c\n",
-				 (m->flags & R_BINFMT_MEM_FLAG_PROT_R) ? 'R' : '-',
-				 (m->flags & R_BINFMT_MEM_FLAG_PROT_W) ? 'W' : '-',
-				 (m->flags & R_BINFMT_MEM_FLAG_PROT_X) ? 'X' : '-');
-    i++;
+    seg = r_utils_list_access(&bin->segments, i);
+    r_binfmt_get_segment_flag_str(flag_str, seg);
+
+    R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25"SIZE_T_FMT_D, i);
+    R_UTILS_PRINT_WHITE_BG_BLACK(color, "%.16" PRIx64, seg->addr);
+    R_UTILS_PRINT_WHITE_BG_BLACK(color, "     %.16" PRIx64, seg->length);
+    R_UTILS_PRINT_WHITE_BG_BLACK(color, "    %s\n", flag_str);
   }
 }
 
@@ -390,7 +362,7 @@ void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%#" PRIx64 "\n", bin->entry);
 
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Loadables segments");
-  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%d\n", r_binfmt_mlist_size(bin->mlist));
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%"SIZE_T_FMT_D"\n", r_utils_list_size(&bin->segments));
 
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "NX bit");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_nx_to_string(bin->nx));

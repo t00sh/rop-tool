@@ -117,62 +117,67 @@ void dis_options_parse(int argc, char **argv) {
 
 /* Disassemble binary at specified address */
 void dis_address(r_disa_s *dis, r_binfmt_s *bin, addr_t addr, u64 len, int stop_next_sym) {
-  r_binfmt_mem_s *m;
+  r_binfmt_segment_s *seg;
   r_disa_instr_t *instr;
   const char *sym;
   u64 length;
   u64 off;
+  size_t i, num;
   int sym_processed = 0;
 
-  /* Test every loadable segment */
-  for(m = bin->mlist->head; m; m = m->next) {
+  num = r_utils_list_size(&bin->segments);
 
-    /* addr is in [m->addr, m->addr+m->length] range */
-    if(addr >= m->addr && addr <= m->addr+m->length) {
+  /* Test every loadable segment */
+  for(i = 0; i < num; i++) {
+
+    seg = r_utils_list_access(&bin->segments, i);
+
+    /* addr is in [seg->addr, seg->addr+seg->length] range */
+    if(addr >= seg->addr && addr <= seg->addr+seg->length) {
 
       /* In case of len is out of range */
-      if(len == 0 || len > m->length - (addr - m->addr))
-	len = m->length - (addr - m->addr);
+      if(len == 0 || len > seg->length - (addr - seg->addr))
+        len = seg->length - (addr - seg->addr);
 
       length = 0;
 
       while(length < len) {
-	off = (addr - m->addr) + length;
-	r_disa_code(dis, m->start+off, m->length-off, m->addr+off, 1);
-	instr = r_disa_next_instr(dis);
+        off = (addr - seg->addr) + length;
+        r_disa_code(dis, seg->start+off, seg->length-off, seg->addr+off, 1);
+        instr = r_disa_next_instr(dis);
 
-	/* We have disassembled the instruction, now print it ! */
-	if(instr != NULL) {
+        /* We have disassembled the instruction, now print it ! */
+        if(instr != NULL) {
 
-	  /* Print symbol, if it exists */
-	  if((sym = r_binfmt_get_sym_by_addr(bin, instr->address)) != NULL) {
-	    if(stop_next_sym) {
-	      if(sym_processed > 0)
-		return;
-	      else
-		sym_processed++;
-	    }
-	    R_UTILS_PRINT_YELLOW_BG_BLACK(dis_options_color, "\n<%s>:\n", sym);
-	  }
+          /* Print symbol, if it exists */
+          if((sym = r_binfmt_get_sym_by_addr(bin, instr->address)) != NULL) {
+            if(stop_next_sym) {
+              if(sym_processed > 0)
+                return;
+              else
+                sym_processed++;
+            }
+            R_UTILS_PRINT_YELLOW_BG_BLACK(dis_options_color, "\n<%s>:\n", sym);
+          }
 
-	  if(r_binfmt_addr_size(bin->arch) == 8) {
-	    R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.16"PRIx64"   ", instr->address);
-	  } else {
-	    R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.8"PRIx32"   ", (u32)(instr->address));
-	  }
-	  R_UTILS_PRINT_YELLOW_BG_BLACK(dis_options_color, "%-8s ", instr->mnemonic);
-	  R_UTILS_PRINT_RED_BG_BLACK(dis_options_color, "%s\n", instr->op_str);
-	  length += instr->size;
-	} else {
-	  /* We have failed to disassemble instruction, print the BAD instruction */
-	  if(r_binfmt_addr_size(bin->arch) == 8) {
-	    R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.16"PRIx64"   ", addr+length);
-	  } else {
-	    R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.8"PRIx32"   ", (u32)(addr+length));
-	  }
-	  R_UTILS_PRINT_YELLOW_BG_BLACK(dis_options_color, "BAD\n");
-	  length += 1;
-	}
+          if(r_binfmt_addr_size(bin->arch) == 8) {
+            R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.16"PRIx64"   ", instr->address);
+          } else {
+            R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.8"PRIx32"   ", (u32)(instr->address));
+          }
+          R_UTILS_PRINT_YELLOW_BG_BLACK(dis_options_color, "%-8s ", instr->mnemonic);
+          R_UTILS_PRINT_RED_BG_BLACK(dis_options_color, "%s\n", instr->op_str);
+          length += instr->size;
+        } else {
+          /* We have failed to disassemble instruction, print the BAD instruction */
+          if(r_binfmt_addr_size(bin->arch) == 8) {
+            R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.16"PRIx64"   ", addr+length);
+          } else {
+            R_UTILS_PRINT_GREEN_BG_BLACK(dis_options_color, " %.8"PRIx32"   ", (u32)(addr+length));
+          }
+          R_UTILS_PRINT_YELLOW_BG_BLACK(dis_options_color, "BAD\n");
+          length += 1;
+        }
       }
     }
   }

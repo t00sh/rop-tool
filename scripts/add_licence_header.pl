@@ -43,17 +43,7 @@ sub process_file {
     while(($line = <F>)) {
         last if($line !~ m/^\/\*.+\*\//);
 
-        if($line_num == 2 && ($line !~ m/ rop-tool /)) {
-            close F;
-            return;
-        }
-
         $line_num++;
-    }
-
-    if($line_num < 20) {
-        close F;
-        return;
     }
 
     $file = $HEADER . $line;

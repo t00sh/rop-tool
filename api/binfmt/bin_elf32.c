@@ -415,6 +415,9 @@ Elf32_Phdr* r_binfmt_elf32_get_segment(r_binfmt_s *bin, r_binfmt_elf32_s *elf, E
 
 /* Check if NX bit is enabled */
 static r_binfmt_nx_e r_binfmt_elf32_check_nx(r_binfmt_s *bin, r_binfmt_elf32_s *elf) {
+  R_BINFMT_ASSERT_RET(R_BINFMT_NX_UNKNOWN, elf->ehdr != NULL);
+  R_BINFMT_ASSERT_RET(R_BINFMT_NX_UNKNOWN, elf->phdr != NULL);
+
   if(r_binfmt_elf32_get_segment(bin, elf, PT_GNU_STACK, PF_X) == NULL)
     return R_BINFMT_NX_ENABLED;
   return R_BINFMT_NX_DISABLED;
@@ -424,6 +427,10 @@ static r_binfmt_nx_e r_binfmt_elf32_check_nx(r_binfmt_s *bin, r_binfmt_elf32_s *
 static r_binfmt_relro_e r_binfmt_elf32_check_relro(r_binfmt_s *bin, r_binfmt_elf32_s *elf) {
   Elf32_Word i;
   Elf32_Sword d_tag;
+
+  R_BINFMT_ASSERT_RET(R_BINFMT_RELRO_UNKNOWN, elf->ehdr != NULL);
+  R_BINFMT_ASSERT_RET(R_BINFMT_RELRO_UNKNOWN, elf->phdr != NULL);
+  R_BINFMT_ASSERT_RET(R_BINFMT_RELRO_UNKNOWN, elf->dyntab != NULL);
 
   if(r_binfmt_elf32_get_segment(bin, elf, PT_GNU_RELRO, ~0) == NULL) {
     return R_BINFMT_RELRO_DISABLED;
@@ -437,6 +444,52 @@ static r_binfmt_relro_e r_binfmt_elf32_check_relro(r_binfmt_s *bin, r_binfmt_elf
   }
 
   return R_BINFMT_RELRO_PARTIAL;
+}
+
+
+static r_binfmt_rpath_e r_binfmt_elf32_check_rpath(r_binfmt_s *bin, r_binfmt_elf32_s *elf) {
+  Elf32_Word i;
+  Elf32_Sword d_tag;
+
+  R_BINFMT_ASSERT_RET(R_BINFMT_RPATH_UNKNOWN, elf->dyntab != NULL);
+
+  for(i = 0; i < elf->dyntab_entries; i++) {
+    R_BINFMT_GET_INT(d_tag, elf->dyntab[i].d_tag, bin->endian);
+
+    if(d_tag == DT_RPATH)
+      return R_BINFMT_RPATH_ENABLED;
+  }
+
+  return R_BINFMT_RPATH_DISABLED;
+}
+
+static r_binfmt_rpath_e r_binfmt_elf32_check_runpath(r_binfmt_s *bin, r_binfmt_elf32_s *elf) {
+  Elf32_Word i;
+  Elf32_Sword d_tag;
+
+  R_BINFMT_ASSERT_RET(R_BINFMT_RUNPATH_UNKNOWN, elf->dyntab != NULL);
+
+  for(i = 0; i < elf->dyntab_entries; i++) {
+    R_BINFMT_GET_INT(d_tag, elf->dyntab[i].d_tag, bin->endian);
+
+    if(d_tag == DT_RUNPATH)
+      return R_BINFMT_RUNPATH_ENABLED;
+  }
+
+  return R_BINFMT_RUNPATH_DISABLED;
+}
+
+static r_binfmt_pie_e r_binfmt_elf32_check_pie(r_binfmt_s *bin, r_binfmt_elf32_s *elf) {
+  Elf32_Half e_type;
+
+  R_BINFMT_ASSERT_RET(R_BINFMT_PIE_UNKNOWN, elf->ehdr != NULL);
+
+  R_BINFMT_GET_INT(e_type, elf->ehdr->e_type, bin->endian);
+
+  if(e_type != ET_DYN)
+    return R_BINFMT_PIE_DISABLED;
+
+  return R_BINFMT_PIE_ENABLED;
 }
 
 /* Fill the BINFMT structure if it's a correct ELF32 */
@@ -468,7 +521,10 @@ r_binfmt_err_e r_binfmt_elf32_load(r_binfmt_s *bin) {
   bin->entry = r_binfmt_elf32_getentry(bin, &elf);
   bin->elf.nx = r_binfmt_elf32_check_nx(bin, &elf);
   bin->elf.ssp = r_binfmt_elf_check_ssp(bin);
+  bin->elf.rpath = r_binfmt_elf32_check_rpath(bin, &elf);
+  bin->elf.runpath = r_binfmt_elf32_check_runpath(bin, &elf);
   bin->elf.relro = r_binfmt_elf32_check_relro(bin, &elf);
+  bin->elf.pie = r_binfmt_elf32_check_pie(bin, &elf);
 
   return R_BINFMT_ERR_OK;
 }

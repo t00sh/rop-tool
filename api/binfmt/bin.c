@@ -321,7 +321,7 @@ void r_binfmt_print_syms(r_binfmt_s *bin, int color) {
 }
 
 static void r_binfmt_print_elf_infos_nx(r_binfmt_s *bin, int color) {
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "NX bit");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "NX bit");
   if(bin->elf.nx == R_BINFMT_NX_DISABLED)
     R_UTILS_PRINT_RED_BG_BLACK(color, "disabled\n");
   else if(bin->elf.nx == R_BINFMT_NX_ENABLED)
@@ -331,7 +331,7 @@ static void r_binfmt_print_elf_infos_nx(r_binfmt_s *bin, int color) {
 }
 
 static void r_binfmt_print_elf_infos_ssp(r_binfmt_s *bin, int color) {
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "SSP");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "SSP");
   if(bin->elf.ssp == R_BINFMT_SSP_DISABLED)
     R_UTILS_PRINT_RED_BG_BLACK(color, "disabled\n");
   else if(bin->elf.ssp == R_BINFMT_SSP_ENABLED)
@@ -341,7 +341,7 @@ static void r_binfmt_print_elf_infos_ssp(r_binfmt_s *bin, int color) {
 }
 
 static void r_binfmt_print_elf_infos_relro(r_binfmt_s *bin, int color) {
-   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Relro");
+   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "Relro");
   if(bin->elf.relro == R_BINFMT_RELRO_DISABLED)
     R_UTILS_PRINT_RED_BG_BLACK(color, "disabled\n");
   else if(bin->elf.relro == R_BINFMT_RELRO_PARTIAL)
@@ -352,10 +352,44 @@ static void r_binfmt_print_elf_infos_relro(r_binfmt_s *bin, int color) {
     R_UTILS_PRINT_WHITE_BG_BLACK(color, "unknown\n");
 }
 
+static void r_binfmt_print_elf_infos_rpath(r_binfmt_s *bin, int color) {
+   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "RPATH");
+  if(bin->elf.rpath == R_BINFMT_RPATH_DISABLED)
+    R_UTILS_PRINT_GREEN_BG_BLACK(color, "no rpath\n");
+  else if(bin->elf.rpath == R_BINFMT_RPATH_ENABLED)
+    R_UTILS_PRINT_RED_BG_BLACK(color, "enabled\n");
+  else
+    R_UTILS_PRINT_WHITE_BG_BLACK(color, "unknown\n");
+}
+
+static void r_binfmt_print_elf_infos_runpath(r_binfmt_s *bin, int color) {
+   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "RUNPATH");
+  if(bin->elf.runpath == R_BINFMT_RUNPATH_DISABLED)
+    R_UTILS_PRINT_GREEN_BG_BLACK(color, "no runpath\n");
+  else if(bin->elf.runpath == R_BINFMT_RUNPATH_ENABLED)
+    R_UTILS_PRINT_RED_BG_BLACK(color, "enabled\n");
+  else
+    R_UTILS_PRINT_WHITE_BG_BLACK(color, "unknown\n");
+}
+
+static void r_binfmt_print_elf_infos_pie(r_binfmt_s *bin, int color) {
+   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "PIE");
+  if(bin->elf.pie == R_BINFMT_PIE_DISABLED)
+    R_UTILS_PRINT_RED_BG_BLACK(color, "disabled\n");
+  else if(bin->elf.pie == R_BINFMT_PIE_ENABLED)
+    R_UTILS_PRINT_GREEN_BG_BLACK(color, "enabled\n");
+  else
+    R_UTILS_PRINT_WHITE_BG_BLACK(color, "unknown\n");
+}
+
+
 static void r_binfmt_print_elf_infos(r_binfmt_s *bin, int color) {
   r_binfmt_print_elf_infos_nx(bin, color);
   r_binfmt_print_elf_infos_ssp(bin, color);
   r_binfmt_print_elf_infos_relro(bin, color);
+  r_binfmt_print_elf_infos_rpath(bin, color);
+  r_binfmt_print_elf_infos_runpath(bin, color);
+  r_binfmt_print_elf_infos_pie(bin, color);
 }
 
 static void r_binfmt_print_pe_infos(r_binfmt_s *bin, int color) {
@@ -371,26 +405,26 @@ void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
 
   R_UTILS_PRINT_YELLOW_BG_BLACK(color, "\n\n ===== INFOS ===== \n");
 
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Filename");
-  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", bin->filename);
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "Filename");
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%s\n", bin->filename);
 
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "File format");
-  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_type_to_string(bin->type));
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "File format");
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%s\n", r_binfmt_type_to_string(bin->type));
 
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Architecture");
-  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_arch_to_string(bin->arch));
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "Architecture");
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%s\n", r_binfmt_arch_to_string(bin->arch));
 
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Endianess");
-  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_endian_to_string(bin->endian));
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "Endianess");
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%s\n", r_binfmt_endian_to_string(bin->endian));
 
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Entry point");
-  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%#" PRIx64 "\n", bin->entry);
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "Entry point");
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%#" PRIx64 "\n", bin->entry);
 
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Loadables segments");
-  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%"SIZE_T_FMT_D"\n", r_utils_list_size(&bin->segments));
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "Loadables segments");
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%"SIZE_T_FMT_D"\n", r_utils_list_size(&bin->segments));
 
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Sections");
-  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%"SIZE_T_FMT_D"\n\n", r_utils_list_size(&bin->sections));
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "Sections");
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%"SIZE_T_FMT_D"\n\n", r_utils_list_size(&bin->sections));
 
   if(bin->type == R_BINFMT_TYPE_ELF32 || bin->type == R_BINFMT_TYPE_ELF64) {
     r_binfmt_print_elf_infos(bin, color);

@@ -155,7 +155,9 @@ typedef struct binfmt {
       r_binfmt_nx_e nx;
       r_binfmt_ssp_e ssp;
       r_binfmt_relro_e relro;
-
+      r_binfmt_rpath_e rpath;
+      r_binfmt_runpath_e runpath;
+      r_binfmt_pie_e pie;
     }elf;
 
     struct {

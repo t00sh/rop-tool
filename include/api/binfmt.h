@@ -178,6 +178,17 @@ u64 r_binfmt_get_int64(byte_t *p, r_binfmt_endian_e endian);
 u32 r_binfmt_get_int32(byte_t *p, r_binfmt_endian_e endian);
 u16 r_binfmt_get_int16(byte_t *p, r_binfmt_endian_e endian);
 
+#define R_BINFMT_GET_INT(store,field,endian) do {                       \
+    if(sizeof(field) == 2)                                              \
+      store = r_binfmt_get_int16((byte_t*)&field, endian);              \
+    else if(sizeof(field) == 4)                                         \
+      store = r_binfmt_get_int32((byte_t*)&field, endian);              \
+    else if(sizeof(field) == 8)                                         \
+      store = r_binfmt_get_int64((byte_t*)&field, endian);              \
+    else                                                                \
+      R_UTILS_ERR("Bad field size in R_BINFMT_GET_INT()");              \
+  } while(0)
+
 
 /* ==============================================
    syms.c

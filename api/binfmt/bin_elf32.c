@@ -40,22 +40,22 @@ static void r_binfmt_elf32_load_segments(r_binfmt_s *bin) {
 
   R_BINFMT_ASSERT(bin->mapped_size >= sizeof(Elf32_Ehdr));
 
-  e_phoff = r_binfmt_get_int32((byte_t*)&ehdr->e_phoff, bin->endian);
+  R_BINFMT_GET_INT(e_phoff, ehdr->e_phoff, bin->endian);
   R_BINFMT_ASSERT(e_phoff < bin->mapped_size);
 
   phdr = (Elf32_Phdr*)(bin->mapped + e_phoff);
 
-  e_phnum = r_binfmt_get_int16((byte_t*)&ehdr->e_phnum, bin->endian);
+  R_BINFMT_GET_INT(e_phnum, ehdr->e_phnum, bin->endian);
 
   R_BINFMT_ASSERT(r_utils_add32(NULL, e_phnum*sizeof(Elf32_Phdr), e_phoff) &&
                   e_phnum*sizeof(Elf32_Phdr) + e_phoff <= bin->mapped_size);
 
   for(i = 0; i < e_phnum; i++) {
-    p_type = r_binfmt_get_int32((byte_t*)&phdr[i].p_type, bin->endian);
-    p_flags = r_binfmt_get_int32((byte_t*)&phdr[i].p_flags, bin->endian);
-    p_vaddr = r_binfmt_get_int32((byte_t*)&phdr[i].p_vaddr, bin->endian);
-    p_offset = r_binfmt_get_int32((byte_t*)&phdr[i].p_offset, bin->endian);
-    p_filesz = r_binfmt_get_int32((byte_t*)&phdr[i].p_filesz, bin->endian);
+    R_BINFMT_GET_INT(p_type, phdr[i].p_type, bin->endian);
+    R_BINFMT_GET_INT(p_flags, phdr[i].p_flags, bin->endian);
+    R_BINFMT_GET_INT(p_vaddr, phdr[i].p_vaddr, bin->endian);
+    R_BINFMT_GET_INT(p_offset, phdr[i].p_offset, bin->endian);
+    R_BINFMT_GET_INT(p_filesz, phdr[i].p_filesz, bin->endian);
 
     R_BINFMT_ASSERT(r_utils_add32(NULL, p_offset, p_filesz) &&
                     p_offset + p_filesz <= bin->mapped_size);
@@ -88,7 +88,7 @@ static const char* r_binfmt_elf32_get_name(r_binfmt_s *bin, u32 section_id, u32 
 
   shdr = (Elf32_Shdr*)(bin->mapped + r_binfmt_get_int32((byte_t*)&ehdr->e_shoff, bin->endian));
 
-  offset = r_binfmt_get_int32((byte_t*)&shdr[section_id].sh_offset, bin->endian);
+  R_BINFMT_GET_INT(offset, shdr[section_id].sh_offset, bin->endian);
 
   return (const char*)(bin->mapped + offset + name);
 }
@@ -104,36 +104,36 @@ static void r_binfmt_elf32_load_syms(r_binfmt_s *bin) {
 
   R_BINFMT_ASSERT(bin->mapped_size >= sizeof(Elf32_Ehdr));
 
-  e_shoff = r_binfmt_get_int32((byte_t*)&ehdr->e_shoff, bin->endian);
+  R_BINFMT_GET_INT(e_shoff, ehdr->e_shoff, bin->endian);
 
   R_BINFMT_ASSERT(e_shoff < bin->mapped_size);
 
   shdr = (Elf32_Shdr*)(bin->mapped + e_shoff);
 
-  e_shnum = r_binfmt_get_int16((byte_t*)&ehdr->e_shnum, bin->endian);
+  R_BINFMT_GET_INT(e_shnum, ehdr->e_shnum, bin->endian);
 
   R_BINFMT_ASSERT(r_utils_add32(NULL, e_shnum*sizeof(Elf32_Shdr), e_shoff) &&
 		  e_shnum*sizeof(Elf32_Shdr) + e_shoff <= bin->mapped_size);
 
   for(i = 0; i < e_shnum; i++) {
-    sh_type = r_binfmt_get_int32((byte_t*)&shdr[i].sh_type, bin->endian);
+    R_BINFMT_GET_INT(sh_type, shdr[i].sh_type, bin->endian);
 
     if(sh_type == SHT_SYMTAB || sh_type == SHT_DYNSYM) {
-      sh_size = r_binfmt_get_int32((byte_t*)&shdr[i].sh_size, bin->endian);
+      R_BINFMT_GET_INT(sh_size, shdr[i].sh_size, bin->endian);
       num = sh_size / sizeof(Elf32_Sym);
-      sh_offset = r_binfmt_get_int32((byte_t*)&shdr[i].sh_offset, bin->endian);
+      R_BINFMT_GET_INT(sh_offset, shdr[i].sh_offset, bin->endian);
 
       R_BINFMT_ASSERT(r_utils_add32(NULL, sh_offset, sh_size) &&
 		      sh_offset + sh_size <= bin->mapped_size);
 
       symhdr = (Elf32_Sym*)(bin->mapped + sh_offset);
-      sh_link = r_binfmt_get_int32((byte_t*)&shdr[i].sh_link, bin->endian);
+      R_BINFMT_GET_INT(sh_link, shdr[i].sh_link, bin->endian);
 
       R_BINFMT_ASSERT(sh_link < e_shnum);
 
       for(j = 0; j < num; j++) {
-	st_name = r_binfmt_get_int32((byte_t*)&symhdr[j].st_name, bin->endian);
-	link_off = r_binfmt_get_int32((byte_t*)&shdr[sh_link].sh_offset, bin->endian);
+	R_BINFMT_GET_INT(st_name, symhdr[j].st_name, bin->endian);
+	R_BINFMT_GET_INT(link_off, shdr[sh_link].sh_offset, bin->endian);
 
 	R_BINFMT_ASSERT(r_utils_add32(NULL, link_off, st_name) &&
 			link_off + st_name <= bin->mapped_size);
@@ -158,26 +158,26 @@ static void r_binfmt_elf32_load_sections(r_binfmt_s *bin) {
 
   R_BINFMT_ASSERT(bin->mapped_size >= sizeof(Elf32_Ehdr));
 
-  e_shoff = r_binfmt_get_int32((byte_t*)&ehdr->e_shoff, bin->endian);
+  R_BINFMT_GET_INT(e_shoff, ehdr->e_shoff, bin->endian);
 
   R_BINFMT_ASSERT(e_shoff <= bin->mapped_size);
 
   shdr = (Elf32_Shdr*)(bin->mapped + e_shoff);
 
-  e_shnum = r_binfmt_get_int16((byte_t*)&ehdr->e_shnum, bin->endian);
-  e_shstrndx = r_binfmt_get_int16((byte_t*)&ehdr->e_shstrndx, bin->endian);
+  R_BINFMT_GET_INT(e_shnum, ehdr->e_shnum, bin->endian);
+  R_BINFMT_GET_INT(e_shstrndx, ehdr->e_shstrndx, bin->endian);
 
   R_BINFMT_ASSERT(r_utils_add32(NULL, e_shnum*sizeof(Elf32_Shdr), e_shoff) &&
 		  e_shnum*sizeof(Elf32_Shdr) + e_shoff <= bin->mapped_size);
 
   R_BINFMT_ASSERT(e_shstrndx < e_shnum);
 
-  strndx_off = r_binfmt_get_int32((byte_t*)&shdr[e_shstrndx].sh_offset, bin->endian);
+  R_BINFMT_GET_INT(strndx_off, shdr[e_shstrndx].sh_offset, bin->endian);
 
   for(i = 0; i < e_shnum; i++) {
-    sh_addr = r_binfmt_get_int32((byte_t*)&shdr[i].sh_addr, bin->endian);
-    sh_size = r_binfmt_get_int32((byte_t*)&shdr[i].sh_size, bin->endian);
-    sh_name = r_binfmt_get_int32((byte_t*)&shdr[i].sh_name, bin->endian);
+    R_BINFMT_GET_INT(sh_addr, shdr[i].sh_addr, bin->endian);
+    R_BINFMT_GET_INT(sh_size, shdr[i].sh_size, bin->endian);
+    R_BINFMT_GET_INT(sh_name, shdr[i].sh_name, bin->endian);
 
     R_BINFMT_ASSERT(r_utils_add32(NULL, strndx_off, sh_name) &&
 		    strndx_off + sh_name <= bin->mapped_size);
@@ -251,18 +251,18 @@ static r_binfmt_nx_e r_binfmt_elf32_check_nx(r_binfmt_s *bin) {
 
   R_BINFMT_ASSERT_RET(R_BINFMT_NX_UNKNOWN, bin->mapped_size >= sizeof(Elf32_Ehdr));
 
-  e_phoff = r_binfmt_get_int32((byte_t*)&ehdr->e_phoff, bin->endian);
+  R_BINFMT_GET_INT(e_phoff, ehdr->e_phoff, bin->endian);
   R_BINFMT_ASSERT_RET(R_BINFMT_NX_UNKNOWN, e_phoff < bin->mapped_size);
 
   phdr = (Elf32_Phdr*)(bin->mapped + e_phoff);
 
-  e_phnum = r_binfmt_get_int16((byte_t*)&ehdr->e_phnum, bin->endian);
+  R_BINFMT_GET_INT(e_phnum, ehdr->e_phnum, bin->endian);
 
   R_BINFMT_ASSERT_RET(R_BINFMT_NX_UNKNOWN, r_utils_add32(NULL, e_phnum*sizeof(Elf32_Phdr), e_phoff) &&
 		  e_phnum*sizeof(Elf32_Phdr) + e_phoff <= bin->mapped_size);
 
   for(i = 0; i < e_phnum; i++) {
-    p_type = r_binfmt_get_int32((byte_t*)&phdr[i].p_type, bin->endian);
+    R_BINFMT_GET_INT(p_type, phdr[i].p_type, bin->endian);
     if(p_type == PT_GNU_STACK)
       return R_BINFMT_NX_ENABLED;
   }

@@ -49,7 +49,7 @@ static r_binfmt_arch_e r_binfmt_macho64_getarch(r_binfmt_s *bin) {
   u32 cpu;
 
   hdr = (r_binfmt_macho64_header_s*)(bin->mapped);
-  cpu = r_binfmt_get_int32((byte_t*)&hdr->h_cpu, bin->endian);
+  R_BINFMT_GET_INT(cpu, hdr->h_cpu, bin->endian);
 
   if(cpu == R_BINFMT_MACHO_CPU_X86_64)
     return R_BINFMT_ARCH_X86_64;
@@ -85,10 +85,10 @@ static void r_binfmt_macho64_load_segment(r_binfmt_s *bin, r_binfmt_macho64_segm
 
   seg = r_binfmt_segment_new();
 
-  vaddr    = r_binfmt_get_int64((byte_t*)&s->vm_addr, bin->endian);
-  filesz   = r_binfmt_get_int64((byte_t*)&s->file_size, bin->endian);
-  fileoff  = r_binfmt_get_int64((byte_t*)&s->file_off, bin->endian);
-  initprot = r_binfmt_get_int32((byte_t*)&s->init_prot, bin->endian);
+  R_BINFMT_GET_INT(vaddr, s->vm_addr, bin->endian);
+  R_BINFMT_GET_INT(filesz, s->file_size, bin->endian);
+  R_BINFMT_GET_INT(fileoff, s->file_off, bin->endian);
+  R_BINFMT_GET_INT(initprot, s->init_prot, bin->endian);
 
   flags = 0;
   if(initprot & R_BINFMT_MACHO_PROT_R)
@@ -113,13 +113,13 @@ static void r_binfmt_macho64_load_segments(r_binfmt_s *bin) {
 
 
   hdr = (r_binfmt_macho64_header_s*)(bin->mapped);
-  cmd_num = r_binfmt_get_int32((byte_t*)&hdr->h_cmd_num, bin->endian);
+  R_BINFMT_GET_INT(cmd_num, hdr->h_cmd_num, bin->endian);
 
 
   off = 0;
   for(i = 0; i < cmd_num; i++) {
     cmd = (r_binfmt_macho_cmd_s*)(bin->mapped + sizeof(*hdr) + off);
-    type = r_binfmt_get_int32((byte_t*)&cmd->type, bin->endian);
+    R_BINFMT_GET_INT(type, cmd->type, bin->endian);
     if(type == R_BINFMT_MACHO_CMD_TYPE_SEGMENT64) {
       r_binfmt_macho64_load_segment(bin, (r_binfmt_macho64_segment_s*)cmd);
     }
@@ -141,8 +141,8 @@ static int r_binfmt_macho64_check_segment(r_binfmt_s *bin, r_binfmt_macho64_segm
   if(bin->mapped_size < off + sizeof(*seg))
     return 0;
 
-  filesz   = r_binfmt_get_int64((byte_t*)&seg->file_size, bin->endian);
-  fileoff  = r_binfmt_get_int64((byte_t*)&seg->file_off, bin->endian);
+  R_BINFMT_GET_INT(filesz, seg->file_size, bin->endian);
+  R_BINFMT_GET_INT(fileoff, seg->file_off, bin->endian);
 
   if(!r_utils_add64(&off, fileoff, filesz))
     return 0;
@@ -167,7 +167,7 @@ static int r_binfmt_macho64_check(r_binfmt_s *bin) {
 
   hdr = (r_binfmt_macho64_header_s*)(bin->mapped);
 
-  cmd_num = r_binfmt_get_int32((byte_t*)&hdr->h_cmd_num, bin->endian);
+  R_BINFMT_GET_INT(cmd_num, hdr->h_cmd_num, bin->endian);
 
   /* Check each command */
   off = 0;
@@ -183,13 +183,13 @@ static int r_binfmt_macho64_check(r_binfmt_s *bin) {
     cmd = (r_binfmt_macho_cmd_s*)(bin->mapped + off + sizeof(*hdr));
 
     /* Now check command */
-    type = r_binfmt_get_int32((byte_t*)&cmd->type, bin->endian);
+    R_BINFMT_GET_INT(type, cmd->type, bin->endian);
     if(type == R_BINFMT_MACHO_CMD_TYPE_SEGMENT64) {
       if(!r_binfmt_macho64_check_segment(bin, (r_binfmt_macho64_segment_s*)cmd))
 	return 0;
     }
 
-    cmd_size = r_binfmt_get_int32((byte_t*)&cmd->size, bin->endian);
+    R_BINFMT_GET_INT(cmd_size, cmd->size, bin->endian);
     if(!cmd_size)
       return 0;
     if(!r_utils_add32(&off, off, cmd_size))

@@ -289,8 +289,8 @@ r_binfmt_err_e r_binfmt_elf64_load(r_binfmt_s *bin) {
   bin->arch = r_binfmt_elf64_getarch(bin);
   bin->endian = r_binfmt_elf64_getendian(bin);
   bin->entry = r_binfmt_elf64_getentry(bin);
-  bin->nx = r_binfmt_elf64_check_nx(bin);
-  bin->ssp = r_binfmt_elf_check_ssp(bin);
+  bin->elf.nx = r_binfmt_elf64_check_nx(bin);
+  bin->elf.ssp = r_binfmt_elf_check_ssp(bin);
 
   if(bin->arch == R_BINFMT_ARCH_UNDEF)
     return R_BINFMT_ERR_NOTSUPPORTED;

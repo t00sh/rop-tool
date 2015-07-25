@@ -341,6 +341,23 @@ void r_binfmt_print_syms(r_binfmt_s *bin, int color) {
   }
 }
 
+static void r_binfmt_print_elf_infos(r_binfmt_s *bin, int color) {
+
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "NX bit");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_nx_to_string(bin->elf.nx));
+
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "SSP");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_ssp_to_string(bin->elf.ssp));
+}
+
+static void r_binfmt_print_pe_infos(r_binfmt_s *bin, int color) {
+  (void)bin, (void)color;
+}
+
+static void r_binfmt_print_macho_infos(r_binfmt_s *bin, int color) {
+  (void)bin, (void)color;
+}
+
 void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
   assert(bin != NULL);
 
@@ -364,12 +381,14 @@ void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Loadables segments");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%"SIZE_T_FMT_D"\n", r_utils_list_size(&bin->segments));
 
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "NX bit");
-  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_nx_to_string(bin->nx));
-
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "SSP");
-  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_ssp_to_string(bin->ssp));
-
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Sections");
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%"SIZE_T_FMT_D"\n\n", r_utils_list_size(&bin->sections));
+
+  if(bin->type == R_BINFMT_TYPE_ELF32 || bin->type == R_BINFMT_TYPE_ELF64) {
+    r_binfmt_print_elf_infos(bin, color);
+  } else if(bin->type == R_BINFMT_TYPE_MACHO32 || bin->type == R_BINFMT_TYPE_MACHO64) {
+    r_binfmt_print_macho_infos(bin, color);
+  } else if(bin->type == R_BINFMT_TYPE_PE) {
+    r_binfmt_print_pe_infos(bin, color);
+  }
 }

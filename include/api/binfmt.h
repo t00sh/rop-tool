@@ -123,8 +123,20 @@ typedef struct binfmt {
   r_utils_list_s syms;
   r_utils_list_s sections;
 
-  r_binfmt_ssp_e ssp;
-  r_binfmt_nx_e nx;
+  union {
+    struct {
+      r_binfmt_ssp_e ssp;
+      r_binfmt_nx_e nx;
+    }elf;
+
+    struct {
+
+    }pe;
+
+    struct {
+
+    }macho;
+  };
 
   byte_t *mapped;
   size_t mapped_size;

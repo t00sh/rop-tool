@@ -207,7 +207,6 @@ r_binfmt_err_e r_binfmt_macho32_load(r_binfmt_s *bin) {
   bin->type = R_BINFMT_TYPE_MACHO32;
   bin->endian = r_binfmt_macho32_getendian(bin);
   bin->arch = r_binfmt_macho32_getarch(bin);
-  bin->nx = R_BINFMT_NX_UNKNOWN;
 
   if(bin->arch == R_BINFMT_ARCH_UNDEF)
     return R_BINFMT_ERR_NOTSUPPORTED;

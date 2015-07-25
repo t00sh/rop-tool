@@ -285,8 +285,8 @@ static r_binfmt_nx_e r_binfmt_elf32_check_nx(r_binfmt_s *bin) {
   bin->arch = r_binfmt_elf32_getarch(bin);
   bin->endian = r_binfmt_elf32_getendian(bin);
   bin->entry = r_binfmt_elf32_getentry(bin);
-  bin->nx = r_binfmt_elf32_check_nx(bin);
-  bin->ssp = r_binfmt_elf_check_ssp(bin);
+  bin->elf.nx = r_binfmt_elf32_check_nx(bin);
+  bin->elf.ssp = r_binfmt_elf_check_ssp(bin);
 
   if(bin->arch == R_BINFMT_ARCH_UNDEF)
     return R_BINFMT_ERR_NOTSUPPORTED;

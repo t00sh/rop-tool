@@ -38,7 +38,7 @@ LIB_HEAP = libheap-$(ARCH).so
 
 .PHONY: clean release test $(LIB_HEAP)
 
-all: $(LIB_HEAP) $(EXE) 
+all: $(LIB_HEAP) $(EXE)
 static: $(EXE_STATIC)
 
 $(EXE): $(OBJ)

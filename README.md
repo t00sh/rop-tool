@@ -37,7 +37,7 @@ OPTIONS:
   --flavor, -f        [f]  Select a flavor (att or intel)
   --no-filter, -F          Do not apply some filters on gadgets
   --help, -h               Print this help message
-  --no-color, -n           Do not colorize output
+  --no-color, -N           Do not colorize output
 
 ```
 
@@ -51,7 +51,7 @@ OPTIONS:
   --byte, -b          [b]  Search the byte [b] in binary
   --dword, -d         [d]  Search the dword [d] in binary
   --help, -h               Print this help message
-  --no-color, -n           Don't colorize output
+  --no-color, -N           Don't colorize output
   --qword, -q         [q]  Search the qword [q] in binary
   --raw, -r                Open file in raw mode (don't considere any file format)
   --split-string, -s  [s]  Search a string "splited" in memory (which is not contiguous in memory)
@@ -88,7 +88,7 @@ OPTIONS:
   --syms, -S               Show symbols
   --filename, -f      [f]  Specify the filename
   --help, -h               Print this help message
-  --no-color, -n           Disable colors
+  --no-color, -N           Disable colors
 
 ```
 

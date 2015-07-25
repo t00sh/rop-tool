@@ -41,7 +41,7 @@ void search_help(void) {
   printf("  --bad, -B           [b]  Specify bad chars in address\n");
   printf("  --dword, -d         [d]  Search the dword [d] in binary\n");
   printf("  --help, -h               Print this help message\n");
-  printf("  --no-color, -n           Don't colorize output\n");
+  printf("  --no-color, -N           Don't colorize output\n");
   printf("  --qword, -q         [q]  Search the qword [q] in binary\n");
   printf("  --raw, -r                Open file in raw mode (don't considere any file format)\n");
   printf("  --split-string, -s  [s]  Search a string \"splited\" in memory (which is not contiguous in memory)\n");
@@ -61,7 +61,7 @@ void search_options_parse(int argc, char **argv) {
     {"bad",           required_argument, NULL, 'B'},
     {"dword",         required_argument, NULL, 'd'},
     {"help",          no_argument,       NULL, 'h'},
-    {"no-color",      no_argument,       NULL, 'n'},
+    {"no-color",      no_argument,       NULL, 'N'},
     {"qword",         required_argument, NULL, 'q'},
     {"raw",           no_argument,       NULL, 'r'},
     {"split-string",  required_argument, NULL, 's'},
@@ -70,7 +70,7 @@ void search_options_parse(int argc, char **argv) {
     {NULL,            0,                 NULL, 0  }
   };
 
-  while((opt = getopt_long(argc, argv, "a::b:B:d:hnq:rs:S:w:", opts, NULL)) != -1) {
+  while((opt = getopt_long(argc, argv, "a::b:B:d:hNq:rs:S:w:", opts, NULL)) != -1) {
     switch(opt) {
 
     case 'a':
@@ -93,7 +93,7 @@ void search_options_parse(int argc, char **argv) {
       search_help();
       exit(EXIT_FAILURE);
       break;
-    case 'n':
+    case 'N':
       search_options_color = 0;
       break;
     case 'q':

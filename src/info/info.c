@@ -37,7 +37,7 @@ void info_help(void) {
   printf("  --syms, -S               Show symbols\n");
   printf("  --filename, -f      [f]  Specify the filename\n");
   printf("  --help, -h               Print this help message\n");
-  printf("  --no-color, -n           Disable colors\n");
+  printf("  --no-color, -N           Disable colors\n");
   printf("\n");
 }
 
@@ -53,11 +53,11 @@ void info_options_parse(int argc, char **argv) {
     {"syms",          no_argument,       NULL, 'S'},
     {"filename",      required_argument, NULL, 'f'},
     {"help",          no_argument,       NULL, 'h'},
-    {"no-color",      no_argument,       NULL, 'n'},
+    {"no-color",      no_argument,       NULL, 'N'},
     {NULL,            0,                 NULL, 0  }
   };
 
-  while((opt = getopt_long(argc, argv, "alsSf:hn", opts, NULL)) != -1) {
+  while((opt = getopt_long(argc, argv, "alsSf:hN", opts, NULL)) != -1) {
     switch(opt) {
 
     case 'a':
@@ -91,7 +91,7 @@ void info_options_parse(int argc, char **argv) {
       exit(EXIT_FAILURE);
       break;
 
-    case 'n':
+    case 'N':
       info_options_color = 0;
       break;
 

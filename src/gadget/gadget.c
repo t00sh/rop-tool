@@ -43,7 +43,7 @@ void gadget_help(void) {
   printf("  --flavor, -f        [f]  Select a flavor (att or intel)\n");
   printf("  --no-filter, -F          Do not apply some filters on gadgets\n");
   printf("  --help, -h               Print this help message\n");
-  printf("  --no-color, -n           Do not colorize output\n");
+  printf("  --no-color, -N           Do not colorize output\n");
   printf("\n");
 }
 
@@ -60,11 +60,11 @@ void gadget_options_parse(int argc, char **argv) {
     {"flavor",        required_argument, NULL, 'f'},
     {"no-filter",     no_argument,       NULL, 'F'},
     {"help",          no_argument,       NULL, 'h'},
-    {"no-color",      no_argument,       NULL, 'n'},
+    {"no-color",      no_argument,       NULL, 'N'},
     {NULL,            0,                 NULL, 0  }
   };
 
-  while((opt = getopt_long(argc, argv, "A:ab:B:d:f:Fhn", opts, NULL)) != -1) {
+  while((opt = getopt_long(argc, argv, "A:ab:B:d:f:FhN", opts, NULL)) != -1) {
     switch(opt) {
 
     case 'A':
@@ -101,7 +101,7 @@ void gadget_options_parse(int argc, char **argv) {
       exit(EXIT_FAILURE);
       break;
 
-    case 'n':
+    case 'N':
       gadget_options_color = 0;
       break;
 

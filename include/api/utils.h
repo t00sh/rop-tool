@@ -183,6 +183,9 @@ int r_utils_execve(const char *path, char *const argv[], char *const envp[]);
 #endif
 
 
+/* =========================================================================
+   safe_int.c
+   ======================================================================= */
 
 int r_utils_add64(u64 *r, u64 a, u64 b);
 int r_utils_add32(u32 *r, u32 a, u32 b);

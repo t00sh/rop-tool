@@ -319,11 +319,11 @@ static void pe_load_segments(r_binfmt_s *bin) {
     flags = 0;
 
     if(shdr[i].Characteristics & IMAGE_SCN_MEM_EXECUTE)
-      flags |= R_BINFMT_MEM_FLAG_PROT_X;
+      flags |= R_BINFMT_SEGMENT_FLAG_PROT_X;
     if(shdr[i].Characteristics & IMAGE_SCN_MEM_WRITE)
-      flags |= R_BINFMT_MEM_FLAG_PROT_W;
+      flags |= R_BINFMT_SEGMENT_FLAG_PROT_W;
     if(shdr[i].Characteristics & IMAGE_SCN_MEM_READ)
-      flags |= R_BINFMT_MEM_FLAG_PROT_R;
+      flags |= R_BINFMT_SEGMENT_FLAG_PROT_R;
 
     if(flags) {
       seg = r_binfmt_segment_new();

@@ -32,7 +32,7 @@ r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin, r_binfmt_arch_e arch) {
 
   seg = r_binfmt_segment_new();
 
-  seg->flags = R_BINFMT_MEM_FLAG_PROT_X | R_BINFMT_MEM_FLAG_PROT_R | R_BINFMT_MEM_FLAG_PROT_W;
+  seg->flags = R_BINFMT_SEGMENT_FLAG_PROT_X | R_BINFMT_SEGMENT_FLAG_PROT_R | R_BINFMT_SEGMENT_FLAG_PROT_W;
   seg->addr = 0;
   seg->start = bin->mapped;
   seg->length = bin->mapped_size;

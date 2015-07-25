@@ -41,7 +41,7 @@ int search_print_bytes_in_mem(r_binfmt_s *bin, byte_t *bytes, u64 len) {
 
     seg = r_utils_list_access(&bin->segments, j);
 
-    if(seg->flags & R_BINFMT_MEM_FLAG_PROT_R) {
+    if(seg->flags & R_BINFMT_SEGMENT_FLAG_PROT_R) {
       if(len <= seg->length) {
 
         r_binfmt_get_segment_flag_str(flag_str, seg);

@@ -39,3 +39,21 @@ r_binfmt_ssp_e r_binfmt_elf_check_ssp(r_binfmt_s *bin) {
 
   return R_BINFMT_SSP_DISABLED;
 }
+
+/* Get the type of the binary (ELF32 or ELF64) */
+r_binfmt_type_e r_binfmt_elf_type(r_binfmt_s *bin) {
+
+  if(bin->mapped_size < EI_NIDENT)
+     return R_BINFMT_TYPE_UNDEF;
+
+  if(memcmp(bin->mapped, ELFMAG, SELFMAG))
+    return R_BINFMT_TYPE_UNDEF;
+
+  if(bin->mapped[EI_CLASS] == ELFCLASS32)
+    return R_BINFMT_TYPE_ELF32;
+
+  if(bin->mapped[EI_CLASS] == ELFCLASS64)
+    return R_BINFMT_TYPE_ELF64;
+
+  return R_BINFMT_TYPE_UNDEF;
+}

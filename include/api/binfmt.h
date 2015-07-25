@@ -24,6 +24,7 @@
 #define DEF_API_BINFMT_H
 
 #include "api/utils.h"
+#include "api/binfmt/elf.h"
 
 #define R_BINFMT_BAD_ADDR ((u64)-1)
 #define R_BINFMT_BAD_OFFSET ((u64)-1)
@@ -43,10 +44,10 @@
   } while(0)
 
 typedef enum r_binfmt_segment_flag {
-  R_BINFMT_MEM_FLAG_NONE=0,
-  R_BINFMT_MEM_FLAG_PROT_X=1,
-  R_BINFMT_MEM_FLAG_PROT_R=2,
-  R_BINFMT_MEM_FLAG_PROT_W=4,
+  R_BINFMT_SEGMENT_FLAG_NONE=0,
+  R_BINFMT_SEGMENT_FLAG_PROT_X=1,
+  R_BINFMT_SEGMENT_FLAG_PROT_R=2,
+  R_BINFMT_SEGMENT_FLAG_PROT_W=4,
 }r_binfmt_segment_flag_e;
 
 typedef struct r_binfmt_segment {
@@ -99,6 +100,32 @@ typedef enum {
   R_BINFMT_SSP_DISABLED
 }r_binfmt_ssp_e;
 
+typedef enum {
+  R_BINFMT_RELRO_UNKNOWN,
+  R_BINFMT_RELRO_DISABLED,
+  R_BINFMT_RELRO_PARTIAL,
+  R_BINFMT_RELRO_FULL
+}r_binfmt_relro_e;
+
+typedef enum {
+  R_BINFMT_PIE_UNKNOWN,
+  R_BINFMT_PIE_DISABLED,
+  R_BINFMT_PIE_ENABLED,
+}r_binfmt_pie_e;
+
+typedef enum {
+  R_BINFMT_RPATH_UNKNOWN,
+  R_BINFMT_RPATH_DISABLED,
+  R_BINFMT_RPATH_ENABLED,
+}r_binfmt_rpath_e;
+
+typedef enum {
+  R_BINFMT_RUNPATH_UNKNOWN,
+  R_BINFMT_RUNPATH_DISABLED,
+  R_BINFMT_RUNPATH_ENABLED,
+}r_binfmt_runpath_e;
+
+
 typedef struct {
   const char *name;
   u64 addr;
@@ -125,8 +152,10 @@ typedef struct binfmt {
 
   union {
     struct {
-      r_binfmt_ssp_e ssp;
       r_binfmt_nx_e nx;
+      r_binfmt_ssp_e ssp;
+      r_binfmt_relro_e relro;
+
     }elf;
 
     struct {

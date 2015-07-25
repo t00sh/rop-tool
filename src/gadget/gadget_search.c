@@ -47,7 +47,7 @@ void gadget_print_search(r_binfmt_s *bin) {
   for(i = 0; i < num; i++) {
     seg = r_utils_list_access(&bin->segments, i);
 
-    if(seg->flags & R_BINFMT_MEM_FLAG_PROT_X) {
+    if(seg->flags & R_BINFMT_SEGMENT_FLAG_PROT_X) {
       r_gadget_update(&g_handle, seg->addr, seg->start, seg->length);
     }
   }

@@ -63,9 +63,6 @@ static void r_binfmt_check(r_binfmt_s *bin) {
   if(bin->endian == R_BINFMT_ENDIAN_UNDEF)
     R_UTILS_ERR("Endianess not supported");
 
-  if(bin->arch == R_BINFMT_ARCH_UNDEF)
-    R_UTILS_ERR("Arch not supported");
-
   if(bin->type == R_BINFMT_TYPE_UNDEF)
     R_UTILS_ERR("File format not recognized");
 }
@@ -264,24 +261,6 @@ int r_binfmt_is_bad_addr(r_utils_bytes_s *bad, u64 addr, r_binfmt_arch_e arch) {
   return 1;
 }
 
-/* Convert NX to string */
-const char *r_binfmt_nx_to_string(r_binfmt_nx_e nx) {
-  if(nx == R_BINFMT_NX_ENABLED)
-    return "enabled";
-  if(nx == R_BINFMT_NX_DISABLED)
-    return "disabled";
-  return "unknown";
-}
-
-/* Convert SSP to string */
-const char *r_binfmt_ssp_to_string(r_binfmt_ssp_e ssp) {
-  if(ssp == R_BINFMT_SSP_ENABLED)
-    return "enabled";
-  if(ssp == R_BINFMT_SSP_DISABLED)
-    return "disabled";
-  return "unknown";
-}
-
 /* Print info about file */
 void r_binfmt_print_sections(r_binfmt_s *bin, int color) {
   r_binfmt_section_s *s;
@@ -341,13 +320,42 @@ void r_binfmt_print_syms(r_binfmt_s *bin, int color) {
   }
 }
 
-static void r_binfmt_print_elf_infos(r_binfmt_s *bin, int color) {
-
+static void r_binfmt_print_elf_infos_nx(r_binfmt_s *bin, int color) {
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "NX bit");
-  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_nx_to_string(bin->elf.nx));
+  if(bin->elf.nx == R_BINFMT_NX_DISABLED)
+    R_UTILS_PRINT_RED_BG_BLACK(color, "disabled\n");
+  else if(bin->elf.nx == R_BINFMT_NX_ENABLED)
+    R_UTILS_PRINT_GREEN_BG_BLACK(color, "enabled\n");
+  else
+    R_UTILS_PRINT_WHITE_BG_BLACK(color, "unknown\n");
+}
 
+static void r_binfmt_print_elf_infos_ssp(r_binfmt_s *bin, int color) {
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "SSP");
-  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%s\n", r_binfmt_ssp_to_string(bin->elf.ssp));
+  if(bin->elf.ssp == R_BINFMT_SSP_DISABLED)
+    R_UTILS_PRINT_RED_BG_BLACK(color, "disabled\n");
+  else if(bin->elf.ssp == R_BINFMT_SSP_ENABLED)
+    R_UTILS_PRINT_GREEN_BG_BLACK(color, "enabled\n");
+  else
+    R_UTILS_PRINT_WHITE_BG_BLACK(color, "unknown\n");
+}
+
+static void r_binfmt_print_elf_infos_relro(r_binfmt_s *bin, int color) {
+   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", "Relro");
+  if(bin->elf.relro == R_BINFMT_RELRO_DISABLED)
+    R_UTILS_PRINT_RED_BG_BLACK(color, "disabled\n");
+  else if(bin->elf.relro == R_BINFMT_RELRO_PARTIAL)
+    R_UTILS_PRINT_YELLOW_BG_BLACK(color, "partial\n");
+  else if(bin->elf.relro == R_BINFMT_RELRO_FULL)
+    R_UTILS_PRINT_GREEN_BG_BLACK(color, "full\n");
+  else
+    R_UTILS_PRINT_WHITE_BG_BLACK(color, "unknown\n");
+}
+
+static void r_binfmt_print_elf_infos(r_binfmt_s *bin, int color) {
+  r_binfmt_print_elf_infos_nx(bin, color);
+  r_binfmt_print_elf_infos_ssp(bin, color);
+  r_binfmt_print_elf_infos_relro(bin, color);
 }
 
 static void r_binfmt_print_pe_infos(r_binfmt_s *bin, int color) {

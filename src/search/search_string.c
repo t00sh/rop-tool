@@ -65,7 +65,7 @@ void search_print_string_in_bin(r_binfmt_s *bin, r_utils_bytes_s *bytes) {
   for(i = 0; i < num; i++) {
     seg = r_utils_list_access(&bin->segments, i);
 
-    if(seg->flags & R_BINFMT_MEM_FLAG_PROT_R)
+    if(seg->flags & R_BINFMT_SEGMENT_FLAG_PROT_R)
       search_print_string(bin, seg, bytes);
   }
 }

@@ -92,11 +92,11 @@ static void r_binfmt_macho64_load_segment(r_binfmt_s *bin, r_binfmt_macho64_segm
 
   flags = 0;
   if(initprot & R_BINFMT_MACHO_PROT_R)
-    flags |= R_BINFMT_MEM_FLAG_PROT_R;
+    flags |= R_BINFMT_SEGMENT_FLAG_PROT_R;
   if(initprot & R_BINFMT_MACHO_PROT_W)
-    flags |= R_BINFMT_MEM_FLAG_PROT_W;
+    flags |= R_BINFMT_SEGMENT_FLAG_PROT_W;
   if(initprot & R_BINFMT_MACHO_PROT_X)
-    flags |= R_BINFMT_MEM_FLAG_PROT_X;
+    flags |= R_BINFMT_SEGMENT_FLAG_PROT_X;
 
   seg->addr = vaddr;
   seg->length = filesz;

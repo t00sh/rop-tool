@@ -40,7 +40,7 @@ void search_print_numeric_in_bin(r_binfmt_s *bin, u64 n, size_t size_of) {
 
      seg = r_utils_list_access(&bin->segments, j);
 
-     if(seg->flags & R_BINFMT_MEM_FLAG_PROT_R) {
+     if(seg->flags & R_BINFMT_SEGMENT_FLAG_PROT_R) {
        r_binfmt_get_segment_flag_str(flag_str, seg);
 
        if(seg->length >= size_of) {

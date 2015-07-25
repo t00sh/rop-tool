@@ -42,15 +42,15 @@ void r_binfmt_get_segment_flag_str(char str[4], r_binfmt_segment_s *seg) {
   assert(seg != NULL);
 
   i = 0;
-  if(seg->flags & R_BINFMT_MEM_FLAG_PROT_R)
+  if(seg->flags & R_BINFMT_SEGMENT_FLAG_PROT_R)
     str[i++] = 'R';
   else
     str[i++] = '-';
-  if(seg->flags & R_BINFMT_MEM_FLAG_PROT_W)
+  if(seg->flags & R_BINFMT_SEGMENT_FLAG_PROT_W)
     str[i++] = 'W';
   else
     str[i++] = '-';
-  if(seg->flags & R_BINFMT_MEM_FLAG_PROT_X)
+  if(seg->flags & R_BINFMT_SEGMENT_FLAG_PROT_X)
     str[i++] = 'X';
   else
     str[i++] = '-';

@@ -1,4 +1,4 @@
-rop-tool v2.3.1
+rop-tool v2.4
 ====
 
 A tool to help you writing binary exploits
@@ -7,7 +7,7 @@ A tool to help you writing binary exploits
 ### OPTIONS
 
 ```
-rop-tool v2.3.1
+rop-tool v2.4
 Help you to make binary exploits.
 
 Usage: rop-tool <cmd> [OPTIONS]

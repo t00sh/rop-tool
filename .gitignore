@@ -23,5 +23,5 @@ binary-samples
 *.so
 
 # Auto generated files
-api/lib/libheap.c
-include/api/libheap.h
+#api/lib/libheap.c
+#include/api/libheap.h

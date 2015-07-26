@@ -1,1 +1,1 @@
-./rop-tool-Linux-x86-64 i ./binary-samples/README.md
+./rop-tool-Linux-x86_64 i ./binary-samples/README.md

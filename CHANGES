@@ -1,3 +1,13 @@
+rop-tool v2.4 (2015-07-25)
+- API   : binary segments are now handled with r_utils_list instead of mlist.
+- API   : Big changes in ELF parser
+- API   : ELF detect others protections : SSP, PIE, RPATH, RUNPATH, Relro
+- API   : r8-r15 x86-64 registers are now included to gadgets filters.
+- TOOLS : Improvments on 'heap' command :
+            * Now, you can trace specifics functions. (options --free, --calloc, --malloc, --realloc)
+            * Can redirect output in a file. (--output)
+            * New option to dump chunk's data. (--dumpdata)
+
 rop-tool v2.3.1 (2015-07-15)
 - Fix a security bug in Capstone library
 - 'heap' command print now on stderr instead of stdout
@@ -49,7 +59,7 @@ Ropc v1.1 (2014-03-19)
 - AT&T syntax
 - Changing the disassemble library (BeaEngine)
 - Payload generator
-- ELF64 support 
+- ELF64 support
 - PE32 and PE64 support
 - Raw mode, for searching in unknown formats
 - Better colored output

@@ -13,13 +13,14 @@ ifeq ($(ARCH), i686)
 	STATIC_LIBS = ./capstone-linux32/libcapstone.a
 	LIBS = -L ./capstone-linux32/ -lcapstone
 else
-	ARCH = x86-64
+	ARCH = x86_64
 	CFLAGS += -m64 -L capstone-linux64
 	STATIC_LIBS = ./capstone-linux64/libcapstone.a
 	LIBS = -L ./capstone-linux64/ -lcapstone
 endif
 
 CFLAGS += -DARCHITECTURE="\"$(ARCH)\""
+CFLAGS += -D__ARCH_$(ARCH)
 
 SRC  = $(wildcard api/*/*.c)
 SRC += $(wildcard src/*.c)

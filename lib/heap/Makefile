@@ -10,9 +10,11 @@ CFLAGS += -I include/ -I lib/heap/include
 ifeq ($(ARCH), i686)
 	CFLAGS += -m32
 else
-	ARCH = x86-64
+	ARCH = x86_64
 	CFLAGS += -m64
 endif
+
+CFLAGS += -D__ARCH_$(ARCH)
 
 SRC = $(wildcard lib/heap/src/*.c)
 OBJ  = $(SRC:%.c=%.o)

@@ -1,1 +1,1 @@
-./rop-tool-Linux-x86-64 i ./binary-samples/MachO-OSX-x86-ls
+./rop-tool-Linux-x86_64 i ./binary-samples/MachO-OSX-x86-ls

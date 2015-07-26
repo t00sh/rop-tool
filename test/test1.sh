@@ -1,1 +1,1 @@
-./rop-tool-Linux-x86-64 s ./binary-samples/anti-disassembler -a8
+./rop-tool-Linux-x86_64 s ./binary-samples/anti-disassembler -a8

@@ -21,6 +21,7 @@ binary-samples
 
 # Custom library
 *.so
+*.a
 
 # Auto generated files
 #api/lib/libheap.c

@@ -22,7 +22,7 @@
 /************************************************************************/
 #ifndef __WINDOWS__
 #include "rop_heap.h"
-#include "api/libheap.h"
+#include "global_libheap.h"
 
 #define HEAP_DEFAULT_TMPPATH "/tmp/"
 
@@ -128,7 +128,7 @@ static void heap_dump_lib(char *filename) {
   if((f = fopen(filename, "w")) == NULL)
     R_UTILS_ERR("Can't open %s", filename);
 
-  fwrite(r_lib_heap, 1, sizeof(r_lib_heap), f);
+  fwrite(global_libheap, 1, sizeof(global_libheap), f);
 
   fclose(f);
 }

@@ -1,5 +1,7 @@
 include Makefile.inc
 
+.PHONY: clean release test
+
 CC = gcc
 
 CFLAGS = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized
@@ -31,30 +33,32 @@ OBJ  = $(SRC:%.c=%.o)
 EXE = $(PACKAGE)-$(SYSTEM)-$(ARCH)
 EXE_STATIC = $(EXE)-static
 
+LIB_HEAP_AUTO_FILES = src/heap/libheap.c
+
 LIB_HEAP = libheap-$(ARCH).so
 
 
 
 
-
-.PHONY: clean release test $(LIB_HEAP)
-
-all: $(LIB_HEAP) $(EXE)
+all: $(EXE)
 static: $(EXE_STATIC)
 
-$(EXE): $(OBJ)
+$(EXE): $(OBJ) $(LIB_HEAP_AUTO_FILES)
 	@echo " LINK $@" ;
 	@$(CC) $(CFLAGS) -o $@ $(OBJ) $(LIBS);
 
-$(EXE_STATIC): $(OBJ)
+$(EXE_STATIC): $(OBJ) $(LIB_HEAP_AUTO_FILES)
 	@echo " LINK $@"
 	@$(CC) $(CFLAGS) -o $@ $(OBJ) $(STATIC_LIBS) -static
+
+
+$(LIB_HEAP_AUTO_FILES): $(LIB_HEAP)
+	@perl scripts/dumplibheap.pl $(ARCH)
 
 $(LIB_HEAP):
 	@echo " MAKE $@"
 	@make -f lib/heap/Makefile
 	@strip $(LIB_HEAP)
-	@perl scripts/dumplibheap.pl $(ARCH)
 
 clean:
 	rm -f $(EXE) $(EXE_STATIC) $(OBJ)

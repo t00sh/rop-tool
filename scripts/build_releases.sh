@@ -49,5 +49,5 @@ ARCH=x86-64 make -f Makefile.windows release
 
 if test ! -z $ONLY_BUILD
 then
-    rsync -Pravdtze ssh rop-tool* www-data@t0x0sh.org:~/t0x0sh/rop-tool/releases/$NEW_VERSION/
+    rsync -Pravdtze ssh rop-tool* t0x0sh@t0x0sh.org:~/www/t0x0sh/rop-tool/releases/$NEW_VERSION/
 fi

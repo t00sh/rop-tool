@@ -310,13 +310,17 @@ void r_binfmt_print_syms(r_binfmt_s *bin, int color) {
   num = r_utils_list_size(&bin->syms);
 
   R_UTILS_PRINT_YELLOW_BG_BLACK(color, "\n\n ===== SYMBOLS ===== \n");
-  R_UTILS_PRINT_RED_BG_BLACK(color, "NAME                                    ADDR\n");
+  R_UTILS_PRINT_RED_BG_BLACK(color, "ADDR              NAME\n");
 
   for(i = 0; i < num; i++) {
     s = r_utils_list_access(&bin->syms, i);
 
-    R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-40s", s->name);
-    R_UTILS_PRINT_WHITE_BG_BLACK(color, "%.16" PRIx64 "\n", s->addr);
+	if(r_binfmt_addr_size(bin->arch) == 8) {
+		R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-18.16" PRIx64, s->addr);
+	} else {
+		R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-18.8" PRIx32, (u32)s->addr);
+	}
+    R_UTILS_PRINT_GREEN_BG_BLACK(color, "%s\n", s->name);
   }
 }
 

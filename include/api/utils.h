@@ -71,13 +71,13 @@
 #define R_UTILS_BG_COLOR_WHITE    "\033[47m"
 
 #define R_UTILS_FPRINT_COLORED(stream,color,c_str,...) do {	\
-    if(color) {							\
-      fprintf(stream, c_str);					\
-      fprintf(stream,__VA_ARGS__);				\
-      fprintf(stream, R_UTILS_COLOR_RESET);			\
-    } else {							\
-      fprintf(stream,__VA_ARGS__);				\
-    }								\
+    if(color) {																							\
+      fprintf(stream, c_str);																\
+      fprintf(stream,__VA_ARGS__);													\
+      fprintf(stream, R_UTILS_COLOR_RESET);									\
+    } else {																								\
+      fprintf(stream,__VA_ARGS__);													\
+    }																												\
   }while(0);
 
 #define R_UTILS_PRINT_COLORED(color,c_str,...) do { R_UTILS_FPRINT_COLORED(stdout, color, c_str, __VA_ARGS__); } while(0)
@@ -240,13 +240,14 @@ typedef struct r_utils_hash {
   u32 size;
   u32 colisions;
   void (*elem_destructor)(void*);
+	size_t entries;
 }r_utils_hash_s;
 
 
 void r_utils_hash_foreach(r_utils_hash_s *h, void (*callback)(r_utils_hash_elem_s*));
 void r_utils_hash_free(r_utils_hash_s **h);
 r_utils_hash_elem_s* r_utils_hash_elem_new(void *elem, u8 *key, u32 key_len);
-r_utils_hash_s* r_utils_hash_new(void(*destructor)(void*));
+r_utils_hash_s* r_utils_hash_new(size_t entries, void(*destructor)(void*));
 void r_utils_hash_insert(r_utils_hash_s *h, r_utils_hash_elem_s *elem);
 r_utils_hash_elem_s* r_utils_hash_find_elem(const r_utils_hash_s *h, int (*cmp)(r_utils_hash_elem_s*, const void*), const void *user);
 int r_utils_hash_elem_exist(r_utils_hash_s *h, u8 *key, u32 key_len);
@@ -254,22 +255,52 @@ u32 r_utils_hash_size(r_utils_hash_s *h);
 
 
 /* =========================================================================
-   list.c
+   arraylist.c
    ======================================================================= */
 
 typedef struct {
   void **list;
   size_t num;
   size_t head;
-}r_utils_list_s;
+}r_utils_arraylist_s;
 
-void r_utils_list_init(r_utils_list_s *l);
-void r_utils_list_push(r_utils_list_s *l, void *e);
-void* r_utils_list_pop(r_utils_list_s *l);
-void *r_utils_list_access(r_utils_list_s *l, size_t i);
-size_t r_utils_list_size(r_utils_list_s *l);
-void r_utils_list_free(r_utils_list_s *l, void (*free_cb)(void*));
-void r_utils_list_sort(r_utils_list_s *l, int (*cmp)(const void*, const void*));
+void r_utils_arraylist_init(r_utils_arraylist_s *l, size_t nelem);
+void r_utils_arraylist_push(r_utils_arraylist_s *l, void *e);
+void* r_utils_arraylist_pop(r_utils_arraylist_s *l);
+void *r_utils_arraylist_access(r_utils_arraylist_s *l, size_t i);
+size_t r_utils_arraylist_size(r_utils_arraylist_s *l);
+void r_utils_arraylist_free(r_utils_arraylist_s *l, void (*free_cb)(void*));
+void r_utils_arraylist_sort(r_utils_arraylist_s *l, int (*cmp)(const void*, const void*));
+void r_utils_arraylist_foreach(r_utils_arraylist_s *l, void (*cb)(void*));
 
+/* =========================================================================
+   linklist.c
+   ======================================================================= */
+
+typedef struct r_utils_linklist_cell {
+	void *elem;
+	struct r_utils_linklist_cell *next;
+	struct r_utils_linklist_cell *prev;
+}r_utils_linklist_cell_s;
+
+typedef struct {
+	r_utils_linklist_cell_s *head;
+	r_utils_linklist_cell_s *tail;
+	r_utils_linklist_cell_s *iterator;
+	size_t num;
+}r_utils_linklist_s;
+
+void r_utils_linklist_init(r_utils_linklist_s *l);
+void r_utils_linklist_push(r_utils_linklist_s *l, void *e);
+void* r_utils_linklist_pop(r_utils_linklist_s *l);
+size_t r_utils_linklist_size(r_utils_linklist_s *l);
+void r_utils_linklist_free(r_utils_linklist_s *l, void (*free_cb)(void*));
+void r_utils_linklist_sort(r_utils_linklist_s *l, int (*cmp)(const void*, const void*));
+void r_utils_linklist_foreach(r_utils_linklist_s *l, void (*cb)(void*));
+void r_utils_linklist_iterator_init(r_utils_linklist_s *l);
+void* r_utils_linklist_next(r_utils_linklist_s *l);
+int r_utils_linklist_hasnext(r_utils_linklist_s *l);
+void r_utils_linklist_delete_cur(r_utils_linklist_s *l, void (*free_cb)(void*));
+void* r_utils_linklist_getcur(r_utils_linklist_s *l);
 
 #endif

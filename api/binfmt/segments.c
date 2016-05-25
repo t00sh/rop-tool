@@ -32,7 +32,7 @@ r_binfmt_segment_s* r_binfmt_segment_new(void) {
 }
 
 void r_binfmt_segments_free(r_binfmt_s *bin) {
-  r_utils_list_free(&bin->segments, free);
+  r_utils_linklist_free(&bin->segments, free);
 }
 
 /* Get memory flags as a string */

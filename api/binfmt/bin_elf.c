@@ -31,7 +31,7 @@
    Must be called when symbols are already loaded
 */
 r_binfmt_ssp_e r_binfmt_elf_check_ssp(r_binfmt_s *bin) {
-  if(r_utils_list_size(&bin->syms) == 0)
+  if(r_utils_arraylist_size(&bin->syms) == 0)
     return R_BINFMT_SSP_UNKNOWN;
 
   if(r_binfmt_get_sym_by_name(bin, "__stack_chk_fail") != R_BINFMT_BAD_ADDR)

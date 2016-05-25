@@ -103,6 +103,10 @@ void r_binfmt_load(r_binfmt_s *bin, const char *filename, r_binfmt_arch_e arch) 
   bin->mapped_size = size;
   bin->filename = filename;
 
+  r_utils_linklist_init(&bin->segments);
+  r_utils_linklist_init(&bin->sections);
+  r_utils_arraylist_init(&bin->syms, 0x20);
+
   if(fread(bin->mapped, 1, (size_t)size, fd) != (size_t)size)
     R_UTILS_ERR("Error while read binary file");
 
@@ -134,13 +138,13 @@ void r_binfmt_load(r_binfmt_s *bin, const char *filename, r_binfmt_arch_e arch) 
 void r_binfmt_write(r_binfmt_s *bin, const char *filename) {
   FILE *fd;
 
-    fd = r_utils_fopen(filename, "w");
+  fd = r_utils_fopen(filename, "w");
 
-    if(fwrite(bin->mapped, 1, bin->mapped_size, fd) != bin->mapped_size) {
-      fclose(fd);
-      R_UTILS_ERRX("Error while writing on file %s !", filename);
-    }
+  if(fwrite(bin->mapped, 1, bin->mapped_size, fd) != bin->mapped_size) {
     fclose(fd);
+    R_UTILS_ERRX("Error while writing on file %s !", filename);
+  }
+  fclose(fd);
 }
 
 /* Free the r_binfmt structure */
@@ -154,14 +158,10 @@ void r_binfmt_free(r_binfmt_s *bin) {
 /* Get the first memory segment which match flags */
 r_binfmt_segment_s* r_binfmt_getsegment(r_binfmt_s *bin, u32 flags) {
   r_binfmt_segment_s *seg;
-  size_t i;
-  size_t num;
 
-  num = r_utils_list_size(&bin->segments);
+  r_utils_linklist_iterator_init(&bin->segments);
 
-  for(i = 0; i < num; i++) {
-    seg = r_utils_list_access(&bin->segments, i);
-
+  while((seg = r_utils_linklist_next(&bin->segments)) != NULL) {
     if(seg->flags == flags)
       return seg;
   }
@@ -264,17 +264,13 @@ int r_binfmt_is_bad_addr(r_utils_bytes_s *bad, u64 addr, r_binfmt_arch_e arch) {
 /* Print info about file */
 void r_binfmt_print_sections(r_binfmt_s *bin, int color) {
   r_binfmt_section_s *s;
-  size_t i;
-  size_t num;
-
-  num = r_utils_list_size(&bin->sections);
 
   R_UTILS_PRINT_YELLOW_BG_BLACK(color, "\n\n ===== SECTIONS ===== \n");
   R_UTILS_PRINT_RED_BG_BLACK(color, "NAME                     ADDR                  SIZE\n");
 
-  for(i = 0; i < num; i++) {
-    s = r_utils_list_access(&bin->sections, i);
+  r_utils_linklist_iterator_init(&bin->sections);
 
+  while((s = r_utils_linklist_next(&bin->sections)) != NULL) {
     R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25s", s->name);
     R_UTILS_PRINT_WHITE_BG_BLACK(color, "%.16" PRIx64 "      %.8" PRIx64 "\n", s->addr, s->size);
   }
@@ -282,20 +278,19 @@ void r_binfmt_print_sections(r_binfmt_s *bin, int color) {
 
 void r_binfmt_print_segments(r_binfmt_s *bin, int color) {
   r_binfmt_segment_s *seg;
-  size_t i, num;
   char flag_str[4];
-
-  num = r_utils_list_size(&bin->segments);
+  int i;
 
   R_UTILS_PRINT_YELLOW_BG_BLACK(color, "\n\n ===== SEGMENTS ===== \n");
   R_UTILS_PRINT_RED_BG_BLACK(color, "ID                       ADDR                 SIZE                FLAGS\n");
 
-  for(i = 0; i < num; i++) {
+  r_utils_linklist_iterator_init(&bin->segments);
 
-    seg = r_utils_list_access(&bin->segments, i);
+  i = 0;
+  while((seg = r_utils_linklist_next(&bin->segments)) != NULL) {
     r_binfmt_get_segment_flag_str(flag_str, seg);
 
-    R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25"SIZE_T_FMT_D, i);
+    R_UTILS_PRINT_GREEN_BG_BLACK(color, "%-25d", i);
     R_UTILS_PRINT_WHITE_BG_BLACK(color, "%.16" PRIx64, seg->addr);
     R_UTILS_PRINT_WHITE_BG_BLACK(color, "     %.16" PRIx64, seg->length);
     R_UTILS_PRINT_WHITE_BG_BLACK(color, "    %s\n", flag_str);
@@ -307,19 +302,19 @@ void r_binfmt_print_syms(r_binfmt_s *bin, int color) {
   size_t i;
   size_t num;
 
-  num = r_utils_list_size(&bin->syms);
+  num = r_utils_arraylist_size(&bin->syms);
 
   R_UTILS_PRINT_YELLOW_BG_BLACK(color, "\n\n ===== SYMBOLS ===== \n");
   R_UTILS_PRINT_RED_BG_BLACK(color, "ADDR              NAME\n");
 
   for(i = 0; i < num; i++) {
-    s = r_utils_list_access(&bin->syms, i);
+    s = r_utils_arraylist_access(&bin->syms, i);
 
-	if(r_binfmt_addr_size(bin->arch) == 8) {
-		R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-18.16" PRIx64, s->addr);
-	} else {
-		R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-18.8" PRIx32, (u32)s->addr);
-	}
+    if(r_binfmt_addr_size(bin->arch) == 8) {
+      R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-18.16" PRIx64, s->addr);
+    } else {
+      R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-18.8" PRIx32, (u32)s->addr);
+    }
     R_UTILS_PRINT_GREEN_BG_BLACK(color, "%s\n", s->name);
   }
 }
@@ -345,7 +340,7 @@ static void r_binfmt_print_elf_infos_ssp(r_binfmt_s *bin, int color) {
 }
 
 static void r_binfmt_print_elf_infos_relro(r_binfmt_s *bin, int color) {
-   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "Relro");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "Relro");
   if(bin->elf.relro == R_BINFMT_RELRO_DISABLED)
     R_UTILS_PRINT_RED_BG_BLACK(color, "disabled\n");
   else if(bin->elf.relro == R_BINFMT_RELRO_PARTIAL)
@@ -357,7 +352,7 @@ static void r_binfmt_print_elf_infos_relro(r_binfmt_s *bin, int color) {
 }
 
 static void r_binfmt_print_elf_infos_rpath(r_binfmt_s *bin, int color) {
-   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "RPATH");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "RPATH");
   if(bin->elf.rpath == R_BINFMT_RPATH_DISABLED)
     R_UTILS_PRINT_GREEN_BG_BLACK(color, "no rpath\n");
   else if(bin->elf.rpath == R_BINFMT_RPATH_ENABLED)
@@ -367,7 +362,7 @@ static void r_binfmt_print_elf_infos_rpath(r_binfmt_s *bin, int color) {
 }
 
 static void r_binfmt_print_elf_infos_runpath(r_binfmt_s *bin, int color) {
-   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "RUNPATH");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "RUNPATH");
   if(bin->elf.runpath == R_BINFMT_RUNPATH_DISABLED)
     R_UTILS_PRINT_GREEN_BG_BLACK(color, "no runpath\n");
   else if(bin->elf.runpath == R_BINFMT_RUNPATH_ENABLED)
@@ -377,7 +372,7 @@ static void r_binfmt_print_elf_infos_runpath(r_binfmt_s *bin, int color) {
 }
 
 static void r_binfmt_print_elf_infos_pie(r_binfmt_s *bin, int color) {
-   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "PIE");
+  R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "PIE");
   if(bin->elf.pie == R_BINFMT_PIE_DISABLED)
     R_UTILS_PRINT_RED_BG_BLACK(color, "disabled\n");
   else if(bin->elf.pie == R_BINFMT_PIE_ENABLED)
@@ -425,10 +420,10 @@ void r_binfmt_print_infos(r_binfmt_s *bin, int color) {
   R_UTILS_PRINT_GREEN_BG_BLACK(color, "%#" PRIx64 "\n", bin->entry);
 
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "Loadables segments");
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%"SIZE_T_FMT_D"\n", r_utils_list_size(&bin->segments));
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%"SIZE_T_FMT_D"\n", r_utils_linklist_size(&bin->segments));
 
   R_UTILS_PRINT_WHITE_BG_BLACK(color, "%-25s", "Sections");
-  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%"SIZE_T_FMT_D"\n\n", r_utils_list_size(&bin->sections));
+  R_UTILS_PRINT_GREEN_BG_BLACK(color, "%"SIZE_T_FMT_D"\n\n", r_utils_linklist_size(&bin->sections));
 
   if(bin->type == R_BINFMT_TYPE_ELF32 || bin->type == R_BINFMT_TYPE_ELF64) {
     r_binfmt_print_elf_infos(bin, color);

@@ -103,7 +103,7 @@ static void r_binfmt_macho64_load_segment(r_binfmt_s *bin, r_binfmt_macho64_segm
   seg->start = bin->mapped + fileoff;
   seg->flags = flags;
 
-  r_utils_list_push(&bin->segments, seg);
+  r_utils_linklist_push(&bin->segments, seg);
 }
 
 static void r_binfmt_macho64_load_segments(r_binfmt_s *bin) {
@@ -186,7 +186,7 @@ static int r_binfmt_macho64_check(r_binfmt_s *bin) {
     R_BINFMT_GET_INT(type, cmd->type, bin->endian);
     if(type == R_BINFMT_MACHO_CMD_TYPE_SEGMENT64) {
       if(!r_binfmt_macho64_check_segment(bin, (r_binfmt_macho64_segment_s*)cmd))
-	return 0;
+  return 0;
     }
 
     R_BINFMT_GET_INT(cmd_size, cmd->size, bin->endian);

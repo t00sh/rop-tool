@@ -32,41 +32,41 @@
 u64 r_binfmt_get_int64(byte_t *p, r_binfmt_endian_e endian) {
   if(endian == R_BINFMT_ENDIAN_BIG)
     return ((u64)p[0] << 56 |
-	    (u64)p[1] << 48 |
-	    (u64)p[2] << 40 |
-	    (u64)p[3] << 32 |
-	    (u64)p[4] << 24 |
-	    (u64)p[5] << 16 |
-	    (u64)p[6] << 8  |
-	    (u64)p[7]);
+      (u64)p[1] << 48 |
+      (u64)p[2] << 40 |
+      (u64)p[3] << 32 |
+      (u64)p[4] << 24 |
+      (u64)p[5] << 16 |
+      (u64)p[6] << 8  |
+      (u64)p[7]);
 
   return ((u64)p[7] << 56 |
-	  (u64)p[6] << 48 |
-	  (u64)p[5] << 40 |
-	  (u64)p[4] << 32 |
-	  (u64)p[3] << 24 |
-	  (u64)p[2] << 16 |
-	  (u64)p[1] << 8  |
-	  (u64)p[0]);
+    (u64)p[6] << 48 |
+    (u64)p[5] << 40 |
+    (u64)p[4] << 32 |
+    (u64)p[3] << 24 |
+    (u64)p[2] << 16 |
+    (u64)p[1] << 8  |
+    (u64)p[0]);
 }
 
 u32 r_binfmt_get_int32(byte_t *p, r_binfmt_endian_e endian) {
   if(endian == R_BINFMT_ENDIAN_BIG)
     return ((u32)p[0] << 24 |
-	    (u32)p[1] << 16 |
-	    (u32)p[2] << 8  |
-	    (u32)p[3]);
+      (u32)p[1] << 16 |
+      (u32)p[2] << 8  |
+      (u32)p[3]);
 
   return ((u32)p[3] << 24 |
-	  (u32)p[2] << 16 |
-	  (u32)p[1] << 8  |
-	  (u32)p[0]);
+    (u32)p[2] << 16 |
+    (u32)p[1] << 8  |
+    (u32)p[0]);
 }
 
 u16 r_binfmt_get_int16(byte_t *p, r_binfmt_endian_e endian) {
   if(endian == R_BINFMT_ENDIAN_BIG)
     return ((u16)p[0] << 8 |
-	    (u16)p[1]);
+      (u16)p[1]);
   return ((u16)p[1] << 8 |
-	  (u16)p[0]);
+    (u16)p[0]);
 }

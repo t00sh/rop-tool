@@ -220,7 +220,7 @@ static void r_binfmt_elf32_load_segments(r_binfmt_s *bin, r_binfmt_elf32_s *elf)
       seg->length = p_filesz;
       seg->start = bin->mapped + p_offset;
 
-      r_utils_list_push(&bin->segments, seg);
+      r_utils_linklist_push(&bin->segments, seg);
     }
   }
 }
@@ -274,7 +274,7 @@ static void r_binfmt_elf32_load_syms_symtab(r_binfmt_s *bin, r_binfmt_elf32_s *e
     sym = r_binfmt_sym_new();
     sym->name = r_binfmt_elf32_get_name(bin, elf, sh_link, st_name);
     sym->addr = elf->symtab[i].st_value;
-    r_utils_list_push(&bin->syms, sym);
+    r_utils_arraylist_push(&bin->syms, sym);
   }
 }
 
@@ -313,7 +313,7 @@ static void r_binfmt_elf32_load_syms_dyntab(r_binfmt_s *bin, r_binfmt_elf32_s *e
     sym = r_binfmt_sym_new();
     sym->name = r_binfmt_elf32_get_name(bin, elf, sh_link, st_name);
     sym->addr = elf->dynsym[i].st_value;
-    r_utils_list_push(&bin->syms, sym);
+    r_utils_arraylist_push(&bin->syms, sym);
   }
 }
 
@@ -353,7 +353,7 @@ static void r_binfmt_elf32_load_sections(r_binfmt_s *bin, r_binfmt_elf32_s *elf)
     section->size = sh_size;
     section->name = r_binfmt_elf32_get_name(bin, elf, e_shstrndx, sh_name);
 
-    r_utils_list_push(&bin->sections, section);
+    r_utils_linklist_push(&bin->sections, section);
   }
 }
 

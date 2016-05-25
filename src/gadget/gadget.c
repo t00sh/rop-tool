@@ -70,7 +70,7 @@ void gadget_options_parse(int argc, char **argv) {
     case 'A':
       gadget_options_arch = r_binfmt_string_to_arch(optarg);
       if(gadget_options_arch == R_BINFMT_ARCH_UNDEF)
-	R_UTILS_ERR("%s: bad architecture.", optarg);
+  R_UTILS_ERR("%s: bad architecture.", optarg);
       break;
 
     case 'a':
@@ -89,7 +89,7 @@ void gadget_options_parse(int argc, char **argv) {
     case 'f':
       gadget_options_flavor = r_disa_string_to_flavor(optarg);
       if(gadget_options_flavor == R_DISA_FLAVOR_UNDEF)
-	R_UTILS_ERR("%s: bad flavor.", optarg);
+  R_UTILS_ERR("%s: bad flavor.", optarg);
       break;
 
     case 'F':

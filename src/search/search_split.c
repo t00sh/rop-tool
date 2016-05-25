@@ -31,15 +31,12 @@ int search_print_bytes_in_mem(r_binfmt_s *bin, byte_t *bytes, u64 len) {
   char flag_str[4];
   int addr_size;
   u64 i;
-  size_t j, num;
-
-  num = r_utils_list_size(&bin->segments);
 
   addr_size = r_binfmt_addr_size(bin->arch);
 
-  for(j = 0; j < num; j++) {
+  r_utils_linklist_iterator_init(&bin->segments);
 
-    seg = r_utils_list_access(&bin->segments, j);
+  while((seg = r_utils_linklist_next(&bin->segments)) != NULL) {
 
     if(seg->flags & R_BINFMT_SEGMENT_FLAG_PROT_R) {
       if(len <= seg->length) {
@@ -73,6 +70,7 @@ int search_print_bytes_in_mem(r_binfmt_s *bin, byte_t *bytes, u64 len) {
   }
   return 0;
 }
+
 void search_print_split_rec(r_binfmt_s *bin, byte_t *bytes, u64 len) {
   u64 max_len;
 

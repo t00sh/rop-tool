@@ -112,16 +112,14 @@ void patch_options_parse(int argc, char **argv) {
 static void patch_address(r_binfmt_s *bin, addr_t addr, void *bytes, u64 len) {
   r_binfmt_segment_s *seg;
   u64 off;
-  size_t i, num;
 
-  num = r_utils_list_size(&bin->segments);
+  r_utils_linklist_iterator_init(&bin->segments);
 
-  for(i = 0; i < num; i++) {
-    seg = r_utils_list_access(&bin->segments, i);
+  while((seg = r_utils_linklist_next(&bin->segments)) != NULL) {
 
     if(addr >= seg->addr && addr <= seg->addr+seg->length) {
       if(addr+len >= seg->addr+seg->length) {
-	R_UTILS_ERR("Too many bytes to copy !");
+        R_UTILS_ERR("Too many bytes to copy !");
       }
 
       off = addr - seg->addr;
@@ -148,15 +146,15 @@ void patch_cmd(int argc, char **argv) {
 
   if(patch_options_offset != R_BINFMT_BAD_ADDR) {
     patch_offset(&bin,
-		 patch_options_offset,
-		 patch_options_bytes->bytes,
-		 patch_options_bytes->len);
+     patch_options_offset,
+     patch_options_bytes->bytes,
+     patch_options_bytes->len);
 
   } else {
     patch_address(&bin,
-		  patch_options_address,
-		  patch_options_bytes->bytes,
-		  patch_options_bytes->len);
+      patch_options_address,
+      patch_options_bytes->bytes,
+      patch_options_bytes->len);
   }
 
   if(patch_options_output == NULL)

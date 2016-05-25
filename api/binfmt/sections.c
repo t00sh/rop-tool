@@ -32,5 +32,5 @@ r_binfmt_section_s* r_binfmt_section_new(void) {
 }
 
 void r_binfmt_sections_free(r_binfmt_s *bin) {
-  r_utils_list_free(&bin->sections, free);
+  r_utils_linklist_free(&bin->sections, free);
 }

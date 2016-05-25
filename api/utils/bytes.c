@@ -110,10 +110,10 @@ int r_utils_bytes_are_in_addr32(r_utils_bytes_s *bytes, u32 addr) {
   if(bytes != NULL) {
     for(i = 0; i < bytes->len; i++) {
       if((bytes->bytes[i] == ((addr)       & 0xFF)) ||
-	 (bytes->bytes[i] == ((addr >> 8)  & 0xFF)) ||
-	 (bytes->bytes[i] == ((addr >> 16) & 0xFF)) ||
-	 (bytes->bytes[i] == ((addr >> 24) & 0xFF)))
-	return 1;
+   (bytes->bytes[i] == ((addr >> 8)  & 0xFF)) ||
+   (bytes->bytes[i] == ((addr >> 16) & 0xFF)) ||
+   (bytes->bytes[i] == ((addr >> 24) & 0xFF)))
+  return 1;
     }
   }
   return 0;
@@ -127,14 +127,14 @@ int r_utils_bytes_are_in_addr64(r_utils_bytes_s *bytes, u64 addr) {
   if(bytes != NULL) {
     for(i = 0; i < bytes->len; i++) {
       if((bytes->bytes[i] == ((addr)       & 0xFF)) ||
-	 (bytes->bytes[i] == ((addr >> 8)  & 0xFF)) ||
-	 (bytes->bytes[i] == ((addr >> 16) & 0xFF)) ||
-	 (bytes->bytes[i] == ((addr >> 24) & 0xFF)) ||
-	 (bytes->bytes[i] == ((addr >> 32) & 0xFF)) ||
-	 (bytes->bytes[i] == ((addr >> 40) & 0xFF)) ||
-	 (bytes->bytes[i] == ((addr >> 48) & 0xFF)) ||
-	 (bytes->bytes[i] == ((addr >> 56) & 0xFF)))
-	return 1;
+   (bytes->bytes[i] == ((addr >> 8)  & 0xFF)) ||
+   (bytes->bytes[i] == ((addr >> 16) & 0xFF)) ||
+   (bytes->bytes[i] == ((addr >> 24) & 0xFF)) ||
+   (bytes->bytes[i] == ((addr >> 32) & 0xFF)) ||
+   (bytes->bytes[i] == ((addr >> 40) & 0xFF)) ||
+   (bytes->bytes[i] == ((addr >> 48) & 0xFF)) ||
+   (bytes->bytes[i] == ((addr >> 56) & 0xFF)))
+  return 1;
     }
   }
 

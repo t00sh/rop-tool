@@ -37,21 +37,21 @@ static void search_print_all_strings(r_binfmt_s *bin, r_binfmt_segment_s *seg) {
     if(isprint(seg->start[i])) {
       cur_len++;
     } else {
-	if(cur_len >= search_options_strlen) {
-	  if(!r_binfmt_is_bad_addr(search_options_bad, (seg->addr+i)-cur_len, bin->arch)) {
+  if(cur_len >= search_options_strlen) {
+    if(!r_binfmt_is_bad_addr(search_options_bad, (seg->addr+i)-cur_len, bin->arch)) {
 
-	    R_UTILS_PRINT_BLACK_BG_WHITE(search_options_color, " %s ", flag_str);
-	    if(addr_size == 4) {
-	      R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.8" PRIx32 " ", (u32)((seg->addr + i) - cur_len));
-	    } else {
-	      R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.16" PRIx64 " ", (seg->addr + i) - cur_len);
-	    }
-	    R_UTILS_PRINT_WHITE_BG_BLACK(search_options_color, "-> ");
-	    R_UTILS_PRINT_RED_BG_BLACK(search_options_color, "%.*s\n", cur_len, (char*)&seg->start[i-cur_len]);
-	    found++;
-	  }
-	}
-	cur_len = 0;
+      R_UTILS_PRINT_BLACK_BG_WHITE(search_options_color, " %s ", flag_str);
+      if(addr_size == 4) {
+        R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.8" PRIx32 " ", (u32)((seg->addr + i) - cur_len));
+      } else {
+        R_UTILS_PRINT_GREEN_BG_BLACK(search_options_color, " %#.16" PRIx64 " ", (seg->addr + i) - cur_len);
+      }
+      R_UTILS_PRINT_WHITE_BG_BLACK(search_options_color, "-> ");
+      R_UTILS_PRINT_RED_BG_BLACK(search_options_color, "%.*s\n", cur_len, (char*)&seg->start[i-cur_len]);
+      found++;
+    }
+  }
+  cur_len = 0;
     }
   }
   R_UTILS_PRINT_YELLOW_BG_BLACK(search_options_color, " %d strings found.\n", found);
@@ -59,16 +59,12 @@ static void search_print_all_strings(r_binfmt_s *bin, r_binfmt_segment_s *seg) {
 
 void search_print_all_string_in_bin(r_binfmt_s *bin) {
   r_binfmt_segment_s *seg;
-  size_t i, num;
 
-  num = r_utils_list_size(&bin->segments);
+  r_utils_linklist_iterator_init(&bin->segments);
 
-  for(i = 0; i < num; i++) {
-
-    seg = r_utils_list_access(&bin->segments, i);
+  while((seg = r_utils_linklist_next(&bin->segments)) != NULL) {
 
     if(seg->flags & R_BINFMT_SEGMENT_FLAG_PROT_R) {
-
       search_print_all_strings(bin, seg);
     }
   }

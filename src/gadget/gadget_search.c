@@ -22,8 +22,8 @@
 /************************************************************************/
 #include "rop_gadget.h"
 
-void gadget_print_gadget(r_utils_hash_elem_s *elem) {
-  r_gadget_s *g = elem->val;
+void gadget_print_gadget(void *gadget) {
+  r_gadget_s *g = gadget;
 
   if(g->addr_size == 4) {
     R_UTILS_PRINT_GREEN_BG_BLACK(gadget_options_color, " %#.8" PRIx32 " ", (u32)g->addr);
@@ -34,26 +34,69 @@ void gadget_print_gadget(r_utils_hash_elem_s *elem) {
   R_UTILS_PRINT_RED_BG_BLACK(gadget_options_color, "%s\n", g->gadget);
 }
 
+
+void gadget_print_gadgets(r_binfmt_s *bin, r_gadget_handle_s *g_handle) {
+  r_utils_hash_s *hash;
+  r_gadget_s *gadget;
+
+  hash = r_utils_hash_new(r_utils_linklist_size(&g_handle->g_list)*5, NULL);
+
+  r_utils_linklist_iterator_init(&g_handle->g_list);
+
+  while((gadget = r_utils_linklist_next(&g_handle->g_list)) != NULL) {
+
+    /* Filter option */
+    if(gadget_options_filter) {
+      if(!r_gadget_is_filter(gadget->gadget,
+                             g_handle->disa.arch,
+                             g_handle->disa.flavor))
+
+        continue;
+    }
+
+    /* All option */
+    if(!gadget_options_all) {
+      if(r_utils_hash_elem_exist(hash,
+                                 (u8*)gadget->gadget,
+                                 strlen(gadget->gadget)))
+        continue;
+    }
+
+    /* Bad option */
+    if(gadget_options_bad != NULL) {
+      if(r_binfmt_is_bad_addr(gadget_options_bad,
+                              gadget->addr,
+                              bin->arch))
+        continue;
+    }
+
+    r_utils_hash_insert(hash, r_utils_hash_elem_new(gadget,
+                                                    (u8*)gadget->gadget,
+                                                    strlen(gadget->gadget)));
+    gadget_print_gadget(gadget);
+
+  }
+
+  R_UTILS_PRINT_WHITE_BG_BLACK(gadget_options_color, "%" PRId32 " gadgets found.\n", r_utils_hash_size(hash));
+  r_utils_hash_free(&hash);
+}
+
 void gadget_print_search(r_binfmt_s *bin) {
   r_binfmt_segment_s *seg;
   r_gadget_handle_s g_handle;
-  size_t i, num;
 
-  num = r_utils_list_size(&bin->segments);
-
-  if(!r_gadget_handle_init(&g_handle, bin->arch, gadget_options_flavor, gadget_options_filter, gadget_options_depth, gadget_options_all, gadget_options_bad))
+  if(!r_gadget_handle_init(&g_handle, bin->arch, gadget_options_flavor, gadget_options_depth))
     R_UTILS_ERR("Can't init gadget handle !");
 
-  for(i = 0; i < num; i++) {
-    seg = r_utils_list_access(&bin->segments, i);
+  r_utils_linklist_iterator_init(&bin->segments);
+
+  while((seg = r_utils_linklist_next(&bin->segments)) != NULL) {
 
     if(seg->flags & R_BINFMT_SEGMENT_FLAG_PROT_X) {
       r_gadget_update(&g_handle, seg->addr, seg->start, seg->length);
     }
   }
 
-  r_utils_hash_foreach(g_handle.g_hash, gadget_print_gadget);
-  R_UTILS_PRINT_WHITE_BG_BLACK(gadget_options_color, "%" PRId32 " gadgets found.\n", r_utils_hash_size(g_handle.g_hash));
-
+  gadget_print_gadgets(bin, &g_handle);
   r_gadget_handle_close(&g_handle);
 }

@@ -3,7 +3,7 @@
 #ifndef DEF_LIBHEAP_H
 #define DEF_LIBHEAP_H
 
-extern unsigned char global_libheap[14976];
+extern unsigned char global_libheap[15024];
 
 #endif
 

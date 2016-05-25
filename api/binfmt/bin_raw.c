@@ -37,7 +37,7 @@ r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin, r_binfmt_arch_e arch) {
   seg->start = bin->mapped;
   seg->length = bin->mapped_size;
 
-  r_utils_list_push(&bin->segments, seg);
+  r_utils_linklist_push(&bin->segments, seg);
 
 
   bin->type = R_BINFMT_TYPE_RAW;

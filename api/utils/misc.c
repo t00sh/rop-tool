@@ -27,8 +27,8 @@
 /* Convert 'a' -> 10 */
 int r_utils_hexchar_to_dec(int c) {
   assert((c >= '0' && c <= '9') ||
-	 (c >= 'a' && c <= 'f') ||
-	 (c >= 'A' && c <= 'F'));
+   (c >= 'a' && c <= 'f') ||
+   (c >= 'A' && c <= 'F'));
 
   if(isdigit(c))
     return c - '0';

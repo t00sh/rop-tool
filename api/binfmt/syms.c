@@ -32,7 +32,7 @@ r_binfmt_sym_s* r_binfmt_sym_new(void) {
 }
 
 void r_binfmt_syms_free(r_binfmt_s *bin) {
-  r_utils_list_free(&bin->syms, free);
+  r_utils_arraylist_free(&bin->syms, free);
 }
 
 static int r_binfmt_syms_cmp(const void* s1, const void* s2) {
@@ -53,7 +53,7 @@ addr_t r_binfmt_get_sym_by_name(r_binfmt_s *bin, const char *name) {
 
   i = 0;
 
-  while((sym = r_utils_list_access(&bin->syms, i))) {
+  while((sym = r_utils_arraylist_access(&bin->syms, i))) {
     if(!strcmp(name, sym->name))
       return sym->addr;
     i++;
@@ -79,7 +79,7 @@ const char* r_binfmt_get_sym_by_addr(r_binfmt_s *bin, addr_t addr) {
   while(start <= end) {
     cur = (start + end) / 2;
 
-    sym = r_utils_list_access(&bin->syms, cur);
+    sym = r_utils_arraylist_access(&bin->syms, cur);
 
     if(sym == NULL)
       break;
@@ -90,7 +90,7 @@ const char* r_binfmt_get_sym_by_addr(r_binfmt_s *bin, addr_t addr) {
       start = cur+1;
     } else {
       if(cur == 0)
-	break;
+  break;
       end = cur-1;
     }
   }
@@ -99,5 +99,5 @@ const char* r_binfmt_get_sym_by_addr(r_binfmt_s *bin, addr_t addr) {
 }
 
 void r_binfmt_syms_sort(r_binfmt_s *bin) {
-  r_utils_list_sort(&bin->syms, r_binfmt_syms_cmp);
+  r_utils_arraylist_sort(&bin->syms, r_binfmt_syms_cmp);
 }

@@ -22,25 +22,29 @@
 /************************************************************************/
 #include "api/utils.h"
 
-void r_utils_list_init(r_utils_list_s *l) {
+void r_utils_arraylist_init(r_utils_arraylist_s *l, size_t nelem) {
   assert(l != NULL);
+  assert(nelem > 0);
+
   memset(l, 0, sizeof(*l));
 
+  l->list = r_utils_realloc(l->list, nelem*sizeof(void*));
+  l->num = nelem;
 }
 
-void r_utils_list_push(r_utils_list_s *l, void *e) {
+void r_utils_arraylist_push(r_utils_arraylist_s *l, void *e) {
   assert(l != NULL);
   assert(e != NULL);
 
   if(l->head >= l->num) {
-    l->list = r_utils_realloc(l->list, (l->num+1)*2*sizeof(void*));
-    l->num = (l->num+1)*2;
+    l->list = r_utils_realloc(l->list, (l->num)*2*sizeof(void*));
+    l->num = (l->num)*2;
   }
 
   l->list[l->head++] = e;
 }
 
-void* r_utils_list_pop(r_utils_list_s *l) {
+void* r_utils_arraylist_pop(r_utils_arraylist_s *l) {
   assert(l != NULL);
 
   if(l->head == 0)
@@ -49,7 +53,7 @@ void* r_utils_list_pop(r_utils_list_s *l) {
   return l->list[--l->head];
 }
 
-void *r_utils_list_access(r_utils_list_s *l, size_t i) {
+void *r_utils_arraylist_access(r_utils_arraylist_s *l, size_t i) {
   assert(l != NULL);
 
   if(i >= l->head)
@@ -58,13 +62,13 @@ void *r_utils_list_access(r_utils_list_s *l, size_t i) {
   return l->list[i];
 }
 
-size_t r_utils_list_size(r_utils_list_s *l) {
+size_t r_utils_arraylist_size(r_utils_arraylist_s *l) {
   assert(l != NULL);
 
   return l->head;
 }
 
-void r_utils_list_free(r_utils_list_s *l, void (*free_cb)(void*)) {
+void r_utils_arraylist_free(r_utils_arraylist_s *l, void (*free_cb)(void*)) {
   size_t i;
 
   assert(l != NULL);
@@ -80,10 +84,18 @@ void r_utils_list_free(r_utils_list_s *l, void (*free_cb)(void*)) {
   l->num = 0;
 }
 
-void r_utils_list_sort(r_utils_list_s *l, int (*cmp)(const void*, const void*)) {
+void r_utils_arraylist_sort(r_utils_arraylist_s *l, int (*cmp)(const void*, const void*)) {
   assert(l != NULL);
   assert(cmp != NULL);
 
   if(l->head > 0)
     qsort(l->list, l->head, sizeof(void*), cmp);
+}
+
+void r_utils_arraylist_foreach(r_utils_arraylist_s *l, void (*cb)(void*)) {
+  size_t i;
+
+  for(i = 0; i < l->head; i++) {
+    cb(r_utils_arraylist_access(l, i));
+  }
 }

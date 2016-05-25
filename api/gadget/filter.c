@@ -304,10 +304,10 @@ int r_gadget_filter_strncmp(const char *gadget, const char *filter, int len) {
           i++;
         if(p2[i] != '0' && p2[i+1] != 'x')
           break;
-	i += 2;
-	while(isxdigit(p2[i]))
-	  i++;
-	i--;
+  i += 2;
+  while(isxdigit(p2[i]))
+    i++;
+  i--;
       }
       if(*p1 == 'Q') {
         if(strncmp("r8", p2+i,2)   &&
@@ -339,7 +339,7 @@ int r_gadget_filter_strncmp(const char *gadget, const char *filter, int len) {
            strncmp("esi", p2+i, 3) &&
            strncmp("edi", p2+i, 3))
           break;
-	i += 2;
+  i += 2;
       }
       if(*p1 == 'W') {
         if(strncmp("ax", p2+i, 2) &&
@@ -375,7 +375,7 @@ int r_gadget_filter_strncmp(const char *gadget, const char *filter, int len) {
 }
 
 /* Return true if the gadget match filters */
-int r_gadget_filter(const char *gadget, r_binfmt_arch_e arch, r_disa_flavor_e flavor) {
+int r_gadget_is_filter(const char *gadget, r_binfmt_arch_e arch, r_disa_flavor_e flavor) {
   const char **p_filters;
   int i;
   const char *p;
@@ -400,7 +400,7 @@ int r_gadget_filter(const char *gadget, r_binfmt_arch_e arch, r_disa_flavor_e fl
     match = 0;
     for(i = 0; p_filters[i] != NULL; i++) {
       if(r_gadget_filter_strncmp(gadget, p_filters[i], p-gadget)) {
-	match = 1;
+  match = 1;
       }
     }
 

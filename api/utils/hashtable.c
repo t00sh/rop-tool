@@ -22,9 +22,7 @@
 /************************************************************************/
 #include "api/utils.h"
 
-#define R_UTILS_HASH_SIZE 0x30000
-
-static u32 r_utils_hash(const u8 *key, size_t key_len) {
+static u32 r_utils_hash(r_utils_hash_s *h, const u8 *key, size_t key_len) {
   u32 hash;
   u32 i;
 
@@ -34,7 +32,7 @@ static u32 r_utils_hash(const u8 *key, size_t key_len) {
     hash = (hash << 1) | (hash >> 31);
     hash += key[i];
   }
-  return hash % R_UTILS_HASH_SIZE;
+  return hash % h->entries;
 }
 
 void r_utils_hash_foreach(r_utils_hash_s *h, void (*callback)(r_utils_hash_elem_s*)) {
@@ -44,7 +42,7 @@ void r_utils_hash_foreach(r_utils_hash_s *h, void (*callback)(r_utils_hash_elem_
   assert(h != NULL);
   assert(h->elems != NULL);
 
-  for(i = 0; i < R_UTILS_HASH_SIZE; i++) {
+  for(i = 0; i < h->entries; i++) {
     for(elem = h->elems[i]; elem; elem = elem->next) {
       callback(elem);
     }
@@ -59,13 +57,12 @@ void r_utils_hash_free(r_utils_hash_s **h) {
   assert(h != NULL && *h != NULL);
   assert((*h)->elems != NULL);
 
-  for(i = 0; i < R_UTILS_HASH_SIZE; i++) {
+  for(i = 0; i < (*h)->entries; i++) {
     e = (*h)->elems[i];
     while(e != NULL) {
       tmp = e->next;
       if((*h)->elem_destructor)
-      	(*h)->elem_destructor(e->val);
-      free(e->key);
+        (*h)->elem_destructor(e->val);
       free(e);
       e = tmp;
     }
@@ -89,11 +86,12 @@ r_utils_hash_elem_s* r_utils_hash_elem_new(void *elem, u8 *key, u32 key_len) {
 }
 
 /* Allocate hashtable */
-r_utils_hash_s* r_utils_hash_new(void(*destructor)(void*)) {
+r_utils_hash_s* r_utils_hash_new(size_t entries, void(*destructor)(void*)) {
   r_utils_hash_s *h;
 
   h = r_utils_calloc(1, sizeof(*h));
-  h->elems = r_utils_calloc(R_UTILS_HASH_SIZE, sizeof(r_utils_hash_elem_s*));
+  h->elems = r_utils_calloc(entries, sizeof(r_utils_hash_elem_s*));
+  h->entries = entries;
   h->elem_destructor = destructor;
 
   return h;
@@ -107,7 +105,7 @@ void r_utils_hash_insert(r_utils_hash_s *h, r_utils_hash_elem_s *elem) {
   assert(elem != NULL);
   assert(h->elems != NULL);
 
-  hash = r_utils_hash(elem->key, elem->key_len);
+  hash = r_utils_hash(h, elem->key, elem->key_len);
 
   if(h->elems[hash] != NULL)
     h->colisions++;
@@ -115,24 +113,6 @@ void r_utils_hash_insert(r_utils_hash_s *h, r_utils_hash_elem_s *elem) {
   elem->next = h->elems[hash];
   h->elems[hash] = elem;
   h->size++;
-}
-
-/* Find an element in the hashtable, and compare with the function cmp */
-r_utils_hash_elem_s* r_utils_hash_find_elem(const r_utils_hash_s *h, int (*cmp)(r_utils_hash_elem_s*, const void*), const void *user) {
-  r_utils_hash_elem_s *e;
-  int i;
-
-  assert(h != NULL);
-  assert(h->elems != NULL);
-  assert(cmp != NULL);
-
-  for(i = 0; i < R_UTILS_HASH_SIZE; i++) {
-    for(e = h->elems[i]; e; e = e->next) {
-      if(cmp(e, user))
-	return e;
-    }
-  }
-  return NULL;
 }
 
 
@@ -145,12 +125,12 @@ int r_utils_hash_elem_exist(r_utils_hash_s *h, u8 *key, u32 key_len) {
   assert(h->elems != NULL);
   assert(key != NULL);
 
-  hash = r_utils_hash(key, key_len);
+  hash = r_utils_hash(h, key, key_len);
 
   for(e = h->elems[hash]; e; e = e->next) {
     if(e->key_len == key_len)
       if(!memcmp(e->key, key, key_len))
-	return 1;
+  return 1;
   }
   return 0;
 }

@@ -29,148 +29,148 @@
 #define R_BINFMT_BAD_ADDR ((u64)-1)
 #define R_BINFMT_BAD_OFFSET ((u64)-1)
 
-#define R_BINFMT_ASSERT(expr) do {					\
-    if(!(expr)) {							\
-      R_UTILS_WARN("%s:%d -> assertion failed (malformed file) : `%s`", __FILE__, __LINE__, #expr); \
-      return;								\
-    }									\
-  } while(0)
+#define R_BINFMT_ASSERT(expr) do {										\
+		if(!(expr)) {													\
+			R_UTILS_WARN("%s:%d -> assertion failed (malformed file) : `%s`", __FILE__, __LINE__, #expr); \
+			return;														\
+		}																\
+	} while(0)
 
-#define R_BINFMT_ASSERT_RET(ret,expr) do {				\
-    if(!(expr)) {							\
-      R_UTILS_WARN("%s:%d -> assertion failed (malformed file) : `%s`", __FILE__, __LINE__, #expr); \
-      return ret;								\
-    }									\
-  } while(0)
+#define R_BINFMT_ASSERT_RET(ret,expr) do {								\
+		if(!(expr)) {													\
+			R_UTILS_WARN("%s:%d -> assertion failed (malformed file) : `%s`", __FILE__, __LINE__, #expr); \
+			return ret;													\
+		}																\
+	} while(0)
 
 typedef enum r_binfmt_segment_flag {
-  R_BINFMT_SEGMENT_FLAG_NONE=0,
-  R_BINFMT_SEGMENT_FLAG_PROT_X=1,
-  R_BINFMT_SEGMENT_FLAG_PROT_R=2,
-  R_BINFMT_SEGMENT_FLAG_PROT_W=4,
+	R_BINFMT_SEGMENT_FLAG_NONE=0,
+	R_BINFMT_SEGMENT_FLAG_PROT_X=1,
+	R_BINFMT_SEGMENT_FLAG_PROT_R=2,
+	R_BINFMT_SEGMENT_FLAG_PROT_W=4,
 }r_binfmt_segment_flag_e;
 
 typedef struct r_binfmt_segment {
-  addr_t addr;
-  len_t length;
-  u32 flags;
-  byte_t *start;
+	addr_t addr;
+	len_t length;
+	u32 flags;
+	byte_t *start;
 }r_binfmt_segment_s;
 
 typedef enum r_binfmt_err {
-  R_BINFMT_ERR_OK=0,
-  R_BINFMT_ERR_UNRECOGNIZED,
-  R_BINFMT_ERR_NOTSUPPORTED,
-  R_BINFMT_ERR_MALFORMEDFILE
+	R_BINFMT_ERR_OK=0,
+	R_BINFMT_ERR_UNRECOGNIZED,
+	R_BINFMT_ERR_NOTSUPPORTED,
+	R_BINFMT_ERR_MALFORMEDFILE
 }r_binfmt_err_e;
 
 typedef enum r_binfmt_type {
-  R_BINFMT_TYPE_UNDEF=0,
-  R_BINFMT_TYPE_ELF32,
-  R_BINFMT_TYPE_ELF64,
-  R_BINFMT_TYPE_PE,
-  R_BINFMT_TYPE_MACHO32,
-  R_BINFMT_TYPE_MACHO64,
-  R_BINFMT_TYPE_RAW
+	R_BINFMT_TYPE_UNDEF=0,
+	R_BINFMT_TYPE_ELF32,
+	R_BINFMT_TYPE_ELF64,
+	R_BINFMT_TYPE_PE,
+	R_BINFMT_TYPE_MACHO32,
+	R_BINFMT_TYPE_MACHO64,
+	R_BINFMT_TYPE_RAW
 }r_binfmt_type_e;
 
 typedef enum r_binfmt_endian {
-  R_BINFMT_ENDIAN_UNDEF=0,
-  R_BINFMT_ENDIAN_LITTLE,
-  R_BINFMT_ENDIAN_BIG
+	R_BINFMT_ENDIAN_UNDEF=0,
+	R_BINFMT_ENDIAN_LITTLE,
+	R_BINFMT_ENDIAN_BIG
 }r_binfmt_endian_e;
 
 typedef enum r_binfmt_arch {
-  R_BINFMT_ARCH_UNDEF=0,
-  R_BINFMT_ARCH_X86,
-  R_BINFMT_ARCH_X86_64,
-  R_BINFMT_ARCH_ARM,
-  R_BINFMT_ARCH_ARM64
+	R_BINFMT_ARCH_UNDEF=0,
+	R_BINFMT_ARCH_X86,
+	R_BINFMT_ARCH_X86_64,
+	R_BINFMT_ARCH_ARM,
+	R_BINFMT_ARCH_ARM64
 }r_binfmt_arch_e;
 
 typedef enum {
-  R_BINFMT_NX_UNKNOWN,
-  R_BINFMT_NX_ENABLED,
-  R_BINFMT_NX_DISABLED
+	R_BINFMT_NX_UNKNOWN,
+	R_BINFMT_NX_ENABLED,
+	R_BINFMT_NX_DISABLED
 }r_binfmt_nx_e;
 
 typedef enum {
-  R_BINFMT_SSP_UNKNOWN,
-  R_BINFMT_SSP_ENABLED,
-  R_BINFMT_SSP_DISABLED
+	R_BINFMT_SSP_UNKNOWN,
+	R_BINFMT_SSP_ENABLED,
+	R_BINFMT_SSP_DISABLED
 }r_binfmt_ssp_e;
 
 typedef enum {
-  R_BINFMT_RELRO_UNKNOWN,
-  R_BINFMT_RELRO_DISABLED,
-  R_BINFMT_RELRO_PARTIAL,
-  R_BINFMT_RELRO_FULL
+	R_BINFMT_RELRO_UNKNOWN,
+	R_BINFMT_RELRO_DISABLED,
+	R_BINFMT_RELRO_PARTIAL,
+	R_BINFMT_RELRO_FULL
 }r_binfmt_relro_e;
 
 typedef enum {
-  R_BINFMT_PIE_UNKNOWN,
-  R_BINFMT_PIE_DISABLED,
-  R_BINFMT_PIE_ENABLED,
+	R_BINFMT_PIE_UNKNOWN,
+	R_BINFMT_PIE_DISABLED,
+	R_BINFMT_PIE_ENABLED,
 }r_binfmt_pie_e;
 
 typedef enum {
-  R_BINFMT_RPATH_UNKNOWN,
-  R_BINFMT_RPATH_DISABLED,
-  R_BINFMT_RPATH_ENABLED,
+	R_BINFMT_RPATH_UNKNOWN,
+	R_BINFMT_RPATH_DISABLED,
+	R_BINFMT_RPATH_ENABLED,
 }r_binfmt_rpath_e;
 
 typedef enum {
-  R_BINFMT_RUNPATH_UNKNOWN,
-  R_BINFMT_RUNPATH_DISABLED,
-  R_BINFMT_RUNPATH_ENABLED,
+	R_BINFMT_RUNPATH_UNKNOWN,
+	R_BINFMT_RUNPATH_DISABLED,
+	R_BINFMT_RUNPATH_ENABLED,
 }r_binfmt_runpath_e;
 
 
 typedef struct {
-  const char *name;
-  u64 addr;
+	const char *name;
+	u64 addr;
 }r_binfmt_sym_s;
 
 typedef struct {
-  const char *name;
-  u64 addr;
-  u64 size;
+	const char *name;
+	u64 addr;
+	u64 size;
 }r_binfmt_section_s;
 
 typedef struct binfmt {
-  const char *filename;
+	const char *filename;
 
-  addr_t entry;
+	addr_t entry;
 
-  r_binfmt_type_e type;
-  r_binfmt_endian_e endian;
-  r_binfmt_arch_e arch;
+	r_binfmt_type_e type;
+	r_binfmt_endian_e endian;
+	r_binfmt_arch_e arch;
 
-  r_utils_list_s segments;
-  r_utils_list_s syms;
-  r_utils_list_s sections;
+	r_utils_linklist_s segments;
+	r_utils_arraylist_s syms;
+	r_utils_linklist_s sections;
 
-  union {
-    struct {
-      r_binfmt_nx_e nx;
-      r_binfmt_ssp_e ssp;
-      r_binfmt_relro_e relro;
-      r_binfmt_rpath_e rpath;
-      r_binfmt_runpath_e runpath;
-      r_binfmt_pie_e pie;
-    }elf;
+	union {
+		struct {
+			r_binfmt_nx_e nx;
+			r_binfmt_ssp_e ssp;
+			r_binfmt_relro_e relro;
+			r_binfmt_rpath_e rpath;
+			r_binfmt_runpath_e runpath;
+			r_binfmt_pie_e pie;
+		}elf;
 
-    struct {
+		struct {
 
-    }pe;
+		}pe;
 
-    struct {
+		struct {
 
-    }macho;
-  };
+		}macho;
+	};
 
-  byte_t *mapped;
-  size_t mapped_size;
+	byte_t *mapped;
+	size_t mapped_size;
 
 }r_binfmt_s;
 
@@ -209,16 +209,16 @@ u64 r_binfmt_get_int64(byte_t *p, r_binfmt_endian_e endian);
 u32 r_binfmt_get_int32(byte_t *p, r_binfmt_endian_e endian);
 u16 r_binfmt_get_int16(byte_t *p, r_binfmt_endian_e endian);
 
-#define R_BINFMT_GET_INT(store,field,endian) do {                       \
-    if(sizeof(field) == 2)                                              \
-      store = r_binfmt_get_int16((byte_t*)&field, endian);              \
-    else if(sizeof(field) == 4)                                         \
-      store = r_binfmt_get_int32((byte_t*)&field, endian);              \
-    else if(sizeof(field) == 8)                                         \
-      store = r_binfmt_get_int64((byte_t*)&field, endian);              \
-    else                                                                \
-      R_UTILS_ERR("Bad field size in R_BINFMT_GET_INT()");              \
-  } while(0)
+#define R_BINFMT_GET_INT(store,field,endian) do {					\
+		if(sizeof(field) == 2)										\
+			store = r_binfmt_get_int16((byte_t*)&field, endian);	\
+		else if(sizeof(field) == 4)									\
+			store = r_binfmt_get_int32((byte_t*)&field, endian);	\
+		else if(sizeof(field) == 8)									\
+			store = r_binfmt_get_int64((byte_t*)&field, endian);	\
+		else														\
+			R_UTILS_ERR("Bad field size in R_BINFMT_GET_INT()");	\
+	} while(0)
 
 
 /* ==============================================

@@ -23,23 +23,23 @@
 #include "api/binfmt.h"
 
 /*
-	libpe - the PE library
+  libpe - the PE library
 
-	Copyright (C) 2010 - 2012 Fernando Mercês
-	Copyright (C) 2013 - 2014 Duret Simon (-TOSH-)
+  Copyright (C) 2010 - 2012 Fernando Mercês
+  Copyright (C) 2013 - 2014 Duret Simon (-TOSH-)
 
-	This program is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #define PE32 0x10b
@@ -71,126 +71,126 @@ enum PE_IMAGE_SCN {
 };
 
 typedef struct _IMAGE_DOS_HEADER {
-	WORD e_magic;
-	WORD e_cblp;
-	WORD e_cp;
-	WORD e_crlc;
-	WORD e_cparhdr;
-	WORD e_minalloc;
-	WORD e_maxalloc;
-	WORD e_ss;
-	WORD e_sp;
-	WORD e_csum;
-	WORD e_ip;
-	WORD e_cs;
-	WORD e_lfarlc;
-	WORD e_ovno;
-	WORD e_res[4];
-	WORD e_oemid;
-	WORD e_oeminfo;
-	WORD e_res2[10];
-	LONG e_lfanew;
+  WORD e_magic;
+  WORD e_cblp;
+  WORD e_cp;
+  WORD e_crlc;
+  WORD e_cparhdr;
+  WORD e_minalloc;
+  WORD e_maxalloc;
+  WORD e_ss;
+  WORD e_sp;
+  WORD e_csum;
+  WORD e_ip;
+  WORD e_cs;
+  WORD e_lfarlc;
+  WORD e_ovno;
+  WORD e_res[4];
+  WORD e_oemid;
+  WORD e_oeminfo;
+  WORD e_res2[10];
+  LONG e_lfanew;
 } __attribute__((packed)) IMAGE_DOS_HEADER;
 
 typedef struct _IMAGE_FILE_HEADER {
-	WORD Machine;
-	WORD NumberOfSections;
-	DWORD TimeDateStamp;
-	DWORD PointerToSymbolTable;
-	DWORD NumberOfSymbols;
-	WORD SizeOfOptionalHeader;
-	WORD Characteristics;
+  WORD Machine;
+  WORD NumberOfSections;
+  DWORD TimeDateStamp;
+  DWORD PointerToSymbolTable;
+  DWORD NumberOfSymbols;
+  WORD SizeOfOptionalHeader;
+  WORD Characteristics;
 } __attribute__((packed)) IMAGE_FILE_HEADER, IMAGE_COFF_HEADER;
 
 typedef struct _IMAGE_OPTIONAL_HEADER_32 {
-	WORD Magic;
-	BYTE MajorLinkerVersion;
-	BYTE MinorLinkerVersion;
-	DWORD SizeOfCode;
-	DWORD SizeOfInitializedData;
-	DWORD SizeOfUninitializedData;
-	DWORD AddressOfEntryPoint;
-	DWORD BaseOfCode;
-	DWORD BaseOfData; // only PE32
-	DWORD ImageBase;
-	DWORD SectionAlignment;
-	DWORD FileAlignment;
-	WORD MajorOperatingSystemVersion;
-	WORD MinorOperatingSystemVersion;
-	WORD MajorImageVersion;
-	WORD MinorImageVersion;
-	WORD MajorSubsystemVersion;
-	WORD MinorSubsystemVersion;
-	DWORD Reserved1;
-	DWORD SizeOfImage;
-	DWORD SizeOfHeaders;
-	DWORD CheckSum;
-	WORD Subsystem;
-	WORD DllCharacteristics;
-	DWORD SizeOfStackReserve;
-	DWORD SizeOfStackCommit;
-	DWORD SizeOfHeapReserve;
-	DWORD SizeOfHeapCommit;
-	DWORD LoaderFlags;
-	DWORD NumberOfRvaAndSizes;
-	// IMAGE_DATA_DIRECTORY DataDirectory[];
+  WORD Magic;
+  BYTE MajorLinkerVersion;
+  BYTE MinorLinkerVersion;
+  DWORD SizeOfCode;
+  DWORD SizeOfInitializedData;
+  DWORD SizeOfUninitializedData;
+  DWORD AddressOfEntryPoint;
+  DWORD BaseOfCode;
+  DWORD BaseOfData; // only PE32
+  DWORD ImageBase;
+  DWORD SectionAlignment;
+  DWORD FileAlignment;
+  WORD MajorOperatingSystemVersion;
+  WORD MinorOperatingSystemVersion;
+  WORD MajorImageVersion;
+  WORD MinorImageVersion;
+  WORD MajorSubsystemVersion;
+  WORD MinorSubsystemVersion;
+  DWORD Reserved1;
+  DWORD SizeOfImage;
+  DWORD SizeOfHeaders;
+  DWORD CheckSum;
+  WORD Subsystem;
+  WORD DllCharacteristics;
+  DWORD SizeOfStackReserve;
+  DWORD SizeOfStackCommit;
+  DWORD SizeOfHeapReserve;
+  DWORD SizeOfHeapCommit;
+  DWORD LoaderFlags;
+  DWORD NumberOfRvaAndSizes;
+  // IMAGE_DATA_DIRECTORY DataDirectory[];
 } __attribute__((packed)) IMAGE_OPTIONAL_HEADER_32;
 
 /* note some fields are quad-words */
 typedef struct _IMAGE_OPTIONAL_HEADER_64 {
-	WORD Magic;
-	BYTE MajorLinkerVersion;
-	BYTE MinorLinkerVersion;
-	DWORD SizeOfCode;
-	DWORD SizeOfInitializedData;
-	DWORD SizeOfUninitializedData;
-	DWORD AddressOfEntryPoint;
-	DWORD BaseOfCode;
-	QWORD ImageBase;
-	DWORD SectionAlignment;
-	DWORD FileAlignment;
-	WORD MajorOperatingSystemVersion;
-	WORD MinorOperatingSystemVersion;
-	WORD MajorImageVersion;
-	WORD MinorImageVersion;
-	WORD MajorSubsystemVersion;
-	WORD MinorSubsystemVersion;
-	DWORD Reserved1;
-	DWORD SizeOfImage;
-	DWORD SizeOfHeaders;
-	DWORD CheckSum;
-	WORD Subsystem;
-	WORD DllCharacteristics;
-	QWORD SizeOfStackReserve;
-	QWORD SizeOfStackCommit;
-	QWORD SizeOfHeapReserve;
-	QWORD SizeOfHeapCommit;
-	DWORD LoaderFlags; /* must be zero */
-	DWORD NumberOfRvaAndSizes;
-	// IMAGE_DATA_DIRECTORY DataDirectory[];
+  WORD Magic;
+  BYTE MajorLinkerVersion;
+  BYTE MinorLinkerVersion;
+  DWORD SizeOfCode;
+  DWORD SizeOfInitializedData;
+  DWORD SizeOfUninitializedData;
+  DWORD AddressOfEntryPoint;
+  DWORD BaseOfCode;
+  QWORD ImageBase;
+  DWORD SectionAlignment;
+  DWORD FileAlignment;
+  WORD MajorOperatingSystemVersion;
+  WORD MinorOperatingSystemVersion;
+  WORD MajorImageVersion;
+  WORD MinorImageVersion;
+  WORD MajorSubsystemVersion;
+  WORD MinorSubsystemVersion;
+  DWORD Reserved1;
+  DWORD SizeOfImage;
+  DWORD SizeOfHeaders;
+  DWORD CheckSum;
+  WORD Subsystem;
+  WORD DllCharacteristics;
+  QWORD SizeOfStackReserve;
+  QWORD SizeOfStackCommit;
+  QWORD SizeOfHeapReserve;
+  QWORD SizeOfHeapCommit;
+  DWORD LoaderFlags; /* must be zero */
+  DWORD NumberOfRvaAndSizes;
+  // IMAGE_DATA_DIRECTORY DataDirectory[];
 } __attribute__((packed)) IMAGE_OPTIONAL_HEADER_64;
 
 typedef struct _IMAGE_DATA_DIRECTORY {
-	DWORD VirtualAddress;
-	DWORD Size;
+  DWORD VirtualAddress;
+  DWORD Size;
 } IMAGE_DATA_DIRECTORY;
 
 #define IMAGE_SIZEOF_SHORT_NAME 8
 
 typedef struct _IMAGE_SECTION_HEADER {
-	BYTE Name[IMAGE_SIZEOF_SHORT_NAME];
-	union {
-		DWORD PhysicalAddress; // same value as next field
-		DWORD VirtualSize;
-	} Misc;
-	DWORD VirtualAddress;
-	DWORD SizeOfRawData;
-	DWORD PointerToRawData;
-	DWORD PointerToRelocations; // always zero in executables
-	DWORD PointerToLinenumbers; // deprecated
-	WORD NumberOfRelocations;
-	WORD NumberOfLinenumbers; // deprecated
-	DWORD Characteristics;
+  BYTE Name[IMAGE_SIZEOF_SHORT_NAME];
+  union {
+    DWORD PhysicalAddress; // same value as next field
+    DWORD VirtualSize;
+  } Misc;
+  DWORD VirtualAddress;
+  DWORD SizeOfRawData;
+  DWORD PointerToRawData;
+  DWORD PointerToRelocations; // always zero in executables
+  DWORD PointerToLinenumbers; // deprecated
+  WORD NumberOfRelocations;
+  WORD NumberOfLinenumbers; // deprecated
+  DWORD Characteristics;
 } IMAGE_SECTION_HEADER;
 
 
@@ -332,7 +332,7 @@ static void pe_load_segments(r_binfmt_s *bin) {
       seg->start = bin->mapped + shdr[i].PointerToRawData;
       seg->length = shdr[i].SizeOfRawData;
 
-      r_utils_list_push(&bin->segments, seg);
+      r_utils_linklist_push(&bin->segments, seg);
     }
   }
 }

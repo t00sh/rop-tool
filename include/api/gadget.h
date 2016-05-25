@@ -34,22 +34,19 @@ typedef struct r_gadget {
 }r_gadget_s;
 
 typedef struct r_gadget_handle {
-  r_utils_hash_s *g_hash;
+  r_utils_linklist_s g_list;
   r_disa_s disa;
-  int filter;
-  int all;
   int depth;
-  r_utils_bytes_s *bad;
 }r_gadget_handle_s;
 
 /* gadget.c */
-int r_gadget_handle_init(r_gadget_handle_s *g_handle, r_binfmt_arch_e arch, r_disa_flavor_e flavor, int filter, int depth, int all, r_utils_bytes_s *bad);
+int r_gadget_handle_init(r_gadget_handle_s *g_handle, r_binfmt_arch_e arch, r_disa_flavor_e flavor, int depth);
 void r_gadget_handle_close(r_gadget_handle_s *g_handle);
 void r_gadget_update(r_gadget_handle_s *g_handle, addr_t addr, u8 *code, u32 code_size);
-
+void r_gadget_filter(r_gadget_handle_s *g_handle);
 
 /* filter.c */
-int r_gadget_filter(const char *gadget, r_binfmt_arch_e arch, r_disa_flavor_e flavor);
+int r_gadget_is_filter(const char *gadget, r_binfmt_arch_e arch, r_disa_flavor_e flavor);
 int r_gadget_filter_strncmp(const char *gadget, const char *filter, int len);
 
 #endif

@@ -114,7 +114,7 @@ void command_print_matchs(const char *cmd) {
     if(!strncmp(command_list[i].name, cmd, len)) {
 
       if(matchs > 0) {
-	printf(", ");
+  printf(", ");
       }
       printf("%s", command_list[i].name);
       matchs++;

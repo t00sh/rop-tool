@@ -5,7 +5,7 @@ include Makefile.inc
 CC = gcc
 
 CFLAGS = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized
-CFLAGS += -Wunreachable-code -g -fstack-protector-all
+CFLAGS += -Wunreachable-code -g -fstack-protector-all -Werror -fsanitize=address
 CFLAGS += -DVERSION="\"$(VERSION)\"" -DPACKAGE="\"$(PACKAGE)\""
 
 CFLAGS += -I include/

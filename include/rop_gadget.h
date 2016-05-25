@@ -25,7 +25,7 @@
 
 #include "api/rop.h"
 
-extern u8 gadget_options_depth;
+extern u32 gadget_options_depth;
 extern int gadget_options_filter;
 extern int gadget_options_all;
 extern int gadget_options_color;

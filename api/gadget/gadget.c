@@ -61,49 +61,29 @@ void r_gadget_handle_close(r_gadget_handle_s *g_handle) {
   r_utils_linklist_free(&g_handle->g_list, r_gadget_free);
 }
 
-void r_gadget_filter(r_gadget_handle_s *g_handle) {
+void r_gadget_add_current(r_gadget_handle_s *g_handle) {
   r_gadget_s *gadget;
+  char *g_string;
 
-  r_utils_linklist_iterator_init(&g_handle->g_list);
+  g_string = r_disa_instr_lst_to_str(&g_handle->disa);
 
-  while(r_utils_linklist_hasnext(&g_handle->g_list)) {
-    gadget = r_utils_linklist_getcur(&g_handle->g_list);
-
-    if(!r_gadget_is_filter(gadget->gadget,
-                       g_handle->disa.arch,
-                       g_handle->disa.flavor)) {
-      r_utils_linklist_delete_cur(&g_handle->g_list, free);
-    } else {
-      r_utils_linklist_next(&g_handle->g_list);
-    }
+  if(g_string != NULL) {
+    gadget = r_gadget_new();
+    gadget->addr_size = r_binfmt_addr_size(g_handle->disa.arch);
+    gadget->addr = g_handle->disa.instr_lst.head[0].address;
+    gadget->gadget = g_string;
+    r_utils_linklist_push(&g_handle->g_list, gadget);
   }
 }
 
+
 void r_gadget_update(r_gadget_handle_s *g_handle, addr_t addr, u8 *code, u32 code_size) {
-  r_gadget_s *gadget;
   u32 i;
-  int j;
 
   assert(g_handle != NULL);
 
   for(i = 0; i < code_size; i++) {
-    for(j = 1; j <= g_handle->depth; j++) {
-      r_disa_code(&g_handle->disa, code+i, code_size-i, addr+i, j);
-
-      if(g_handle->disa.instr_lst.count > 0) {
-        if(r_disa_end_is_call(&g_handle->disa) ||
-           r_disa_end_is_jmp(&g_handle->disa) ||
-           r_disa_end_is_ret(&g_handle->disa) ||
-           r_disa_end_is_syscall(&g_handle->disa)) {
-
-          gadget = r_gadget_new();
-          gadget->addr_size = r_binfmt_addr_size(g_handle->disa.arch);
-          gadget->addr = addr+i;
-          gadget->gadget = r_disa_instr_lst_to_str(&g_handle->disa);
-
-          r_utils_linklist_push(&g_handle->g_list, gadget);
-        }
-      }
-    }
+    r_disa_code(&g_handle->disa, code+i, code_size-i, addr+i, g_handle->depth);
+    r_gadget_add_current(g_handle);
   }
 }

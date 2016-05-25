@@ -23,8 +23,9 @@
 #include "rop_gadget.h"
 
 #define GADGET_DEFAULT_DEPTH 5
+#define GADGET_MAX_DEPTH 50
 
-u8 gadget_options_depth = GADGET_DEFAULT_DEPTH;
+u32 gadget_options_depth = GADGET_DEFAULT_DEPTH;
 int gadget_options_filter = 1;
 int gadget_options_color = 1;
 int gadget_options_all = 0;
@@ -70,7 +71,7 @@ void gadget_options_parse(int argc, char **argv) {
     case 'A':
       gadget_options_arch = r_binfmt_string_to_arch(optarg);
       if(gadget_options_arch == R_BINFMT_ARCH_UNDEF)
-  R_UTILS_ERR("%s: bad architecture.", optarg);
+        R_UTILS_ERR("%s: bad architecture.", optarg);
       break;
 
     case 'a':
@@ -84,12 +85,14 @@ void gadget_options_parse(int argc, char **argv) {
 
     case 'd':
       gadget_options_depth = strtoull(optarg, NULL, 0);
+      if(gadget_options_depth <= 0 || gadget_options_depth > GADGET_MAX_DEPTH)
+        R_UTILS_ERR("%s: bad depth.", optarg);
       break;
 
     case 'f':
       gadget_options_flavor = r_disa_string_to_flavor(optarg);
       if(gadget_options_flavor == R_DISA_FLAVOR_UNDEF)
-  R_UTILS_ERR("%s: bad flavor.", optarg);
+        R_UTILS_ERR("%s: bad flavor.", optarg);
       break;
 
     case 'F':

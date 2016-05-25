@@ -56,6 +56,7 @@ int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch) {
   return 1;
 }
 
+/* Set the disassembler flavor (intel/AT&T) */
 int r_disa_set_flavor(r_disa_s *dis, r_disa_flavor_e flavor) {
 
   assert(dis != NULL);
@@ -103,6 +104,7 @@ size_t r_disa_code(r_disa_s *dis, byte_t *code, len_t len, addr_t addr, size_t c
   return dis->instr_lst.count;
 }
 
+/* Get the next disassembled instruction */
 r_disa_instr_t* r_disa_next_instr(r_disa_s *dis) {
   r_disa_instr_t *instr;
 
@@ -117,77 +119,77 @@ r_disa_instr_t* r_disa_next_instr(r_disa_s *dis) {
   return instr;
 }
 
-/* Check if last instruction is a CALL */
-int r_disa_end_is_call(r_disa_s *dis) {
-  size_t end;
-
+/* Check if the instruction at <index> is a CALL */
+int r_disa_is_call(r_disa_s *dis, size_t index) {
   assert(dis != NULL);
+  assert(index < dis->instr_lst.count);
 
-  if(dis->instr_lst.count == 0)
-    return 0;
-
-  end = dis->instr_lst.count-1;
-  return (!strncmp(dis->instr_lst.head[end].mnemonic, "call", 4));
+  return (!strncmp(dis->instr_lst.head[index].mnemonic, "call", 4));
 }
 
-/* Check if last instruction is a JMP */
-int r_disa_end_is_jmp(r_disa_s *dis) {
-  size_t end;
-
+/* Check if the instruction at <index> is a JMP */
+int r_disa_is_jmp(r_disa_s *dis, size_t index) {
   assert(dis != NULL);
+  assert(index < dis->instr_lst.count);
 
-  if(dis->instr_lst.count == 0)
-    return 0;
-
-  end = dis->instr_lst.count-1;
-  return (!strncmp(dis->instr_lst.head[end].mnemonic, "jmp", 3));
+  return (!strncmp(dis->instr_lst.head[index].mnemonic, "jmp", 3));
 }
 
-/* Check if last instruction is a syscall */
-int r_disa_end_is_syscall(r_disa_s *dis) {
-  size_t end;
-
+/* Check if the instruction at <index> is a SYSCALL */
+int r_disa_is_syscall(r_disa_s *dis, size_t index) {
   assert(dis != NULL);
+  assert(index < dis->instr_lst.count);
 
-  if(dis->instr_lst.count == 0)
-    return 0;
-
-  end = dis->instr_lst.count-1;
-  if(!strncmp(dis->instr_lst.head[end].mnemonic, "int", 3) && !strncmp(dis->instr_lst.head[end].op_str, "0x80", 4))
+  if(!strncmp(dis->instr_lst.head[index].mnemonic, "int", 3) && !strncmp(dis->instr_lst.head[index].op_str, "0x80", 4))
     return 1;
 
-  if(!strncmp(dis->instr_lst.head[end].mnemonic, "syscall", 7))
+  if(!strncmp(dis->instr_lst.head[index].mnemonic, "syscall", 7))
     return 1;
 
   return 0;
 }
 
-/* Check if last instruction is a RET */
-int r_disa_end_is_ret(r_disa_s *dis) {
-  size_t end;
-
+/* Check if the instruction at <index> is a RET */
+int r_disa_is_ret(r_disa_s *dis, size_t index) {
   assert(dis != NULL);
+  assert(index < dis->instr_lst.count);
 
-  if(dis->instr_lst.count == 0)
-    return 0;
+  return (!strncmp(dis->instr_lst.head[index].mnemonic, "ret", 3));
+}
 
-  end = dis->instr_lst.count-1;
-  return (!strncmp(dis->instr_lst.head[end].mnemonic, "ret", 3));
+/* Get the index of the first call/ret/jmp/syscall instruction */
+int r_disa_end_gadget_index(r_disa_s *dis) {
+  size_t i;
+
+  for(i = 0; i < dis->instr_lst.count; i++) {
+    if(r_disa_is_ret(dis, i)
+       || r_disa_is_call(dis, i)
+       || r_disa_is_syscall(dis, i)
+       || r_disa_is_jmp(dis, i))
+      return i;
+  }
+
+  return -1;
 }
 
 /* Transform the instr list to string : [INSTR1; [INSTR2];...]
-   The string is allocated with malloc, she must be freed by the caller
+   The string is allocated with malloc, and must be freed by the caller
 */
 char* r_disa_instr_lst_to_str(r_disa_s *dis) {
   char *string;
-  size_t i;
   size_t size;
+  int i, end_index;
 
   assert(dis != NULL);
 
+  end_index = r_disa_end_gadget_index(dis);
+
+  if(end_index < 0)
+    return NULL;
+
   size = 0;
 
-  for(i = 0; i < dis->instr_lst.count; i++) {
+  for(i = 0; i <= end_index; i++) {
     size += strlen(dis->instr_lst.head[i].mnemonic);
     size += strlen(dis->instr_lst.head[i].op_str);
     size += 3;
@@ -198,7 +200,7 @@ char* r_disa_instr_lst_to_str(r_disa_s *dis) {
   string = r_utils_malloc(size);
   *string = '\0';
 
-  for(i = 0; i < dis->instr_lst.count; i++) {
+  for(i = 0; i <= end_index; i++) {
     strcat(string, dis->instr_lst.head[i].mnemonic);
     strcat(string, " ");
     strcat(string, dis->instr_lst.head[i].op_str);

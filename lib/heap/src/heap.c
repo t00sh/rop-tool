@@ -63,19 +63,19 @@ static size_t libheap_heap_size = 0;
 #define LIBHEAP_ADDR(c) (((u8*)c) + sizeof(size_t))
 #define LIBHEAP_CHUNK_INUSE(c) (LIBHEAP_NEXT_CHUNK(c) > libheap_last_chunk ? 1 : LIBHEAP_CHUNK_FLAG(LIBHEAP_NEXT_CHUNK(c), LIBHEAP_PREV_INUSE))
 
-#define LIBHEAP_DUMP(...) do {						\
-    R_UTILS_FPRINT_RED_BG_BLACK(libheap_options_stream, libheap_options_color, __VA_ARGS__);  \
-    libheap_dump();							\
+#define LIBHEAP_DUMP(...) do {                                          \
+    R_UTILS_FPRINT_RED_BG_BLACK(libheap_options_stream, libheap_options_color, __VA_ARGS__); \
+    libheap_dump();                                                     \
   }while(0)
 
-#define LIBHEAP_DUMP_FIELD(u,f,...) do {				\
-    if(u) {								\
-      R_UTILS_FPRINT_YELLOW_BG_BLACK(libheap_options_stream, libheap_options_color,f);	\
+#define LIBHEAP_DUMP_FIELD(u,f,...) do {                                \
+    if(u) {                                                             \
+      R_UTILS_FPRINT_YELLOW_BG_BLACK(libheap_options_stream, libheap_options_color,f); \
       R_UTILS_FPRINT_GREEN_BG_BLACK(libheap_options_stream, libheap_options_color,__VA_ARGS__); \
-    } else {								\
-      R_UTILS_FPRINT_WHITE_BG_BLACK(libheap_options_stream, libheap_options_color,f);	\
+    } else {                                                            \
+      R_UTILS_FPRINT_WHITE_BG_BLACK(libheap_options_stream, libheap_options_color,f); \
       R_UTILS_FPRINT_GREEN_BG_BLACK(libheap_options_stream, libheap_options_color,__VA_ARGS__); \
-    }									\
+    }                                                                   \
   }while(0)
 
 static libheap_chunk_s *libheap_first_chunk = NULL;
@@ -109,17 +109,17 @@ static void libheap_dump_chunk(libheap_chunk_s *chunk) {
   }
   LIBHEAP_DUMP_FIELD(inuse, "size: ", "0x%"SIZE_T_FMT_X", ", LIBHEAP_CHUNK_SIZE(chunk));
   LIBHEAP_DUMP_FIELD(inuse, "flags: ", "%c%c%c\n",
-		     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_IS_MMAPED) ? 'M' : '-',
-		     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_PREV_INUSE) ? 'P' : '-',
-		     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_NON_MAIN_ARENA) ? 'A' : '-');
+                     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_IS_MMAPED) ? 'M' : '-',
+                     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_PREV_INUSE) ? 'P' : '-',
+                     LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_NON_MAIN_ARENA) ? 'A' : '-');
 
   if(libheap_options_dumpdata) {
 #if defined(__ARCH_i686)
-     libheap_hexdump(libheap_options_stream, libheap_options_color, LIBHEAP_ADDR(chunk), LIBHEAP_CHUNK_SIZE(chunk), (u32)(LIBHEAP_ADDR(chunk)));
+    libheap_hexdump(libheap_options_stream, libheap_options_color, LIBHEAP_ADDR(chunk), LIBHEAP_CHUNK_SIZE(chunk), (u32)(LIBHEAP_ADDR(chunk)));
 #elif defined(__ARCH_x86_64)
     libheap_hexdump(libheap_options_stream, libheap_options_color, LIBHEAP_ADDR(chunk), LIBHEAP_CHUNK_SIZE(chunk), (u64)(LIBHEAP_ADDR(chunk)));
 #else
-    #error "Fix ARCH define"
+#error "Fix ARCH define"
 #endif
   }
 }

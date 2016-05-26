@@ -20,41 +20,21 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with rop-tool.  If not, see <http://www.gnu.org/licenses/>     */
 /************************************************************************/
-#ifndef DEF_API_UTILS_H
-#define DEF_API_UTILS_H
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <errno.h>
+#ifndef DEF_API_UTILS_BYTES_H
+#define DEF_API_UTILS_BYTES_H
 
-#include <ctype.h>
-#include <getopt.h>
-#include <limits.h>
-#include <assert.h>
+/* Raw bytes sequence structure */
+typedef struct r_utils_bytes {
+  u64 len;
+  u8 *bytes;
+}r_utils_bytes_s;
 
-#ifdef __linux__
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#endif
-
-
-#include "api/utils/print.h"
-#include "api/utils/types.h"
-#include "api/utils/xfunc.h"
-#include "api/utils/safe_int.h"
-#include "api/utils/bytes.h"
-#include "api/utils/misc.h"
-#include "api/utils/hashtable.h"
-#include "api/utils/arraylist.h"
-#include "api/utils/linklist.h"
-
-
-
+r_utils_bytes_s* r_utils_bytes_unhexlify(const char *string);
+char* r_utils_bytes_hexlify(r_utils_bytes_s *bytes);
+void r_utils_free_bytes_seq(r_utils_bytes_s **bytes);
+r_utils_bytes_s* r_utils_new_bytes_seq(size_t len);
+int r_utils_bytes_are_in_addr32(r_utils_bytes_s *bytes, u32 addr);
+int r_utils_bytes_are_in_addr64(r_utils_bytes_s *bytes, u64 addr);
 
 #endif

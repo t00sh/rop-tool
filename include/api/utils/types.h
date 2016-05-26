@@ -20,41 +20,29 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with rop-tool.  If not, see <http://www.gnu.org/licenses/>     */
 /************************************************************************/
-#ifndef DEF_API_UTILS_H
-#define DEF_API_UTILS_H
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <errno.h>
+#ifndef DEF_API_UTILS_TYPES_H
+#define DEF_API_UTILS_TYPES_H
 
-#include <ctype.h>
-#include <getopt.h>
-#include <limits.h>
-#include <assert.h>
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
 
-#ifdef __linux__
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/mman.h>
+typedef u8 byte_t;
+typedef u64 addr_t;
+typedef u64 len_t;
+
+/* %zu seem to not be standard */
+#ifdef __WINDOWS__
+#define SIZE_T_FMT_X "Ix"
+#define SIZE_T_FMT_D "Id"
+#define SIZE_T_FMT_U "Iu"
+#else
+#define SIZE_T_FMT_X "zx"
+#define SIZE_T_FMT_D "zd"
+#define SIZE_T_FMT_U "zu"
 #endif
-
-
-#include "api/utils/print.h"
-#include "api/utils/types.h"
-#include "api/utils/xfunc.h"
-#include "api/utils/safe_int.h"
-#include "api/utils/bytes.h"
-#include "api/utils/misc.h"
-#include "api/utils/hashtable.h"
-#include "api/utils/arraylist.h"
-#include "api/utils/linklist.h"
-
-
 
 
 #endif

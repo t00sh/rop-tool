@@ -20,41 +20,27 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with rop-tool.  If not, see <http://www.gnu.org/licenses/>     */
 /************************************************************************/
-#ifndef DEF_API_UTILS_H
-#define DEF_API_UTILS_H
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <errno.h>
+#ifndef DEF_API_UTILS_XFUNC_H
+#define DEF_API_UTILS_XFUNC_H
 
-#include <ctype.h>
-#include <getopt.h>
-#include <limits.h>
-#include <assert.h>
+void* r_utils_malloc(size_t size);
+void* r_utils_calloc(size_t nmemb, size_t size);
+void* r_utils_realloc(void *ptr, size_t size);
+char* r_utils_strdup(const char *s);
+FILE* r_utils_fopen(const char *path, const char *mode);
+int r_utils_fseek(FILE *stream, long offset, int whence);
+long r_utils_ftell(FILE *stream);
 
 #ifdef __linux__
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/mman.h>
+int r_utils_open(const char *path, int oflag);
+ssize_t r_utils_read(int fd, void *buf, size_t count);
+ssize_t r_utils_write(int fd, const void *buf, size_t count);
+void* r_utils_mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
+int r_utils_close(int fildes);
+int r_utils_fstat(int fildes, struct stat *buf);
+pid_t r_utils_fork(void);
+int r_utils_execve(const char *path, char *const argv[], char *const envp[]);
 #endif
-
-
-#include "api/utils/print.h"
-#include "api/utils/types.h"
-#include "api/utils/xfunc.h"
-#include "api/utils/safe_int.h"
-#include "api/utils/bytes.h"
-#include "api/utils/misc.h"
-#include "api/utils/hashtable.h"
-#include "api/utils/arraylist.h"
-#include "api/utils/linklist.h"
-
-
-
 
 #endif

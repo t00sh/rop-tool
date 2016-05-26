@@ -20,41 +20,24 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with rop-tool.  If not, see <http://www.gnu.org/licenses/>     */
 /************************************************************************/
-#ifndef DEF_API_UTILS_H
-#define DEF_API_UTILS_H
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <errno.h>
+#ifndef DEF_API_UTILS_ARRAYLIST_H
+#define DEF_API_UTILS_ARRAYLIST_H
 
-#include <ctype.h>
-#include <getopt.h>
-#include <limits.h>
-#include <assert.h>
+typedef struct {
+  void **list;
+  size_t num;
+  size_t head;
+}r_utils_arraylist_s;
 
-#ifdef __linux__
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#endif
-
-
-#include "api/utils/print.h"
-#include "api/utils/types.h"
-#include "api/utils/xfunc.h"
-#include "api/utils/safe_int.h"
-#include "api/utils/bytes.h"
-#include "api/utils/misc.h"
-#include "api/utils/hashtable.h"
-#include "api/utils/arraylist.h"
-#include "api/utils/linklist.h"
-
-
+void r_utils_arraylist_init(r_utils_arraylist_s *l, size_t nelem);
+void r_utils_arraylist_push(r_utils_arraylist_s *l, void *e);
+void* r_utils_arraylist_pop(r_utils_arraylist_s *l);
+void *r_utils_arraylist_access(r_utils_arraylist_s *l, size_t i);
+size_t r_utils_arraylist_size(r_utils_arraylist_s *l);
+void r_utils_arraylist_free(r_utils_arraylist_s *l, void (*free_cb)(void*));
+void r_utils_arraylist_sort(r_utils_arraylist_s *l, int (*cmp)(const void*, const void*));
+void r_utils_arraylist_foreach(r_utils_arraylist_s *l, void (*cb)(void*));
 
 
 #endif

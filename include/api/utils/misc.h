@@ -20,41 +20,13 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with rop-tool.  If not, see <http://www.gnu.org/licenses/>     */
 /************************************************************************/
-#ifndef DEF_API_UTILS_H
-#define DEF_API_UTILS_H
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <errno.h>
+#ifndef DEF_API_UTILS_MISC_H
+#define DEF_API_UTILS_MISC_H
 
-#include <ctype.h>
-#include <getopt.h>
-#include <limits.h>
-#include <assert.h>
-
-#ifdef __linux__
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#endif
-
-
-#include "api/utils/print.h"
-#include "api/utils/types.h"
-#include "api/utils/xfunc.h"
-#include "api/utils/safe_int.h"
-#include "api/utils/bytes.h"
-#include "api/utils/misc.h"
-#include "api/utils/hashtable.h"
-#include "api/utils/arraylist.h"
-#include "api/utils/linklist.h"
-
-
-
+int r_utils_dec_to_hexchar(int c);
+int r_utils_hexchar_to_dec(int c);
+void* r_utils_memsearch(void *src, u64 src_len, void *dst, u64 dst_len);
+char* r_utils_alea_filename(char *file, int len);
 
 #endif

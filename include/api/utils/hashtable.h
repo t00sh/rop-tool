@@ -20,41 +20,34 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with rop-tool.  If not, see <http://www.gnu.org/licenses/>     */
 /************************************************************************/
-#ifndef DEF_API_UTILS_H
-#define DEF_API_UTILS_H
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <errno.h>
+#ifndef DEF_API_UTILS_HASHTABLE_H
+#define DEF_API_UTILS_HASHTABLE_H
 
-#include <ctype.h>
-#include <getopt.h>
-#include <limits.h>
-#include <assert.h>
+typedef struct r_utils_hash_elem {
+  void *val;
+  u8 *key;
+  u32 key_len;
+  struct r_utils_hash_elem *next;
+}r_utils_hash_elem_s;
 
-#ifdef __linux__
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#endif
+typedef struct r_utils_hash {
+  r_utils_hash_elem_s **elems;
+  u32 size;
+  u32 colisions;
+  void (*elem_destructor)(void*);
+	size_t entries;
+}r_utils_hash_s;
 
 
-#include "api/utils/print.h"
-#include "api/utils/types.h"
-#include "api/utils/xfunc.h"
-#include "api/utils/safe_int.h"
-#include "api/utils/bytes.h"
-#include "api/utils/misc.h"
-#include "api/utils/hashtable.h"
-#include "api/utils/arraylist.h"
-#include "api/utils/linklist.h"
-
-
+void r_utils_hash_foreach(r_utils_hash_s *h, void (*callback)(r_utils_hash_elem_s*));
+void r_utils_hash_free(r_utils_hash_s **h);
+r_utils_hash_elem_s* r_utils_hash_elem_new(void *elem, u8 *key, u32 key_len);
+r_utils_hash_s* r_utils_hash_new(size_t entries, void(*destructor)(void*));
+void r_utils_hash_insert(r_utils_hash_s *h, r_utils_hash_elem_s *elem);
+r_utils_hash_elem_s* r_utils_hash_find_elem(const r_utils_hash_s *h, int (*cmp)(r_utils_hash_elem_s*, const void*), const void *user);
+int r_utils_hash_elem_exist(r_utils_hash_s *h, u8 *key, u32 key_len);
+u32 r_utils_hash_size(r_utils_hash_s *h);
 
 
 #endif

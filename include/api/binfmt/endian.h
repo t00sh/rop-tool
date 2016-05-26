@@ -20,41 +20,23 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with rop-tool.  If not, see <http://www.gnu.org/licenses/>     */
 /************************************************************************/
-#ifndef DEF_API_UTILS_H
-#define DEF_API_UTILS_H
+#ifndef DEF_API_BINFMT_ENDIAN_H
+#define DEF_API_BINFMT_ENDIAN_H
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <errno.h>
+u64 r_binfmt_get_int64(byte_t *p, r_binfmt_endian_e endian);
+u32 r_binfmt_get_int32(byte_t *p, r_binfmt_endian_e endian);
+u16 r_binfmt_get_int16(byte_t *p, r_binfmt_endian_e endian);
 
-#include <ctype.h>
-#include <getopt.h>
-#include <limits.h>
-#include <assert.h>
-
-#ifdef __linux__
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#endif
-
-
-#include "api/utils/print.h"
-#include "api/utils/types.h"
-#include "api/utils/xfunc.h"
-#include "api/utils/safe_int.h"
-#include "api/utils/bytes.h"
-#include "api/utils/misc.h"
-#include "api/utils/hashtable.h"
-#include "api/utils/arraylist.h"
-#include "api/utils/linklist.h"
-
-
+#define R_BINFMT_GET_INT(store,field,endian) do {           \
+    if(sizeof(field) == 2)                                  \
+      store = r_binfmt_get_int16((byte_t*)&field, endian);  \
+    else if(sizeof(field) == 4)                             \
+      store = r_binfmt_get_int32((byte_t*)&field, endian);  \
+    else if(sizeof(field) == 8)                             \
+      store = r_binfmt_get_int64((byte_t*)&field, endian);  \
+    else                                                    \
+      R_UTILS_ERR("Bad field size in R_BINFMT_GET_INT()");  \
+  } while(0)
 
 
 #endif

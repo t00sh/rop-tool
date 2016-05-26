@@ -20,41 +20,21 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with rop-tool.  If not, see <http://www.gnu.org/licenses/>     */
 /************************************************************************/
-#ifndef DEF_API_UTILS_H
-#define DEF_API_UTILS_H
+#ifndef DEF_API_BINFMT_BIN_H
+#define DEF_API_BINFMT_BIN_H
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <errno.h>
-
-#include <ctype.h>
-#include <getopt.h>
-#include <limits.h>
-#include <assert.h>
-
-#ifdef __linux__
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#endif
-
-
-#include "api/utils/print.h"
-#include "api/utils/types.h"
-#include "api/utils/xfunc.h"
-#include "api/utils/safe_int.h"
-#include "api/utils/bytes.h"
-#include "api/utils/misc.h"
-#include "api/utils/hashtable.h"
-#include "api/utils/arraylist.h"
-#include "api/utils/linklist.h"
-
-
+void r_binfmt_free(r_binfmt_s *bin);
+void r_binfmt_load(r_binfmt_s *bin, const char *filename, r_binfmt_arch_e arch);
+void r_binfmt_write(r_binfmt_s *bin, const char *filename);
+r_binfmt_arch_e r_binfmt_string_to_arch(const char *str);
+const char* r_binfmt_arch_to_string(r_binfmt_arch_e arch);
+const char* r_binfmt_type_to_string(r_binfmt_type_e type);
+int r_binfmt_addr_size(r_binfmt_arch_e arch);
+int r_binfmt_is_bad_addr(r_utils_bytes_s *bad, u64 addr, r_binfmt_arch_e arch);
+void r_binfmt_print_segments(r_binfmt_s *bin, int color);
+void r_binfmt_print_sections(r_binfmt_s *bin, int color);
+void r_binfmt_print_syms(r_binfmt_s *bin, int color);
+void r_binfmt_print_infos(r_binfmt_s *bin, int color);
 
 
 #endif

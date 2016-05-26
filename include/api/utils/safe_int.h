@@ -20,41 +20,18 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with rop-tool.  If not, see <http://www.gnu.org/licenses/>     */
 /************************************************************************/
-#ifndef DEF_API_UTILS_H
-#define DEF_API_UTILS_H
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <errno.h>
+#ifndef DEF_API_UTILS_SAFE_INT_H
+#define DEF_API_UTILS_SAFE_INT_H
 
-#include <ctype.h>
-#include <getopt.h>
-#include <limits.h>
-#include <assert.h>
-
-#ifdef __linux__
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#endif
-
-
-#include "api/utils/print.h"
-#include "api/utils/types.h"
-#include "api/utils/xfunc.h"
-#include "api/utils/safe_int.h"
-#include "api/utils/bytes.h"
-#include "api/utils/misc.h"
-#include "api/utils/hashtable.h"
-#include "api/utils/arraylist.h"
-#include "api/utils/linklist.h"
-
-
-
+int r_utils_add64(u64 *r, u64 a, u64 b);
+int r_utils_add32(u32 *r, u32 a, u32 b);
+int r_utils_add16(u16 *r, u16 a, u16 b);
+int r_utils_mul64(u64 *r, u64 a, u64 b);
+int r_utils_mul32(u32 *r, u32 a, u32 b);
+int r_utils_mul16(u16 *r, u16 a, u16 b);
+int r_utils_sub64(u64 *r, u64 a, u64 b);
+int r_utils_sub32(u32 *r, u32 a, u32 b);
+int r_utils_sub16(u16 *r, u16 a, u16 b);
 
 #endif

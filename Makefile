@@ -4,8 +4,8 @@ include Makefile.inc
 
 CC = gcc
 
-CFLAGS = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized
-CFLAGS += -Wunreachable-code -g -fstack-protector-all -Werror -fsanitize=address
+CFLAGS = -O2 -Wextra -Wall -Wwrite-strings -Wstrict-prototypes -Wuninitialized
+CFLAGS += -Wunreachable-code -g -fstack-protector-all -Werror
 CFLAGS += -DVERSION="\"$(VERSION)\"" -DPACKAGE="\"$(PACKAGE)\""
 
 CFLAGS += -I include/
@@ -20,6 +20,7 @@ else
 	STATIC_LIBS = ./capstone-linux64/libcapstone.a
 	LIBS = -L ./capstone-linux64/ -lcapstone
 endif
+
 
 CFLAGS += -DARCHITECTURE="\"$(ARCH)\""
 CFLAGS += -D__ARCH_$(ARCH)

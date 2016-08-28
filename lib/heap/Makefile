@@ -2,8 +2,8 @@
 
 CC = gcc
 
-CFLAGS = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes -Wuninitialized
-CFLAGS += -Wunreachable-code -g -fstack-protector-all
+CFLAGS = -O2 -Wall -Wextra -Werror -Wwrite-strings -Wstrict-prototypes -Wuninitialized
+CFLAGS += -Wunreachable-code -g -fstack-protector-all -Wno-deprecated-declarations
 
 CFLAGS += -I include -I lib/heap/include
 

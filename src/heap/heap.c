@@ -30,7 +30,6 @@ char **heap_options_command = NULL;
 const char *heap_options_tmppath = HEAP_DEFAULT_TMPPATH;
 const char *heap_options_output = NULL;
 int heap_options_color = 1;
-int heap_options_trace_calloc = 0;
 int heap_options_trace_free = 0;
 int heap_options_trace_realloc = 0;
 int heap_options_trace_malloc = 0;
@@ -39,7 +38,6 @@ int heap_options_dumpdata = 0;
 void heap_help(void) {
   printf("Usage : %s heap [OPTIONS] [COMMAND]\n\n", PACKAGE);
   printf("OPTIONS:\n");
-  printf("  --calloc, -C             Trace calloc calls\n");
   printf("  --free, -F               Trace free calls\n");
   printf("  --realloc, -R            Trace realloc calls\n");
   printf("  --malloc, -M             Trace malloc calls\n");
@@ -57,7 +55,6 @@ void heap_options_parse(int argc, char **argv) {
 
   const struct option opts[] = {
     {"output",        required_argument, NULL, 'O'},
-    {"calloc",        no_argument,       NULL, 'C'},
     {"free",          no_argument,       NULL, 'F'},
     {"realloc",       no_argument,       NULL, 'R'},
     {"malloc",        no_argument,       NULL, 'M'},
@@ -68,15 +65,11 @@ void heap_options_parse(int argc, char **argv) {
     {NULL,            0,                 NULL, 0  }
   };
 
-  while((opt = getopt_long(argc, argv, "+O:CFRMdht:N", opts, NULL)) != -1) {
+  while((opt = getopt_long(argc, argv, "+O:FRMdht:N", opts, NULL)) != -1) {
     switch(opt) {
 
     case 'O':
       heap_options_output = optarg;
-      break;
-
-    case 'C':
-      heap_options_trace_calloc = 1;
       break;
 
     case 'F':
@@ -175,12 +168,6 @@ void heap_cmd(int argc, char **argv) {
   if(heap_options_trace_malloc)
     if(setenv("LIBHEAP_TRACE_MALLOC", "1", 0) == -1) {
       fprintf(stderr, "Can't set LIBHEAP_TRACE_MALLOC environment variable\n");
-      exit(EXIT_FAILURE);
-    }
-
-  if(heap_options_trace_calloc)
-    if(setenv("LIBHEAP_TRACE_CALLOC", "1", 0) == -1) {
-      fprintf(stderr, "Can't set LIBHEAP_TRACE_CALLOC environment variable\n");
       exit(EXIT_FAILURE);
     }
 

@@ -41,13 +41,12 @@ typedef struct libheap_chunk {
 
 void* (*libheap_malloc_old)(size_t, const void*);
 void* (*libheap_realloc_old)(void*, size_t, const void*);
-void* (*libheap_calloc_old)(size_t, size_t, const void*);
 void (*libheap_free_old)(void*, const void*);
 
 
 static void libheap_initialize(void);
 
-void (*__malloc_initialize_hook)(void) = libheap_initialize;
+void (*__MALLOC_HOOK_VOLATILE __malloc_initialize_hook)(void) = libheap_initialize;
 
 
 #define LIBHEAP_PREV_INUSE     0x1
@@ -181,9 +180,6 @@ static void libheap_get_options(void) {
   if((env = getenv("LIBHEAP_TRACE_MALLOC")) != NULL) {
     trace |= (atoi(env) % 2) * LIBHEAP_TRACE_MALLOC;
   }
-  if((env = getenv("LIBHEAP_TRACE_CALLOC")) != NULL) {
-    trace |= (atoi(env) % 2) * LIBHEAP_TRACE_CALLOC;
-  }
   if((env = getenv("LIBHEAP_TRACE_REALLOC")) != NULL) {
     trace |= (atoi(env) % 2) * LIBHEAP_TRACE_REALLOC;
   }
@@ -228,6 +224,25 @@ void* libheap_malloc_hook(size_t s, const void *user) {
   return p;
 }
 
+void* libheap_realloc_hook(void *ptr, size_t s, const void *user) {
+  void *p;
+
+  (void) user;
+
+  __realloc_hook = libheap_realloc_old;
+  p = realloc(ptr, s);
+
+  if(!LIBHEAP_CHUNK_FLAG(LIBHEAP_GET_CHUNK(p), LIBHEAP_IS_MMAPED)) {
+    libheap_update_chunk(p);
+    if(libheap_options_trace & LIBHEAP_TRACE_MALLOC)
+      LIBHEAP_DUMP("realloc(%" SIZE_T_FMT_X ") = %p\n", s, p);
+  }
+
+  __realloc_hook = libheap_realloc_hook;
+
+  return p;
+}
+
 
 void libheap_free_hook(void *ptr, const void *user) {
 
@@ -248,11 +263,13 @@ void libheap_free_hook(void *ptr, const void *user) {
 
 static void libheap_initialize(void) {
 
-  libheap_malloc_old = __malloc_hook;
-  libheap_free_old   = __free_hook;
+  libheap_malloc_old  = __malloc_hook;
+  libheap_free_old    = __free_hook;
+  libheap_realloc_old = __realloc_hook;
 
-  __malloc_hook = libheap_malloc_hook;
-  __free_hook   = libheap_free_hook;
+  __malloc_hook  = libheap_malloc_hook;
+  __free_hook    = libheap_free_hook;
+  __realloc_hook = libheap_realloc_hook;
 
   libheap_get_options();
 

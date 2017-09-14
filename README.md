@@ -188,38 +188,38 @@ Disassemble 0x100 bytes at address 0x08048452
 rop-tool gadget /bin/ls
 ```
 
-![ScreenShot](https://t0x0sh.org/repo/images/rop-tool/screen1.png)
+![ScreenShot](https://repo.t0x0sh.org/images/rop-tool/screen1.png)
 
 ```
 rop-tool search /bin/ls -a
 ```
 
-![ScreenShot](https://t0x0sh.org/repo/images/rop-tool/screen2.png)
+![ScreenShot](https://repo.t0x0sh.org/images/rop-tool/screen2.png)
 
 ```
 rop-tool search /bin/ls -s "/bin/sh\x00"
 ```
 
-![ScreenShot](https://t0x0sh.org/repo/images/rop-tool/screen3.png)
+![ScreenShot](https://repo.t0x0sh.org/images/rop-tool/screen3.png)
 
 ```
 rop-tool search /bin/ls -w 0x90
 ```
 
-![ScreenShot](https://t0x0sh.org/repo/images/rop-tool/screen4.png)
+![ScreenShot](https://repo.t0x0sh.org/images/rop-tool/screen4.png)
 
 ```
 rop-tool heap ./a.out
 ```
 
-![ScreenShot](https://t0x0sh.org/repo/images/rop-tool/screen5.png)
+![ScreenShot](https://repo.t0x0sh.org/images/rop-tool/screen5.png)
 
 
 ```
 rop-tool dis ./bin  # Many formats
 ```
 
-![ScreenShot](https://t0x0sh.org/repo/images/rop-tool/screen6.png)
+![ScreenShot](https://repo.t0x0sh.org/images/rop-tool/screen6.png)
 
 ### HOW TO CONTRIBUTE
 - Programming (see TODO file if you need ideas)

@@ -5,12 +5,10 @@
 use strict;
 use warnings;
 
-die "Usage : $0 <architecture>\n" unless($ARGV[0]);
-
-my $LIBHEAP  = "./libheap-$ARGV[0].so";
-my $FILE_OUT = "src/heap/libheap.c";
+my $LIBHEAP  = "./libheap/librop-tool-heap.so";
+my $FILE_OUT = "rop-tool/src/heap/libheap.c";
 my $VAR_NAME = "global_libheap";
-my $HEADER   = "include/global_libheap.h";
+my $HEADER   = "rop-tool/include/libheap.h";
 
 my $len = dump_file($LIBHEAP, $FILE_OUT, $VAR_NAME);
 print " GEN $FILE_OUT\n";

@@ -2,7 +2,7 @@
 *.o
 
 # Executables
-rop-tool*
+rop-tool/rop-tool
 
 # Signature files
 *.asc
@@ -11,7 +11,7 @@ rop-tool*
 *~
 *#*
 
-capstone*
+capstone
 
 # Test files
 *.stdout
@@ -24,5 +24,5 @@ binary-samples
 *.a
 
 # Auto generated files
-#api/lib/libheap.c
-#include/api/libheap.h
+rop-tool/src/heap/libheap.c
+rop-tool/include/libheap.h

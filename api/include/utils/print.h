@@ -61,6 +61,7 @@
     } else {                                                \
       fprintf(stream,__VA_ARGS__);                          \
     }                                                       \
+    fflush(stream);					    \
   }while(0);
 
 #define R_UTILS_PRINT_COLORED(color,c_str,...) do {             \

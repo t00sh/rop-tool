@@ -263,6 +263,8 @@ void libheap_free_hook(void *ptr, const void *user) {
 
 static void libheap_initialize(void) {
 
+  libheap_get_options();
+
   libheap_malloc_old  = __malloc_hook;
   libheap_free_old    = __free_hook;
   libheap_realloc_old = __realloc_hook;
@@ -270,7 +272,4 @@ static void libheap_initialize(void) {
   __malloc_hook  = libheap_malloc_hook;
   __free_hook    = libheap_free_hook;
   __realloc_hook = libheap_realloc_hook;
-
-  libheap_get_options();
-
 }

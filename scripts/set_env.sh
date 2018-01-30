@@ -5,7 +5,6 @@ set -e
 BINARY_SAMPLES_GITHUB="https://github.com/JonathanSalwan/binary-samples.git"
 CAPSTONE_GITHUB="https://github.com/aquynh/capstone"
 
-rm -rf capstone*win*
 
 if test ! -d capstone
 then

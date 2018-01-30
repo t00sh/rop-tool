@@ -6,9 +6,9 @@ use strict;
 use warnings;
 
 my $LIBHEAP  = "./libheap/librop-tool-heap.so";
-my $FILE_OUT = "rop-tool/src/heap/libheap.c";
+my $FILE_OUT = "tools/src/heap/libheap.c";
 my $VAR_NAME = "global_libheap";
-my $HEADER   = "rop-tool/include/libheap.h";
+my $HEADER   = "tools/include/libheap.h";
 
 my $len = dump_file($LIBHEAP, $FILE_OUT, $VAR_NAME);
 print " GEN $FILE_OUT\n";

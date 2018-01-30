@@ -2,7 +2,7 @@
 *.o
 
 # Executables
-rop-tool/rop-tool
+rop-tool
 
 # Signature files
 *.asc
@@ -24,5 +24,5 @@ binary-samples
 *.a
 
 # Auto generated files
-rop-tool/src/heap/libheap.c
-rop-tool/include/libheap.h
+tools/src/heap/libheap.c
+tools/include/libheap.h

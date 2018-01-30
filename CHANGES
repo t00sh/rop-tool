@@ -1,3 +1,10 @@
+rop-tool v2.4.1 (2018-01-30)
+- Fix: little bug in 'heap' command prints
+- Fix: bug in heap command, we use __malloc_hooks instead of dlsym because of infinite recursion.
+- Fix: in 'info' command, we test address sizes when printing, and we print symbol name before address.
+- No support for Windows anymore (if you want rop-tool compiling for windows, use pull-requests)
+- Refactoring of source tree: each module (api, tools, libheap) can be built independently.
+
 rop-tool v2.4 (2015-07-25)
 - API   : binary segments are now handled with r_utils_list instead of mlist.
 - API   : Big changes in ELF parser

@@ -5,16 +5,15 @@ include ../Makefile.inc
 CFLAGS  = -O2 -Wall -Wextra -Wwrite-strings -Wstrict-prototypes
 CFLAGS += -fPIC -Wunreachable-code -g -fstack-protector-all
 
-CPPFLAGS  = -I. -I./include/ -I../capstone/include
+CPPFLAGS  = -I. -I./include/ -I../api/ -I../api/include -I../capstone/include
 CPPFLAGS += -DVERSION="\"$(VERSION)\"" -DPACKAGE="\"$(PACKAGE)\""
+CPPFLAGS += -D__ARCH_$(ARCH)
 
-LDFLAGS = -L../capstone/
-
-SRC  = $(wildcard ./src/*/*.c)
+SRC  = $(wildcard ./src/*.c)
 OBJ  = $(SRC:%.c=%.o)
 
-LIB_DYN = lib$(PACKAGE)-api.so
-LIB_STATIC = lib$(PACKAGE)-api.a
+LIB_DYN = lib$(PACKAGE)-heap.so
+LIB_STATIC = lib$(PACKAGE)-heap.a
 
 all: $(LIB_DYN) $(LIB_STATIC)
 
@@ -28,7 +27,7 @@ $(LIB_STATIC): $(OBJ)
 
 %.o:%.c
 	@ echo " CC $@" ;
-	@ $(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@ ;
+	@ $(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(LIB_DYN) $(LIB_STATIC) $(OBJ)

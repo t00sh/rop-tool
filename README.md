@@ -1,4 +1,4 @@
-rop-tool v2.4
+rop-tool v2.4.1
 ====
 
 A tool to help you writing binary exploits
@@ -7,7 +7,7 @@ A tool to help you writing binary exploits
 ### OPTIONS
 
 ```
-rop-tool v2.4
+rop-tool v2.4.1
 Help you to make binary exploits.
 
 Usage: rop-tool <cmd> [OPTIONS]
@@ -230,9 +230,6 @@ rop-tool dis ./bin  # Many formats
 
 ### DEPENDENCIES
 - [capstone](http://capstone-engine.org/)
-
-### RELEASES
-- https://t0x0sh.org/rop-tool/releases/
 
 ### LICENSE
 - GPLv3 license : http://www.gnu.org/licenses/gpl-3.0.txt

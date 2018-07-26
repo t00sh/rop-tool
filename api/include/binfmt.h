@@ -87,7 +87,9 @@ typedef enum r_binfmt_arch {
   R_BINFMT_ARCH_X86,
   R_BINFMT_ARCH_X86_64,
   R_BINFMT_ARCH_ARM,
-  R_BINFMT_ARCH_ARM64
+  R_BINFMT_ARCH_ARM64,
+  R_BINFMT_ARCH_MIPS,
+  R_BINFMT_ARCH_MIPS64,
 }r_binfmt_arch_e;
 
 typedef enum {

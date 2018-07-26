@@ -375,6 +375,8 @@ static r_binfmt_arch_e r_binfmt_elf64_getarch(r_binfmt_s *bin, r_binfmt_elf64_s 
     return R_BINFMT_ARCH_X86_64;
   if(elf->ehdr->e_machine == EM_AARCH64)
     return R_BINFMT_ARCH_ARM64;
+  if(elf->ehdr->e_machine == EM_MIPS)
+    return R_BINFMT_ARCH_MIPS64;
 
   return R_BINFMT_ARCH_UNDEF;
 }

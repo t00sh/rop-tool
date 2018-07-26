@@ -43,6 +43,12 @@ int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch) {
   } else if(arch == R_BINFMT_ARCH_ARM64) {
     cs_mode = CS_MODE_ARM;
     cs_arch = CS_ARCH_ARM64;
+  } else if(arch == R_BINFMT_ARCH_MIPS) {
+    cs_mode = CS_MODE_MIPS32;
+    cs_arch = CS_ARCH_MIPS;
+  } else if(arch == R_BINFMT_ARCH_MIPS64) {
+    cs_mode = CS_MODE_MIPS64;
+    cs_arch = CS_ARCH_MIPS;
   } else {
     return 0;
   }

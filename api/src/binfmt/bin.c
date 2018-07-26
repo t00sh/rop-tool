@@ -195,6 +195,10 @@ const char* r_binfmt_arch_to_string(r_binfmt_arch_e arch) {
     return "arm";
   case R_BINFMT_ARCH_ARM64:
     return "arm64";
+  case R_BINFMT_ARCH_MIPS:
+    return "mips";
+  case R_BINFMT_ARCH_MIPS64:
+    return "mips64";
   default:
     return "unknown";
   }

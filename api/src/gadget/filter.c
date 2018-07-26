@@ -282,12 +282,37 @@ static const char *att_x86_64_filters[] = {
   NULL
 };
 
+static const char *registers8[] = {"r8b", "r9b", "r10b", "r11b", "r12b", "r13b",
+                                   "r14b", "r15b", "al", "ah", "bl", "bh", "cl", "ch"
+                                   "dl", "dh", NULL};
+
+static const char *registers16[] = {"r8w", "r9w", "r10w", "r11w", "r12w", "r13w",
+                                    "r14w", "r15w", "ax", "bx", "cx", "dx",
+                                    "sp", "bp", "si", "di", NULL};
+
+static const char *registers32[] = {"r8d", "r9d", "r10d", "r11d", "r12d", "r13d",
+                                    "r14d", "r15d", "eax", "ebx", "ecx", "edx",
+                                    "esp", "ebp", "esi", "edi", NULL};
+
+static const char *registers64[] = {"r8", "r9", "r10", "r11", "r12", "r13",
+                                    "r14", "r15", "rax", "rbx", "rcx", "rdx",
+                                    "rsp", "rbp", "rsi", "rdi", NULL};
+
+static int r_gadget_register_length(const char *string, const char **registers) {
+  size_t i;
+
+  for(i = 0; registers[i] != NULL; i++) {
+    if(!strncmp(string, registers[i], strlen(registers[i])))
+      return strlen(registers[i]);
+  }
+  return 0;
+}
 
 /* Return true if the instruction match the filter */
 int r_gadget_filter_strncmp(const char *gadget, const char *filter, int len) {
   const char *p1 = filter;
   const char *p2 = gadget;
-  int i;
+  int i, length;
 
   i = 0;
   while((len == 0 || i < len)
@@ -310,56 +335,37 @@ int r_gadget_filter_strncmp(const char *gadget, const char *filter, int len) {
   i--;
       }
       if(*p1 == 'Q') {
-        if(strncmp("r8", p2+i,2)   &&
-           strncmp("r9", p2+i,2)   &&
-           strncmp("r10", p2+i,3)  &&
-           strncmp("r11", p2+i,3)  &&
-           strncmp("r12", p2+i,3)  &&
-           strncmp("r13", p2+i,3)  &&
-           strncmp("r14", p2+i,3)  &&
-           strncmp("r15", p2+i,3)  &&
-           strncmp("rax", p2+i, 3) &&
-           strncmp("rbx", p2+i, 3) &&
-           strncmp("rcx", p2+i, 3) &&
-           strncmp("rdx", p2+i, 3) &&
-           strncmp("rsp", p2+i, 3) &&
-           strncmp("rbp", p2+i, 3) &&
-           strncmp("rsi", p2+i, 3) &&
-           strncmp("rdi", p2+i, 3))
+        length = r_gadget_register_length(p2 + i, registers64);
+        if(length > 0) {
+          i += length - 1;
+        } else {
           break;
-        i += 2;
+        }
       }
       if(*p1 == 'D') {
-        if(strncmp("eax", p2+i, 3) &&
-           strncmp("ebx", p2+i, 3) &&
-           strncmp("ecx", p2+i, 3) &&
-           strncmp("edx", p2+i, 3) &&
-           strncmp("esp", p2+i, 3) &&
-           strncmp("ebp", p2+i, 3) &&
-           strncmp("esi", p2+i, 3) &&
-           strncmp("edi", p2+i, 3))
+        length = r_gadget_register_length(p2 + i, registers32);
+        if(length > 0) {
+          i += length - 1;
+        } else {
           break;
-  i += 2;
+        }
       }
       if(*p1 == 'W') {
-        if(strncmp("ax", p2+i, 2) &&
-           strncmp("bx", p2+i, 2) &&
-           strncmp("cx", p2+i, 2) &&
-           strncmp("dx", p2+i, 2) &&
-           strncmp("di", p2+i, 2) &&
-           strncmp("si", p2+i, 2))
+        length = r_gadget_register_length(p2 + i, registers16);
+        if(length > 0) {
+          i += length - 1;
+        } else {
           break;
-        i++;
+        }
       }
 
       if(*p1 == 'B') {
-        if(strncmp("al", p2+i, 2) &&
-           strncmp("bl", p2+i, 2) &&
-           strncmp("cl", p2+i, 2) &&
-           strncmp("dl", p2+i, 2))
+        length = r_gadget_register_length(p2 + i, registers8);
+        if(length > 0) {
+          i += length - 1;
+        } else {
           break;
-        i++;
-
+        }
       }
     } else {
       if(*p1 != p2[i])

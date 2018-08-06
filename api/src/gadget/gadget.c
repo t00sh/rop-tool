@@ -78,12 +78,14 @@ void r_gadget_add_current(r_gadget_handle_s *g_handle) {
 
 
 void r_gadget_update(r_gadget_handle_s *g_handle, addr_t addr, u8 *code, u32 code_size) {
-  u32 i;
+  u32 i, depth;
 
   assert(g_handle != NULL);
 
   for(i = 0; i < code_size; i++) {
-    r_disa_code(&g_handle->disa, code+i, code_size-i, addr+i, g_handle->depth);
-    r_gadget_add_current(g_handle);
+    for(depth = 1; depth <= g_handle->depth; depth++) {
+      r_disa_code(&g_handle->disa, code+i, code_size-i, addr+i, depth);
+      r_gadget_add_current(g_handle);
+    }
   }
 }

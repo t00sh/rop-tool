@@ -163,19 +163,16 @@ int r_disa_is_ret(r_disa_s *dis, size_t index) {
   return (!strncmp(dis->instr_lst.head[index].mnemonic, "ret", 3));
 }
 
-/* Get the index of the first call/ret/jmp/syscall instruction */
-int r_disa_end_gadget_index(r_disa_s *dis) {
-  size_t i;
+/* Return 1 if last gadget is jmp/call/ret/syscall */
+int r_disa_is_end_gadget(r_disa_s *dis) {
 
-  for(i = 0; i < dis->instr_lst.count; i++) {
-    if(r_disa_is_ret(dis, i)
-       || r_disa_is_call(dis, i)
-       || r_disa_is_syscall(dis, i)
-       || r_disa_is_jmp(dis, i))
-      return i;
-  }
+  if(dis->instr_lst.count <= 0)
+    return 0;
 
-  return -1;
+  return r_disa_is_ret(dis, dis->instr_lst.count - 1)
+    || r_disa_is_call(dis, dis->instr_lst.count - 1)
+    || r_disa_is_syscall(dis, dis->instr_lst.count - 1)
+    || r_disa_is_jmp(dis, dis->instr_lst.count - 1);
 }
 
 /* Transform the instr list to string : [INSTR1; [INSTR2];...]
@@ -183,19 +180,16 @@ int r_disa_end_gadget_index(r_disa_s *dis) {
 */
 char* r_disa_instr_lst_to_str(r_disa_s *dis) {
   char *string;
-  size_t size;
-  int i, end_index;
+  size_t size, i;
 
   assert(dis != NULL);
 
-  end_index = r_disa_end_gadget_index(dis);
-
-  if(end_index < 0)
+  if(!r_disa_is_end_gadget(dis))
     return NULL;
 
   size = 0;
 
-  for(i = 0; i <= end_index; i++) {
+  for(i = 0; i < dis->instr_lst.count; i++) {
     size += strlen(dis->instr_lst.head[i].mnemonic);
     size += strlen(dis->instr_lst.head[i].op_str);
     size += 3;
@@ -206,7 +200,7 @@ char* r_disa_instr_lst_to_str(r_disa_s *dis) {
   string = r_utils_malloc(size);
   *string = '\0';
 
-  for(i = 0; i <= end_index; i++) {
+  for(i = 0; i < dis->instr_lst.count; i++) {
     strcat(string, dis->instr_lst.head[i].mnemonic);
     strcat(string, " ");
     strcat(string, dis->instr_lst.head[i].op_str);

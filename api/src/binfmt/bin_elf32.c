@@ -359,20 +359,21 @@ static void r_binfmt_elf32_load_sections(r_binfmt_s *bin, r_binfmt_elf32_s *elf)
 
 /* Get the architecture */
 static r_binfmt_arch_e r_binfmt_elf32_getarch(r_binfmt_s *bin, r_binfmt_elf32_s *elf) {
-  (void) bin;
+  uint16_t e_machine;
 
   R_BINFMT_ASSERT_RET(R_BINFMT_ARCH_UNDEF, elf->ehdr != NULL);
+  R_BINFMT_GET_INT(e_machine, elf->ehdr->e_machine, bin->endian);
 
-  if(elf->ehdr->e_machine == EM_386)
+  if(e_machine == EM_386)
     return R_BINFMT_ARCH_X86;
-  if(elf->ehdr->e_machine == EM_ARM)
+  if(e_machine == EM_ARM)
     return R_BINFMT_ARCH_ARM;
-  if(elf->ehdr->e_machine == EM_X86_64 ||
-     elf->ehdr->e_machine == EM_IA_64)
+  if(e_machine == EM_X86_64 ||
+     e_machine == EM_IA_64)
     return R_BINFMT_ARCH_X86_64;
-  if(elf->ehdr->e_machine == EM_AARCH64)
+  if(e_machine == EM_AARCH64)
     return R_BINFMT_ARCH_ARM64;
-  if(elf->ehdr->e_machine == EM_MIPS)
+  if(e_machine == EM_MIPS)
     return R_BINFMT_ARCH_MIPS;
 
   return R_BINFMT_ARCH_UNDEF;

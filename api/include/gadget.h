@@ -40,6 +40,7 @@ typedef struct r_gadget_handle {
 }r_gadget_handle_s;
 
 
+/* X86 filters */
 extern const char *r_filter_x86_att[];
 extern const char *r_filter_x86_att_end[];
 extern const char *r_filter_x86[];
@@ -47,6 +48,14 @@ extern const char *r_filter_x86_end[];
 extern const char *r_filter_x86_att[];
 extern const char *r_filter_x86_att_end[];
 extern const char *r_filter_x86_registers[];
+
+/* ARM filters */
+extern const char *r_filter_arm[];
+extern const char *r_filter_arm_end[];
+extern const char *r_filter_arm_registers[];
+extern const char *r_filter_arm64[];
+extern const char *r_filter_arm64_end[];
+extern const char *r_filter_arm64_registers[];
 
 /* gadget.c */
 int r_gadget_handle_init(r_gadget_handle_s *g_handle, r_binfmt_arch_e arch, r_disa_flavor_e flavor, int depth);

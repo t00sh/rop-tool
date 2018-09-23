@@ -53,6 +53,14 @@ static r_filter_t r_filter_list[] = {
     R_BINFMT_ARCH_X86_64, R_DISA_FLAVOR_ATT,
     r_filter_x86_att, r_filter_x86_att_end, r_filter_x86_registers
   },
+  { /* ARM  */
+    R_BINFMT_ARCH_ARM, R_DISA_FLAVOR_UNDEF,
+    r_filter_arm, r_filter_arm_end, r_filter_arm_registers
+  },
+  { /* ARM64  */
+    R_BINFMT_ARCH_ARM64, R_DISA_FLAVOR_UNDEF,
+    r_filter_arm64, r_filter_arm64_end, r_filter_arm64_registers
+  },
   {
     R_BINFMT_ARCH_UNDEF, R_DISA_FLAVOR_UNDEF, NULL, NULL, NULL
   }
@@ -155,7 +163,8 @@ int r_gadget_is_filter(const char *gadget, r_binfmt_arch_e arch,
 
   for(i = 0; r_filter_list[i].arch != R_BINFMT_ARCH_UNDEF; i++) {
     if(r_filter_list[i].arch == arch &&
-       r_filter_list[i].flavor == flavor) {
+       (r_filter_list[i].flavor == flavor ||
+        r_filter_list[i].flavor == R_DISA_FLAVOR_UNDEF)) {
       p_filters = r_filter_list[i].filters;
       p_filters_end = r_filter_list[i].filters_end;
       p_registers = r_filter_list[i].registers;
@@ -172,21 +181,20 @@ int r_gadget_is_filter(const char *gadget, r_binfmt_arch_e arch,
 
   while((p = strchr(gadget, ';')) != NULL) {
     is_end = 0;
-    for(i = 0; p_filters[i] != NULL; i++) {
-      if(r_gadget_filter_strncmp(gadget, p_filters[i], p_registers, p-gadget)) {
+    for(i = 0; p_filters_end[i] != NULL; i++) {
+      if(r_gadget_filter_strncmp(gadget, p_filters_end[i], p_registers, p-gadget)) {
+        is_end = 1;
         break;
       }
     }
 
-    if(p_filters[i] == NULL) {
-
-      for(i = 0; p_filters_end[i] != NULL; i++) {
-        if(r_gadget_filter_strncmp(gadget, p_filters_end[i], p_registers, p-gadget)) {
-          is_end = 1;
+    if(p_filters_end[i] == NULL) {
+      for(i = 0; p_filters[i] != NULL; i++) {
+        if(r_gadget_filter_strncmp(gadget, p_filters[i], p_registers, p-gadget)) {
           break;
         }
       }
-      if(p_filters_end[i] == NULL) {
+      if(p_filters[i] == NULL) {
         match = 0;
       }
     }

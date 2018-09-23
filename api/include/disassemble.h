@@ -23,7 +23,7 @@
 #ifndef DEF_API_DISASSEMBLE_H
 #define DEF_API_DISASSEMBLE_H
 
-#include <capstone.h>
+#include <capstone/capstone.h>
 
 #include "utils.h"
 #include "binfmt.h"

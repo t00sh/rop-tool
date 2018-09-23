@@ -8,8 +8,6 @@ CFLAGS += -fPIC -Wunreachable-code -g -fstack-protector-all
 CPPFLAGS  = -I. -I./include/ -I../capstone/include
 CPPFLAGS += -DVERSION="\"$(VERSION)\"" -DPACKAGE="\"$(PACKAGE)\""
 
-LDFLAGS = -L../capstone/
-
 SRC  = $(wildcard ./src/*/*.c)
 OBJ  = $(SRC:%.c=%.o)
 

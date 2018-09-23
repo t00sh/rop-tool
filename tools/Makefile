@@ -11,7 +11,7 @@ CFLAGS += -Wunreachable-code -g -fstack-protector-all
 CPPFLAGS  = -I. -I./include/ -I../capstone/include -I../api/ -I../api/include
 CPPFLAGS += -DVERSION="\"$(VERSION)\"" -DPACKAGE="\"$(PACKAGE)\""
 
-LDFLAGS = -L../capstone/ -static
+LDFLAGS = -L../capstone -lcapstone
 
 SRC  = $(wildcard ./src/*/*.c)
 SRC += $(wildcard ./src/*.c)
@@ -21,14 +21,19 @@ EXE = $(PACKAGE)
 
 all: $(EXE)
 
-$(EXE): $(OBJ) $(LIBROP_TOOL_API_STATIC) $(LIBCAPSTONE_STATIC)
+$(EXE): $(OBJ) $(LIBROP_TOOL_API_STATIC)
 	@ echo " LINK $@" ;
 	@ $(CC) $(CFLAGS) -o $@ $(OBJ)  \
-		$(LIBROP_TOOL_API_STATIC) $(LIBCAPSTONE_STATIC) $(LDFLAGS)
+		$(LIBROP_TOOL_API_STATIC) $(LDFLAGS)
+
+$(EXE)-static: $(OBJ) $(LIBROP_TOOL_API_STATIC) $(LIBCAPSTONE_STATIC)
+	@ echo " LINK $@" ;
+	@ $(CC) $(CFLAGS) -o $@ $(OBJ)  \
+		$(LIBROP_TOOL_API_STATIC) $(LDFLAGS) -static
 
 %.o:%.c
 	@ echo " CC $@" ;
 	@ $(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@ ;
 
 clean:
-	rm -f $(EXE) $(OBJ)
+	rm -f $(EXE) $(EXE)-static $(OBJ)

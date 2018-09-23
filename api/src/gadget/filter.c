@@ -30,141 +30,48 @@
 
 /*
  * %X  : hexadécimal value
- * %Q : qword (64bits) register (r8, r9, r10, r11, r12, r13, r14, r15,rax, rbx, rcx, rdx, rsi, rdi, rsp);
- * %D : dword (32bits) register (eax, ebx, ecx, edx, esi, edi, esp, ebp)
- * %W : word (16bits) register (ax, bx, cx, dx, si, di)
- * %B : byte (8bits) register (al, bl, cl, dl)
+ * %R : register
+ * %C : a caractere
+ * %W : qword, dword, word, byte
+ * %S : - or +
  * %% : '%' char
  */
 
-static const char *intel_x86_filters[] = {
-  "pop %D",
+static const char *intel_filters[] = {
+  "pop %R",
   "popa",
 
-  "push %D",
+  "push %R",
   "pusha",
 
-  "add %D, dword ptr [%X]",
-  "add %D, dword ptr [%D + %X]",
-  "add %D, dword ptr [%D - %X]",
-  "add %D, dword ptr [%D]",
-  "add %D, %X",
-  "add %D, %D",
-  "add dword ptr [%D], %D",
-  "add dword ptr [%D + %X], %D",
-  "add dword ptr [%D - %X], %D",
+  "add %R, %X",
+  "add %R, %R",
+  "add %R, %W ptr [%R %S %X]",
+  "add %R, %W ptr [%R]",
+  "add %W ptr [%R], %R",
+  "add %W ptr [%R %S %X], %R",
 
   "int %X",
-  "call %D",
-  "call dword ptr [%D]",
-  "jmp dword ptr [%D]",
-  "jmp %D",
+  "call %R",
+  "call %W ptr [%R]",
+  "call %W ptr [%R %S %R*%X]",
+  "call %W ptr [%R %S %X]",
+  "call %W ptr [%R %S %R*%X %S %X]",
+  "jmp %R",
+  "jmp %W ptr [%R]",
+  "jmp %W ptr [%R %S %R*%X %S %X]",
+  "jmp %W ptr [%R %S %R*%X]",
+  "jmp %W ptr [%R %S %X]",
 
-  "mov %D, %D",
-  "mov dword ptr [%D + %X], %D",
-  "mov dword ptr [%D - %X], %D",
-  "mov dword ptr [%D], %D",
-  "mov %D, dword ptr [%D]",
-  "mov %D, dword ptr [%D + %X]",
-  "mov %D, dword ptr [%D - %X]",
-  "mov %b, %b",
+  "mov %R, %R",
+  "mov %W ptr [%R %S %X], %R",
+  "mov %W ptr [%R], %R",
+  "mov %R, %W ptr [%R]",
+  "mov %R, %W ptr [%R %S %X]",
 
-  "add byte ptr [%D], %B",
-  "add byte ptr [%D + %X], %B",
-  "add byte ptr [%D - %X], %B",
-
-  "xchg %D, %D",
-
-  "inc %D",
-  "inc %W",
-  "inc %B",
-
-  "dec %D",
-  "dec %W",
-  "dec %B",
-
-  "leave ",
-  "ret ",
-  NULL
-};
-
-static const char *intel_x86_64_filters[] = {
-  "pop %D",
-  "pop %Q",
-  "popa",
-
-  "push %D",
-  "push %Q",
-  "pusha",
-
-  "add %D, dword ptr [%X]",
-  "add %D, dword ptr [%D + %X]",
-  "add %D, dword ptr [%D - %X]",
-  "add %D, dword ptr [%D]",
-  "add %D, %X",
-  "add %D, %D",
-  "add dword ptr [%D], %D",
-  "add dword ptr [%D + %X], %D",
-  "add dword ptr [%D - %X], %D",
-
-  "add %Q, dword ptr [%X]",
-  "add %Q, qword ptr [%Q+%X]",
-  "add %Q, qword ptr [%Q - %X]",
-  "add %Q, qword ptr [%Q]",
-  "add %Q, %X",
-  "add %Q, %Q",
-  "add qword ptr [%Q], %Q",
-  "add qword ptr [%Q + %X], %Q",
-  "add qword ptr [%Q - %X], %Q",
-
-  "int %X",
-  "call %D",
-  "call %Q",
-  "call dword ptr [%D]",
-  "call qword ptr [%Q]",
-  "jmp dword ptr [%D]",
-  "jmp qword ptr [%Q]",
-  "jmp %D",
-  "jmp %Q",
-
-  "mov %D, %D",
-  "mov dword ptr [%D + %X], %D",
-  "mov dword ptr [%D - %X], %D",
-  "mov dword ptr [%D], %D",
-  "mov %D, dword ptr [%D]",
-  "mov %D, dword ptr [%D + %X]",
-  "mov %D, dword ptr [%D - %X]",
-
-  "mov %Q, %Q",
-  "mov qword ptr [%Q + %X], %Q",
-  "mov qword ptr [%Q - %X], %Q",
-  "mov qword ptr [%Q], %Q",
-  "mov %Q, qword ptr [%Q]",
-  "mov %Q, qword ptr [%Q + %X]",
-  "mov %Q, qword ptr [%Q - %X]",
-
-  "mov %B, %B",
-
-  "add byte ptr [%D], %B",
-  "add byte ptr [%D + %X], %B",
-  "add byte ptr [%D - %X], %B",
-
-  "add byte ptr [%Q], %B",
-  "add byte ptr [%Q + %X], %B",
-  "add byte ptr [%Q - %X], %B",
-
-  "xchg %D, %D",
-  "xchg %Q, %Q",
-
-  "inc %Q",
-  "inc %D",
-  "inc %W",
-  "inc %B",
-
-  "dec %Q",
-  "dec %D",
-  "dec %W",
-  "dec %B",
+  "xchg %R, %R",
+  "inc %R",
+  "dec %R",
 
   "syscall ",
   "leave ",
@@ -172,131 +79,59 @@ static const char *intel_x86_64_filters[] = {
   NULL
 };
 
-static const char *att_x86_filters[] = {
-  "popl %%%D",
+static const char *intel_att_filters[] = {
+  "pop%C %%%R",
   "popa",
 
-  "pushl %%%D",
+  "push%C %%%R",
   "pusha",
 
-  "addl (%%%D), %%%D",
-  "addl %%%D, (%%%D)",
-  "addl %%%D, $%X",
-  "addl %%%D, %%%D",
-  "addl %%%D, (%%%D)",
-
-  "addl %%%D, %X(%%%D)",
-  "addb %%%B, %X(%%%D)",
-  "addb %%%B, (%%%D)",
-  "addl $%X, %%%D",
-  "addl %X, %%%D",
-  "addl %X(%%%D), %%%D",
+  "add%C (%%%R), %%%R",
+  "add%C %%%R, (%%%R)",
+  "add%C %%%R, $%X",
+  "add%C %%%R, %%%R",
+  "add%C %%%R, %X(%%%R)",
+  "add%C $%X, %%%R",
+  "add%C %X, %%%R",
+  "add%C %X(%%%R), %%%R",
 
   "int $%X",
-  "calll *(%%%D)",
-  "calll *%%%D",
-  "jmpl *%%%D",
-  "jmpl *(%%%D)",
+  "call%C *(%%%R)",
+  "call%C *%X(%%%R)",
+  "call%C *%X(%%%R, %%%R, %X)",
+  "jmp%C *%%%R",
+  "jmp%C *%X(%%%R)",
+  "jmp%C *%X(%%%R, %%%R, %%%X)",
 
-  "movl %%%D, %%%D",
-  "movl %%%D, (%%%D)",
-  "movl (%%%D), %%%D",
-  "movb %%%B, %%%B",
-  "movl %X(%%%D), %%%D",
-  "movl %%%D, %X(%%%D)",
+  "mov%C %%%R, %%%R",
+  "mov%C %%%R, (%%%R)",
+  "mov%C (%%%R), %%%R",
+  "mov%C %X(%%%R), %%%R",
+  "mov%C %%%R, %X(%%%R)",
 
-  "xchgl %%%D, %%%D",
-
-
-  "incl %%%D",
-  "incb %%%B",
-
-  "decl %%%D",
-  "decb %%%B",
+  "xchg%C %%%R, %%%R",
+  "inc%C %%%R",
+  "dec%C %%%R",
 
   "leave ",
-  "retl ",
+  "ret%C ",
   NULL
 };
 
-static const char *att_x86_64_filters[] = {
-  "popl %%%D",
-  "popq %%%Q",
-  "popa",
-
-  "pushl %%%D",
-  "pushq %%%Q",
-  "pusha",
-
-  "addl (%%%D), %%%D",
-  "addl %%%D, (%%%D)",
-  "addl %%%D, $%X",
-  "addl %%%D, %%%D",
-  "addl %%%D, (%%%D)",
-
-  "addl %%%D, %X(%%%D)",
-  "addl $%X, %%%D",
-  "addl %X, %%%D",
-  "addl %X(%%%D), %%%D",
-  "addb %%%B, %X(%%%D)",
-  "addb %%%B, (%%%D)",
-  "addb %%%B, %X(%%%Q)",
-  "addb %%%B, (%%%Q)",
-  "addq $%X, %%%Q",
-
-  "int $%X",
-  "calll *(%%%D)",
-  "calll *%%%D",
-  "callq *%%%Q",
-  "callq *(%%%Q)",
-  "jmpl *%%%D",
-  "jmpl *(%%%D)",
-  "jmpq *%%%Q",
-  "jmpq *(%%%Q)",
-
-  "movl %%%D, %%%D",
-  "movl %%%D, (%%%D)",
-  "movl (%%%D), %%%D",
-  "movl %X(%%%D), %%%D",
-  "movl %%%D, %X(%%%D)",
-  "movb %%%B, %%%B",
-  "movq %X(%%%Q), %%%Q",
-  "movq %X(%%%Q), %%%Q",
-  "movq %%%Q, %%%Q",
-  "movq %%%Q, (%%%Q)",
-  "movq (%%%Q), %%%Q",
-  "movq %%%Q, %X(%%%Q)",
-
-  "xchgl %%%D, %%%D",
-  "xchgq %%%Q, %%%Q",
-
-  "incl %%%D",
-  "incb %%%B",
-
-  "decl %%%D",
-  "decb %%%B",
-
-  "leave ",
-  "retl ",
-  "retq ",
-  NULL
+static const char *intel_registers[] = {
+  /* 8bits */
+  "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b", "al", "ah",
+  "bl", "bh", "cl", "ch"
+  /* 16bits */
+  "dl", "dh", "r8w", "r9w", "r10w", "r11w", "r12w", "r13w", "r14w", "r15w",
+  "ax", "bx", "cx", "dx", "sp", "bp", "si", "di",
+  /* 32bits */
+  "r8d", "r9d", "r10d", "r11d", "r12d", "r13d", "r14d", "r15d", "eax", "ebx",
+  "ecx", "edx", "esp", "ebp", "esi", "edi",
+  /* 64bits */
+  "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", "rax", "rbx", "rcx",
+  "rdx", "rsp", "rbp", "rsi", "rdi",
 };
-
-static const char *registers8[] = {"r8b", "r9b", "r10b", "r11b", "r12b", "r13b",
-                                   "r14b", "r15b", "al", "ah", "bl", "bh", "cl", "ch"
-                                   "dl", "dh", NULL};
-
-static const char *registers16[] = {"r8w", "r9w", "r10w", "r11w", "r12w", "r13w",
-                                    "r14w", "r15w", "ax", "bx", "cx", "dx",
-                                    "sp", "bp", "si", "di", NULL};
-
-static const char *registers32[] = {"r8d", "r9d", "r10d", "r11d", "r12d", "r13d",
-                                    "r14d", "r15d", "eax", "ebx", "ecx", "edx",
-                                    "esp", "ebp", "esi", "edi", NULL};
-
-static const char *registers64[] = {"r8", "r9", "r10", "r11", "r12", "r13",
-                                    "r14", "r15", "rax", "rbx", "rcx", "rdx",
-                                    "rsp", "rbp", "rsi", "rdi", NULL};
 
 static int r_gadget_register_length(const char *string, const char **registers) {
   size_t i;
@@ -309,7 +144,8 @@ static int r_gadget_register_length(const char *string, const char **registers) 
 }
 
 /* Return true if the instruction match the filter */
-int r_gadget_filter_strncmp(const char *gadget, const char *filter, int len) {
+int r_gadget_filter_strncmp(const char *gadget, const char *filter,
+                            const char **registers, int len) {
   const char *p1 = filter;
   const char *p2 = gadget;
   int i, length;
@@ -324,43 +160,35 @@ int r_gadget_filter_strncmp(const char *gadget, const char *filter, int len) {
         if(p2[i] != '%')
           break;
       }
-      if(*p1 == 'X') {
-        if(p2[i] == '-')
-          i++;
-        if(p2[i] != '0' && p2[i+1] != 'x')
-          break;
-  i += 2;
-  while(isxdigit(p2[i]))
-    i++;
-  i--;
-      }
-      if(*p1 == 'Q') {
-        length = r_gadget_register_length(p2 + i, registers64);
-        if(length > 0) {
-          i += length - 1;
-        } else {
-          break;
-        }
-      }
-      if(*p1 == 'D') {
-        length = r_gadget_register_length(p2 + i, registers32);
-        if(length > 0) {
-          i += length - 1;
-        } else {
+      if(*p1 == 'S') {
+        if(p2[i] != '+' && p2[i] != '-') {
           break;
         }
       }
       if(*p1 == 'W') {
-        length = r_gadget_register_length(p2 + i, registers16);
-        if(length > 0) {
-          i += length - 1;
+        if(!strncmp(p2+i, "qword", 5)) {
+          i += 4;
+        } else if(!strncmp(p2+i, "dword", 5)) {
+          i += 4;
+        } else if(!strncmp(p2+i, "word", 4)) {
+          i += 3;
+        } else if(!strncmp(p2+i, "byte", 4)) {
+          i += 3;
         } else {
           break;
         }
       }
-
-      if(*p1 == 'B') {
-        length = r_gadget_register_length(p2 + i, registers8);
+      if(*p1 == 'X') {
+        if(p2[i] == '-')
+          i++;
+        if(p2[i] == '0' && p2[i+1] == 'x')
+          i += 2;
+        while(isxdigit(p2[i]))
+          i++;
+        i--;
+      }
+      if(*p1 == 'R') {
+        length = r_gadget_register_length(p2 + i, registers);
         if(length > 0) {
           i += length - 1;
         } else {
@@ -383,20 +211,21 @@ int r_gadget_filter_strncmp(const char *gadget, const char *filter, int len) {
 /* Return true if the gadget match filters */
 int r_gadget_is_filter(const char *gadget, r_binfmt_arch_e arch, r_disa_flavor_e flavor) {
   const char **p_filters;
+  const char **p_registers;
   int i;
   const char *p;
   int match;
 
 
   /* Check wich filter to use */
-  if(flavor == R_DISA_FLAVOR_INTEL && arch == R_BINFMT_ARCH_X86) {
-    p_filters = intel_x86_filters;
-  }  else if(flavor == R_DISA_FLAVOR_ATT && arch == R_BINFMT_ARCH_X86) {
-    p_filters = att_x86_filters;
-  } else if(flavor == R_DISA_FLAVOR_INTEL && arch == R_BINFMT_ARCH_X86_64) {
-    p_filters = intel_x86_64_filters;
-  } else if(flavor == R_DISA_FLAVOR_ATT && arch == R_BINFMT_ARCH_X86_64) {
-    p_filters = att_x86_64_filters;
+  if(arch == R_BINFMT_ARCH_X86 || arch == R_BINFMT_ARCH_X86_64) {
+    p_registers = intel_registers;
+
+    if(flavor == R_DISA_FLAVOR_INTEL) {
+      p_filters = intel_filters;
+    } else {
+      p_filters = intel_att_filters;
+    }
   } else {
     /* No filter available for this flavor/architecture : don't filter gadget */
     return 1;
@@ -405,8 +234,8 @@ int r_gadget_is_filter(const char *gadget, r_binfmt_arch_e arch, r_disa_flavor_e
   while((p = strchr(gadget, ';')) != NULL) {
     match = 0;
     for(i = 0; p_filters[i] != NULL; i++) {
-      if(r_gadget_filter_strncmp(gadget, p_filters[i], p-gadget)) {
-  match = 1;
+      if(r_gadget_filter_strncmp(gadget, p_filters[i], p_registers, p-gadget)) {
+        match = 1;
       }
     }
 

@@ -59,10 +59,6 @@ void r_disa_free_instr_lst(r_disa_s *dis);
 void r_disa_close(r_disa_s *dis);
 size_t r_disa_code(r_disa_s *dis, byte_t *code, len_t len, addr_t addr, size_t count);
 r_disa_instr_t* r_disa_next_instr(r_disa_s *dis);
-int r_disa_end_is_call(r_disa_s *dis);
-int r_disa_end_is_jmp(r_disa_s *dis);
-int r_disa_end_is_ret(r_disa_s *dis);
-int r_disa_end_is_syscall(r_disa_s *dis);
 char* r_disa_instr_lst_to_str(r_disa_s *dis);
 r_disa_flavor_e r_disa_string_to_flavor(const char *string);
 

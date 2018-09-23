@@ -22,115 +22,40 @@
 /************************************************************************/
 #include "disassemble.h"
 #include "binfmt.h"
-
+#include "gadget.h"
 
 /* =========================================================================
    This file implement functions for filter and matching gadgets
    ======================================================================= */
 
-/*
- * %X  : hexadécimal value
- * %R : register
- * %C : a caractere
- * %W : qword, dword, word, byte
- * %S : - or +
- * %% : '%' char
- */
+typedef struct r_filter {
+  r_binfmt_arch_e arch;
+  r_disa_flavor_e flavor;
+  const char **filters;
+  const char **filters_end;
+  const char **registers;
+} r_filter_t;
 
-static const char *intel_filters[] = {
-  "pop %R",
-  "popa",
-
-  "push %R",
-  "pusha",
-
-  "add %R, %X",
-  "add %R, %R",
-  "add %R, %W ptr [%R %S %X]",
-  "add %R, %W ptr [%R]",
-  "add %W ptr [%R], %R",
-  "add %W ptr [%R %S %X], %R",
-
-  "int %X",
-  "call %R",
-  "call %W ptr [%R]",
-  "call %W ptr [%R %S %R*%X]",
-  "call %W ptr [%R %S %X]",
-  "call %W ptr [%R %S %R*%X %S %X]",
-  "jmp %R",
-  "jmp %W ptr [%R]",
-  "jmp %W ptr [%R %S %R*%X %S %X]",
-  "jmp %W ptr [%R %S %R*%X]",
-  "jmp %W ptr [%R %S %X]",
-
-  "mov %R, %R",
-  "mov %W ptr [%R %S %X], %R",
-  "mov %W ptr [%R], %R",
-  "mov %R, %W ptr [%R]",
-  "mov %R, %W ptr [%R %S %X]",
-
-  "xchg %R, %R",
-  "inc %R",
-  "dec %R",
-
-  "syscall ",
-  "leave ",
-  "ret ",
-  NULL
-};
-
-static const char *intel_att_filters[] = {
-  "pop%C %%%R",
-  "popa",
-
-  "push%C %%%R",
-  "pusha",
-
-  "add%C (%%%R), %%%R",
-  "add%C %%%R, (%%%R)",
-  "add%C %%%R, $%X",
-  "add%C %%%R, %%%R",
-  "add%C %%%R, %X(%%%R)",
-  "add%C $%X, %%%R",
-  "add%C %X, %%%R",
-  "add%C %X(%%%R), %%%R",
-
-  "int $%X",
-  "call%C *(%%%R)",
-  "call%C *%X(%%%R)",
-  "call%C *%X(%%%R, %%%R, %X)",
-  "jmp%C *%%%R",
-  "jmp%C *%X(%%%R)",
-  "jmp%C *%X(%%%R, %%%R, %%%X)",
-
-  "mov%C %%%R, %%%R",
-  "mov%C %%%R, (%%%R)",
-  "mov%C (%%%R), %%%R",
-  "mov%C %X(%%%R), %%%R",
-  "mov%C %%%R, %X(%%%R)",
-
-  "xchg%C %%%R, %%%R",
-  "inc%C %%%R",
-  "dec%C %%%R",
-
-  "leave ",
-  "ret%C ",
-  NULL
-};
-
-static const char *intel_registers[] = {
-  /* 8bits */
-  "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b", "al", "ah",
-  "bl", "bh", "cl", "ch"
-  /* 16bits */
-  "dl", "dh", "r8w", "r9w", "r10w", "r11w", "r12w", "r13w", "r14w", "r15w",
-  "ax", "bx", "cx", "dx", "sp", "bp", "si", "di",
-  /* 32bits */
-  "r8d", "r9d", "r10d", "r11d", "r12d", "r13d", "r14d", "r15d", "eax", "ebx",
-  "ecx", "edx", "esp", "ebp", "esi", "edi",
-  /* 64bits */
-  "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15", "rax", "rbx", "rcx",
-  "rdx", "rsp", "rbp", "rsi", "rdi",
+static r_filter_t r_filter_list[] = {
+  { /* intel x86 intel */
+    R_BINFMT_ARCH_X86, R_DISA_FLAVOR_INTEL,
+    r_filter_x86, r_filter_x86_end, r_filter_x86_registers
+  },
+  { /* intel x86 AT&T */
+    R_BINFMT_ARCH_X86, R_DISA_FLAVOR_ATT,
+    r_filter_x86_att, r_filter_x86_att_end, r_filter_x86_registers
+  },
+  { /* intel x86-64 intel */
+    R_BINFMT_ARCH_X86_64, R_DISA_FLAVOR_INTEL,
+    r_filter_x86, r_filter_x86_end, r_filter_x86_registers
+  },
+  { /* intel x86-64 AT&T */
+    R_BINFMT_ARCH_X86_64, R_DISA_FLAVOR_ATT,
+    r_filter_x86_att, r_filter_x86_att_end, r_filter_x86_registers
+  },
+  {
+    R_BINFMT_ARCH_UNDEF, R_DISA_FLAVOR_UNDEF, NULL, NULL, NULL
+  }
 };
 
 static int r_gadget_register_length(const char *string, const char **registers) {
@@ -143,7 +68,14 @@ static int r_gadget_register_length(const char *string, const char **registers) 
   return 0;
 }
 
-/* Return true if the instruction match the filter */
+/* Return true if the instruction match the filter
+ * %X : hexadecimal or decimal value
+ * %R : register
+ * %C : caracter
+ * %W : qword, dword, word, byte
+ * %S : - or +
+ * %% : '%' char
+ */
 int r_gadget_filter_strncmp(const char *gadget, const char *filter,
                             const char **registers, int len) {
   const char *p1 = filter;
@@ -208,41 +140,62 @@ int r_gadget_filter_strncmp(const char *gadget, const char *filter,
   return 0;
 }
 
-/* Return true if the gadget match filters */
-int r_gadget_is_filter(const char *gadget, r_binfmt_arch_e arch, r_disa_flavor_e flavor) {
-  const char **p_filters;
-  const char **p_registers;
-  int i;
+/*
+ * Return 0 -> reject gadget
+ * Return 1 -> accept gadget unfiltered
+ * Return 2 -> accept gadget filtered
+ */
+int r_gadget_is_filter(const char *gadget, r_binfmt_arch_e arch,
+                       r_disa_flavor_e flavor) {
+  const char **p_filters = NULL;
+  const char **p_filters_end = NULL;
+  const char **p_registers = NULL;
+  int i, is_end, match;
   const char *p;
-  int match;
 
-
-  /* Check wich filter to use */
-  if(arch == R_BINFMT_ARCH_X86 || arch == R_BINFMT_ARCH_X86_64) {
-    p_registers = intel_registers;
-
-    if(flavor == R_DISA_FLAVOR_INTEL) {
-      p_filters = intel_filters;
-    } else {
-      p_filters = intel_att_filters;
+  for(i = 0; r_filter_list[i].arch != R_BINFMT_ARCH_UNDEF; i++) {
+    if(r_filter_list[i].arch == arch &&
+       r_filter_list[i].flavor == flavor) {
+      p_filters = r_filter_list[i].filters;
+      p_filters_end = r_filter_list[i].filters_end;
+      p_registers = r_filter_list[i].registers;
+      break;
     }
-  } else {
-    /* No filter available for this flavor/architecture : don't filter gadget */
-    return 1;
   }
 
+  if(p_filters == NULL) {
+    return 0;
+  }
+
+  match = 1;
+  is_end = 0;
+
   while((p = strchr(gadget, ';')) != NULL) {
-    match = 0;
+    is_end = 0;
     for(i = 0; p_filters[i] != NULL; i++) {
       if(r_gadget_filter_strncmp(gadget, p_filters[i], p_registers, p-gadget)) {
-        match = 1;
+        break;
       }
     }
 
-    if(!match)
-      return 0;
+    if(p_filters[i] == NULL) {
+
+      for(i = 0; p_filters_end[i] != NULL; i++) {
+        if(r_gadget_filter_strncmp(gadget, p_filters_end[i], p_registers, p-gadget)) {
+          is_end = 1;
+          break;
+        }
+      }
+      if(p_filters_end[i] == NULL) {
+        match = 0;
+      }
+    }
 
     gadget = p+2;
   }
-  return 1;
+
+  if(!is_end) {
+    return 0;
+  }
+  return is_end + match;
 }

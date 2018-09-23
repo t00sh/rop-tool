@@ -38,6 +38,7 @@ void gadget_print_gadget(void *gadget) {
 void gadget_print_gadgets(r_binfmt_s *bin, r_gadget_handle_s *g_handle) {
   r_utils_hash_s *hash;
   r_gadget_s *gadget;
+  int ret;
 
   hash = r_utils_hash_new(r_utils_linklist_size(&g_handle->g_list)*5, NULL);
 
@@ -45,13 +46,13 @@ void gadget_print_gadgets(r_binfmt_s *bin, r_gadget_handle_s *g_handle) {
 
   while((gadget = r_utils_linklist_next(&g_handle->g_list)) != NULL) {
 
-    /* Filter option */
-    if(gadget_options_filter) {
-      if(!r_gadget_is_filter(gadget->gadget,
+    /* Filter gadget */
+    ret = r_gadget_is_filter(gadget->gadget,
                              g_handle->disa.arch,
-                             g_handle->disa.flavor))
+                             g_handle->disa.flavor);
 
-        continue;
+    if(ret == 0 || (gadget_options_filter && ret != 2)) {
+      continue;
     }
 
     /* All option */

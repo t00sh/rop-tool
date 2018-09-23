@@ -2,7 +2,7 @@
 /* rop-tool - A Return Oriented Programming and binary exploitation     */
 /*            tool                                                      */
 /*                                                                      */
-/* Copyright 2013-2015, -TOSH-                                          */
+/* Copyright 2013-2018, -TOSH-                                          */
 /* File coded by -TOSH-                                                 */
 /*                                                                      */
 /* This file is part of rop-tool.                                       */
@@ -20,54 +20,31 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with rop-tool.  If not, see <http://www.gnu.org/licenses/>     */
 /************************************************************************/
-#ifndef DEF_API_GADGET_H
-#define DEF_API_GADGET_H
-
-#include "utils.h"
-#include "binfmt.h"
 #include "disassemble.h"
-
-typedef struct r_gadget {
-  char *gadget;
-  int addr_size;
-  addr_t addr;
-}r_gadget_s;
-
-typedef struct r_gadget_handle {
-  r_utils_linklist_s g_list;
-  r_disa_s disa;
-  u32 depth;
-}r_gadget_handle_s;
+#include "binfmt.h"
 
 
-/* X86 filters */
-extern const char *r_filter_x86_att[];
-extern const char *r_filter_x86_att_end[];
-extern const char *r_filter_x86[];
-extern const char *r_filter_x86_end[];
-extern const char *r_filter_x86_att[];
-extern const char *r_filter_x86_att_end[];
-extern const char *r_filter_x86_registers[];
+/* =========================================================================
+   This file implement filters and registers for MIPS arch
+   ======================================================================= */
 
-/* ARM filters */
-extern const char *r_filter_arm[];
-extern const char *r_filter_arm_end[];
-extern const char *r_filter_arm_registers[];
-extern const char *r_filter_arm64[];
-extern const char *r_filter_arm64_end[];
-extern const char *r_filter_arm64_registers[];
+const char *r_filter_mips[] = {
+  "mov%C $%R, $%R",
+  "li $%R, %X",
+  "lw $%R, %X($%R)",
+  "addiu $%R, $%R",
+  NULL,
+};
 
-/* MIPS filters */
-extern const char *r_filter_mips[];
-extern const char *r_filter_mips_end[];
-extern const char *r_filter_mips_registers[];
+const char *r_filter_mips_end[] = {
+  "jalr $%R, $%R",
+  "jalr.hb $%R, $%R",
+  "jr $%R",
+  NULL,
+};
 
-/* gadget.c */
-int r_gadget_handle_init(r_gadget_handle_s *g_handle, r_binfmt_arch_e arch, r_disa_flavor_e flavor, int depth);
-void r_gadget_handle_close(r_gadget_handle_s *g_handle);
-void r_gadget_update(r_gadget_handle_s *g_handle, addr_t addr, u8 *code, u32 code_size);
-
-/* filter.c */
-int r_gadget_is_filter(const char *gadget, r_binfmt_arch_e arch, r_disa_flavor_e flavor);
-
-#endif
+const char *r_filter_mips_registers[] = {
+  "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "8", "v0", "v1",
+  "a0", "a1", "s0", "s1", "s2", "s3", "zero",
+  NULL
+};

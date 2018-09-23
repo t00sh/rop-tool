@@ -61,6 +61,11 @@ static r_filter_t r_filter_list[] = {
     R_BINFMT_ARCH_ARM64, R_DISA_FLAVOR_UNDEF,
     r_filter_arm64, r_filter_arm64_end, r_filter_arm64_registers
   },
+  { /* MIPS */
+    R_BINFMT_ARCH_MIPS, R_DISA_FLAVOR_UNDEF,
+    r_filter_mips, r_filter_mips_end, r_filter_mips_registers
+  },
+
   {
     R_BINFMT_ARCH_UNDEF, R_DISA_FLAVOR_UNDEF, NULL, NULL, NULL
   }

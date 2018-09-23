@@ -112,9 +112,9 @@ static void libheap_dump_chunk(libheap_chunk_s *chunk) {
                      LIBHEAP_CHUNK_FLAG(chunk, LIBHEAP_NON_MAIN_ARENA) ? 'A' : '-');
 
   if(libheap_options_dumpdata) {
-#if defined(__ARCH_i686)
+#if defined(__ARCH_32)
     libheap_hexdump(libheap_options_stream, libheap_options_color, LIBHEAP_ADDR(chunk), LIBHEAP_CHUNK_SIZE(chunk), (u32)(LIBHEAP_ADDR(chunk)));
-#elif defined(__ARCH_x86_64)
+#elif defined(__ARCH_64)
     libheap_hexdump(libheap_options_stream, libheap_options_color, LIBHEAP_ADDR(chunk), LIBHEAP_CHUNK_SIZE(chunk), (u64)(LIBHEAP_ADDR(chunk)));
 #else
 #error "Fix ARCH define"

@@ -2,7 +2,7 @@
 /* rop-tool - A Return Oriented Programming and binary exploitation     */
 /*            tool                                                      */
 /*                                                                      */
-/* Copyright 2013-2015, -TOSH-                                          */
+/* Copyright 2013-2018, -TOSH-                                          */
 /* File coded by -TOSH-                                                 */
 /*                                                                      */
 /* This file is part of rop-tool.                                       */
@@ -20,46 +20,31 @@
 /* You should have received a copy of the GNU General Public License    */
 /* along with rop-tool.  If not, see <http://www.gnu.org/licenses/>     */
 /************************************************************************/
-#ifndef DEF_API_DISASSEMBLE_H
-#define DEF_API_DISASSEMBLE_H
-
-#include <capstone/capstone.h>
-
-#include "utils.h"
+#include "disassemble.h"
 #include "binfmt.h"
 
 
-typedef csh r_disa_handle_t;
-typedef cs_insn r_disa_instr_t;
+/* =========================================================================
+   This file implement filters and registers for MIPS arch
+   ======================================================================= */
 
-typedef enum r_disa_flavor {
-  R_DISA_FLAVOR_UNDEF=0,
-  R_DISA_FLAVOR_INTEL,
-  R_DISA_FLAVOR_ATT
-}r_disa_flavor_e;
+const char *r_filter_mips[] = {
+  "mov%C $%R, $%R",
+  "li $%R, %X",
+  "lw $%R, %X($%R)",
+  "addiu $%R, $%R",
+  NULL,
+};
 
-typedef struct r_disa_instr_lst {
-  r_disa_instr_t *head;
-  size_t count;
-  size_t cur;
-}r_disa_instr_lst_s;
+const char *r_filter_mips_end[] = {
+  "jalr $%R, $%R",
+  "jalr.hb $%R, $%R",
+  "jr $%R",
+  NULL,
+};
 
-typedef struct r_disa {
-  r_disa_handle_t handle;
-  r_disa_instr_lst_s instr_lst;
-  r_binfmt_arch_e arch;
-  r_disa_flavor_e flavor;
-}r_disa_s;
-
-
-
-int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch);
-int r_disa_set_flavor(r_disa_s *dis, r_disa_flavor_e flavor);
-void r_disa_free_instr_lst(r_disa_s *dis);
-void r_disa_close(r_disa_s *dis);
-size_t r_disa_code(r_disa_s *dis, byte_t *code, len_t len, addr_t addr, size_t count);
-r_disa_instr_t* r_disa_next_instr(r_disa_s *dis);
-char* r_disa_instr_lst_to_str(r_disa_s *dis);
-r_disa_flavor_e r_disa_string_to_flavor(const char *string);
-
-#endif
+const char *r_filter_mips_registers[] = {
+  "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "8", "v0", "v1",
+  "a0", "a1", "s0", "s1", "s2", "s3", "zero",
+  NULL
+};

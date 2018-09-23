@@ -43,6 +43,12 @@ int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch) {
   } else if(arch == R_BINFMT_ARCH_ARM64) {
     cs_mode = CS_MODE_ARM;
     cs_arch = CS_ARCH_ARM64;
+  } else if(arch == R_BINFMT_ARCH_MIPS) {
+    cs_mode = CS_MODE_MIPS32;
+    cs_arch = CS_ARCH_MIPS;
+  } else if(arch == R_BINFMT_ARCH_MIPS64) {
+    cs_mode = CS_MODE_MIPS64;
+    cs_arch = CS_ARCH_MIPS;
   } else {
     return 0;
   }
@@ -119,77 +125,21 @@ r_disa_instr_t* r_disa_next_instr(r_disa_s *dis) {
   return instr;
 }
 
-/* Check if the instruction at <index> is a CALL */
-int r_disa_is_call(r_disa_s *dis, size_t index) {
-  assert(dis != NULL);
-  assert(index < dis->instr_lst.count);
-
-  return (!strncmp(dis->instr_lst.head[index].mnemonic, "call", 4));
-}
-
-/* Check if the instruction at <index> is a JMP */
-int r_disa_is_jmp(r_disa_s *dis, size_t index) {
-  assert(dis != NULL);
-  assert(index < dis->instr_lst.count);
-
-  return (!strncmp(dis->instr_lst.head[index].mnemonic, "jmp", 3));
-}
-
-/* Check if the instruction at <index> is a SYSCALL */
-int r_disa_is_syscall(r_disa_s *dis, size_t index) {
-  assert(dis != NULL);
-  assert(index < dis->instr_lst.count);
-
-  if(!strncmp(dis->instr_lst.head[index].mnemonic, "int", 3) && !strncmp(dis->instr_lst.head[index].op_str, "0x80", 4))
-    return 1;
-
-  if(!strncmp(dis->instr_lst.head[index].mnemonic, "syscall", 7))
-    return 1;
-
-  return 0;
-}
-
-/* Check if the instruction at <index> is a RET */
-int r_disa_is_ret(r_disa_s *dis, size_t index) {
-  assert(dis != NULL);
-  assert(index < dis->instr_lst.count);
-
-  return (!strncmp(dis->instr_lst.head[index].mnemonic, "ret", 3));
-}
-
-/* Get the index of the first call/ret/jmp/syscall instruction */
-int r_disa_end_gadget_index(r_disa_s *dis) {
-  size_t i;
-
-  for(i = 0; i < dis->instr_lst.count; i++) {
-    if(r_disa_is_ret(dis, i)
-       || r_disa_is_call(dis, i)
-       || r_disa_is_syscall(dis, i)
-       || r_disa_is_jmp(dis, i))
-      return i;
-  }
-
-  return -1;
-}
-
 /* Transform the instr list to string : [INSTR1; [INSTR2];...]
    The string is allocated with malloc, and must be freed by the caller
 */
 char* r_disa_instr_lst_to_str(r_disa_s *dis) {
   char *string;
-  size_t size;
-  int i, end_index;
+  size_t size, i;
 
   assert(dis != NULL);
-
-  end_index = r_disa_end_gadget_index(dis);
-
-  if(end_index < 0)
-    return NULL;
-
   size = 0;
 
-  for(i = 0; i <= end_index; i++) {
+  if(dis->instr_lst.count <= 0) {
+    return NULL;
+  }
+
+  for(i = 0; i < dis->instr_lst.count; i++) {
     size += strlen(dis->instr_lst.head[i].mnemonic);
     size += strlen(dis->instr_lst.head[i].op_str);
     size += 3;
@@ -200,7 +150,7 @@ char* r_disa_instr_lst_to_str(r_disa_s *dis) {
   string = r_utils_malloc(size);
   *string = '\0';
 
-  for(i = 0; i <= end_index; i++) {
+  for(i = 0; i < dis->instr_lst.count; i++) {
     strcat(string, dis->instr_lst.head[i].mnemonic);
     strcat(string, " ");
     strcat(string, dis->instr_lst.head[i].op_str);

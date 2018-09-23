@@ -1,3 +1,10 @@
+rop-tool v2.4.2 (2018-09-23)
+- FIX   : small bugs (ELF parser, build system)
+- API   : ARM + MIPS gadgets !
+- API   : we can have multiple "stop" gadgets (e.g syscall; ret;)
+- API   : improvment of the gadget filters
+- API   : support for MIPS and MIPS64 architecture
+
 rop-tool v2.4.1 (2018-01-30)
 - Fix: little bug in 'heap' command prints
 - Fix: bug in heap command, we use __malloc_hooks instead of dlsym because of infinite recursion.

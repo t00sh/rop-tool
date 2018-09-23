@@ -1,4 +1,4 @@
-rop-tool v2.4.1
+rop-tool v2.4.2
 ====
 
 A tool to help you writing binary exploits
@@ -145,7 +145,7 @@ OPTIONS:
 * Intel and AT&T flavor
 * Support of ELF, PE and MACH-O binary format
 * Support of big and little endian
-* Support of x86, x86_64, ARM and ARM64 architecture
+* Support of x86, x86_64, ARM, ARM64, MIPS, MIPS64 architectures
 
 
 ### EXAMPLES

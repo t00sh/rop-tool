@@ -1,14 +1,14 @@
 rop-tool v2.4.2
 ====
 
-A tool to help you writing binary exploits
+A tool to help you write binary exploits
 
 
 ### OPTIONS
 
 ```
-rop-tool v2.4.1
-Help you to make binary exploits.
+rop-tool v2.4.2
+Help you make binary exploits.
 
 Usage: rop-tool <cmd> [OPTIONS]
 
@@ -38,7 +38,6 @@ OPTIONS:
   --no-filter, -F          Do not apply some filters on gadgets
   --help, -h               Print this help message
   --no-color, -N           Do not colorize output
-
 ```
 
 #### SEARCH COMMAND
@@ -92,6 +91,22 @@ OPTIONS:
 
 ```
 
+#### DISASSEMBLE COMMAND
+
+```
+Usage : rop-tool dis [OPTIONS] [FILENAME]
+
+OPTIONS:
+  --help, -h               Print this help message
+  --no-color, -N           Do not colorize output
+  --address, -a    <a>     Start disassembling at address <a>
+  --offset, -o     <o>     Start disassembling at offset <o>
+  --sym, -s        <s>     Disassemble symbol
+  --len, -l        <l>     Disassemble only <l> bytes
+  --arch, -A       <a>     Select architecture (x86, x86-64, arm, arm64)
+  --flavor, -f     <f>     Change flavor (intel, att)
+```
+
 #### HEAP COMMAND
 
 ```
@@ -109,10 +124,9 @@ OPTIONS:
   --no-color, -N           Do not colorize output
 ```
 
-**Small explication about output of heap command**
+**Small explainations about output of heap command**
 
-Each line correspond to a malloc chunk, and the heap is dumped
-after each execution of heap functions (free, malloc, realloc, calloc)
+Each line correspond to a malloc chunk, and the heap is dumped after each execution of heap functions (free, malloc, realloc, calloc)
 
 * addr: is the real address of the malloc chunk
 
@@ -123,28 +137,18 @@ after each execution of heap functions (free, malloc, realloc, calloc)
 * flags: P is PREV_INUSE, M is IS_MAPED and A is NON_MAIN_ARENA
 
 
-#### DISASSEMBLE COMMAND
-
-```
-Usage : rop-tool dis [OPTIONS] [FILENAME]
-
-OPTIONS:
-  --help, -h               Print this help message
-  --no-color, -N           Do not colorize output
-  --address, -a    <a>     Start disassembling at address <a>
-  --offset, -o     <o>     Start disassembling at offset <o>
-  --sym, -s        <s>     Disassemble symbol
-  --len, -l        <l>     Disassemble only <l> bytes
-  --arch, -A       <a>     Select architecture (x86, x86-64, arm, arm64)
-  --flavor, -f     <f>     Change flavor (intel, att)
-```
-
 ### FEATURES
-* String searching, Gadget searching, patching, info, heap visualization, disassembling
+
+* String searching, gadget searching, patching, info, heap visualization, disassembling
+
 * Colored output
+
 * Intel and AT&T flavor
+
 * Support of ELF, PE and MACH-O binary format
+
 * Support of big and little endian
+
 * Support of x86, x86_64, ARM, ARM64, MIPS, MIPS64 architectures
 
 
@@ -152,35 +156,51 @@ OPTIONS:
 
 Basic gadget searching
 
-* rop-tool gadget ./program
+```
+rop-tool gadget ./program
+```
 
 Display all gadgets with AT&T syntax
 
-* rop-tool gadget ./program -f att -a
+```
+rop-tool gadget ./program -f att -a
+```
 
-Search in RAW x86 file
+Search gadgets in RAW x86 file
 
-* rop-tool gadget ./program -A x86
+```
+rop-tool gadget ./program -A x86
+```
 
 Search a "splitted" string in the binary
 
-* rop-tool search ./program -s "/bin/sh"
+```
+rop-tool search ./program -s "/bin/sh"
+```
 
 Search all strings in binary
 
-* rop-tool search ./program -a
+```
+rop-tool search ./program -a
+```
 
 Patch binary at offset 0x1000, with "\xaa\xbb\xcc\xdd" and save as "patched" :
 
-* rop-tool patch ./program -o 0x1000 -b "\xaa\xbb\xcc\xdd" -O patched
+```
+rop-tool patch ./program -o 0x1000 -b "\xaa\xbb\xcc\xdd" -O patched
+```
 
 Visualize heap allocation of /bin/ls command :
 
-* rop-tool heap /bin/ls
+```
+rop-tool heap /bin/ls
+```
 
 Disassemble 0x100 bytes at address 0x08048452
 
-* rop-tool dis /bin/ls -l 0x100 -a 0x08048452
+```
+rop-tool dis /bin/ls -l 0x100 -a 0x08048452
+```
 
 ### SCREENSHOTS
 
@@ -203,17 +223,10 @@ rop-tool search /bin/ls -s "/bin/sh\x00"
 ![ScreenShot](https://repo.t0x0sh.org/images/rop-tool/screen3.png)
 
 ```
-rop-tool search /bin/ls -w 0x90
-```
-
-![ScreenShot](https://repo.t0x0sh.org/images/rop-tool/screen4.png)
-
-```
 rop-tool heap ./a.out
 ```
 
 ![ScreenShot](https://repo.t0x0sh.org/images/rop-tool/screen5.png)
-
 
 ```
 rop-tool dis ./bin  # Many formats
@@ -221,20 +234,23 @@ rop-tool dis ./bin  # Many formats
 
 ![ScreenShot](https://repo.t0x0sh.org/images/rop-tool/screen6.png)
 
-### HOW TO CONTRIBUTE
-- Programming (see TODO file if you need ideas)
-- Report bugs
-- Improve documentation
-- Submit new ideas
-- ...
+### COMPILATION
+
+```
+git clone https://github.com/t00sh/rop-tool.git
+cd rop-tool
+sh scripts/set_env.sh
+make
+```
 
 ### DEPENDENCIES
+
 - [capstone](http://capstone-engine.org/)
 
 ### LICENSE
-- GPLv3 license : http://www.gnu.org/licenses/gpl-3.0.txt
+
+- [GPLv3 license](http://www.gnu.org/licenses/gpl-3.0.txt)
 
 ### AUTHOR
-Tosh
 
-tosh -at- t0x0sh ~dot~ org
+Tosh (tosh at t0x0sh . org)

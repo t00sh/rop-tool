@@ -22,6 +22,21 @@
 /************************************************************************/
 #include "disassemble.h"
 
+/*
+ * Convert r_binfmt_endian_e to cs_mode
+ */
+static cs_mode r_disa_convert_endian(r_binfmt_endian_e endian) {
+  switch(endian) {
+  case R_BINFMT_ENDIAN_BIG:
+    return CS_MODE_BIG_ENDIAN;
+  case R_BINFMT_ENDIAN_LITTLE:
+    return CS_MODE_LITTLE_ENDIAN;
+  default:
+    return 0;
+  }
+  return 0;
+}
+
 /* Init the disassembler */
 int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch, r_binfmt_endian_e endian) {
   int cs_mode;
@@ -53,6 +68,7 @@ int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch, r_binfmt_endian_e endian) {
     return 0;
   }
 
+  cs_mode |= r_disa_convert_endian(endian);
   if(cs_open(cs_arch, cs_mode, &dis->handle) != CS_ERR_OK)
     return 0;
 
@@ -66,6 +82,9 @@ int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch, r_binfmt_endian_e endian) {
 int r_disa_set_flavor(r_disa_s *dis, r_disa_flavor_e flavor) {
 
   assert(dis != NULL);
+
+  if(dis->arch != R_BINFMT_ARCH_X86 && dis->arch != R_BINFMT_ARCH_X86_64)
+    return 1;
 
   dis->flavor = flavor;
 

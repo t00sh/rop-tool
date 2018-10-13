@@ -53,7 +53,7 @@ typedef struct r_disa {
 
 
 
-int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch);
+int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch, r_binfmt_endian_e endian);
 int r_disa_set_flavor(r_disa_s *dis, r_disa_flavor_e flavor);
 void r_disa_free_instr_lst(r_disa_s *dis);
 void r_disa_close(r_disa_s *dis);

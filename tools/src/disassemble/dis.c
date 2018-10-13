@@ -229,7 +229,7 @@ void dis_cmd(int argc, char **argv) {
   r_binfmt_load(&bin, dis_options_filename, dis_options_arch);
 
   /* Init disassembler */
-  if(!r_disa_init(&dis, bin.arch))
+  if(!r_disa_init(&dis, bin.arch, bin.endian))
     R_UTILS_ERR("Can't init disassembler");
 
   if(!r_disa_set_flavor(&dis, dis_options_flavor))

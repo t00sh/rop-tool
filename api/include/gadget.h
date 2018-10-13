@@ -63,7 +63,9 @@ extern const char *r_filter_mips_end[];
 extern const char *r_filter_mips_registers[];
 
 /* gadget.c */
-int r_gadget_handle_init(r_gadget_handle_s *g_handle, r_binfmt_arch_e arch, r_disa_flavor_e flavor, int depth);
+int r_gadget_handle_init(r_gadget_handle_s *g_handle, r_binfmt_arch_e arch,
+                         r_binfmt_endian_e endian, r_disa_flavor_e flavor,
+                         int depth);
 void r_gadget_handle_close(r_gadget_handle_s *g_handle);
 void r_gadget_update(r_gadget_handle_s *g_handle, addr_t addr, u8 *code, u32 code_size);
 

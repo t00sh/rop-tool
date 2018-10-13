@@ -23,7 +23,7 @@
 #include "disassemble.h"
 
 /* Init the disassembler */
-int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch) {
+int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch, r_binfmt_endian_e endian) {
   int cs_mode;
   int cs_arch;
 

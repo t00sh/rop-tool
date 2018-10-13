@@ -36,11 +36,14 @@ static void r_gadget_free(void* g) {
   free(gadget->gadget);
   free(gadget);
 }
-int r_gadget_handle_init(r_gadget_handle_s *g_handle, r_binfmt_arch_e arch, r_disa_flavor_e flavor, int depth) {
+
+int r_gadget_handle_init(r_gadget_handle_s *g_handle, r_binfmt_arch_e arch,
+                         r_binfmt_endian_e endian, r_disa_flavor_e flavor,
+                         int depth) {
   assert(g_handle != NULL);
   assert(depth > 0);
 
-  if(!r_disa_init(&g_handle->disa, arch))
+  if(!r_disa_init(&g_handle->disa, arch, endian))
     return 0;
   if(!r_disa_set_flavor(&g_handle->disa, flavor)) {
     r_disa_close(&g_handle->disa);

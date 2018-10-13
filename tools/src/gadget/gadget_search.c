@@ -86,8 +86,10 @@ void gadget_print_search(r_binfmt_s *bin) {
   r_binfmt_segment_s *seg;
   r_gadget_handle_s g_handle;
 
-  if(!r_gadget_handle_init(&g_handle, bin->arch, gadget_options_flavor, gadget_options_depth))
+  if(!r_gadget_handle_init(&g_handle, bin->arch, bin->endian,
+                           gadget_options_flavor, gadget_options_depth)) {
     R_UTILS_ERR("Can't init gadget handle !");
+  }
 
   r_utils_linklist_iterator_init(&bin->segments);
 

@@ -37,7 +37,7 @@ const char *r_filter_mips[] = {
 };
 
 const char *r_filter_mips_end[] = {
-  "jalr $%R, $%R",
+  "jalr $%R",
   "jalr.hb $%R, $%R",
   "jr $%R",
   "syscall",

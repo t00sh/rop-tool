@@ -30,9 +30,9 @@
 
 const char *r_filter_mips[] = {
   "mov%C $%R, $%R",
-  "li $%R, %X",
-  "lw $%R, %X($%R)",
-  "addiu $%R, $%R",
+  "l%C $%R, %X",
+  "l%C $%R, %X($%R)",
+  "l%C $%R, %X($%R)",
   NULL,
 };
 
@@ -40,11 +40,13 @@ const char *r_filter_mips_end[] = {
   "jalr $%R, $%R",
   "jalr.hb $%R, $%R",
   "jr $%R",
+  "syscall",
   NULL,
 };
 
 const char *r_filter_mips_registers[] = {
-  "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "8", "v0", "v1",
-  "a0", "a1", "s0", "s1", "s2", "s3", "zero",
+  "zero", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3", "t4",
+  "t5", "t6", "t7", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "t8", "t9",
+  "k0", "k1", "gp", "sp", "s8", "fp", "ra",
   NULL
 };

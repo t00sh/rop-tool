@@ -27,7 +27,8 @@
    This file contain the functions for the RAW binary
    ======================================================================= */
 
-r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin, r_binfmt_arch_e arch) {
+r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin, r_binfmt_arch_e arch,
+                                 r_binfmt_endian_e endian) {
   r_binfmt_segment_s *seg;
 
   seg = r_binfmt_segment_new();
@@ -42,8 +43,7 @@ r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin, r_binfmt_arch_e arch) {
 
   bin->type = R_BINFMT_TYPE_RAW;
   bin->arch = arch;
-  bin->endian = R_BINFMT_ENDIAN_LITTLE;
-
+  bin->endian = endian;
 
   return R_BINFMT_ERR_OK;
 }

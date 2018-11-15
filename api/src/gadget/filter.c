@@ -169,7 +169,7 @@ int r_gadget_is_filter(const char *gadget, r_binfmt_arch_e arch,
   for(i = 0; r_filter_list[i].arch != R_BINFMT_ARCH_UNDEF; i++) {
     if(r_filter_list[i].arch == arch &&
        (r_filter_list[i].flavor == flavor ||
-        r_filter_list[i].flavor == R_DISA_FLAVOR_UNDEF)) {
+        flavor == R_DISA_FLAVOR_UNDEF)) {
       p_filters = r_filter_list[i].filters;
       p_filters_end = r_filter_list[i].filters_end;
       p_registers = r_filter_list[i].registers;

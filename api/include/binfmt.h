@@ -185,7 +185,7 @@ r_binfmt_err_e r_binfmt_elf64_load(r_binfmt_s *bin);
 r_binfmt_err_e r_binfmt_elf32_load(r_binfmt_s *bin);
 r_binfmt_err_e r_binfmt_macho32_load(r_binfmt_s *bin);
 r_binfmt_err_e r_binfmt_macho64_load(r_binfmt_s *bin);
-r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *bin, r_binfmt_arch_e arch);
+r_binfmt_err_e r_binfmt_raw_load(r_binfmt_s *, r_binfmt_arch_e, r_binfmt_endian_e);
 
 #include "binfmt/bin.h"
 #include "binfmt/endian.h"

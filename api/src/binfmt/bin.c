@@ -81,7 +81,8 @@ static long r_binfmt_get_size(FILE* file) {
 /* Load binary in memory
  * If arch != R_BINFMT_ARCH_UNDEF then the binary is loaded in 'raw mode'
  */
-void r_binfmt_load(r_binfmt_s *bin, const char *filename, r_binfmt_arch_e arch) {
+void r_binfmt_load(r_binfmt_s *bin, const char *filename, r_binfmt_arch_e arch,
+                   r_binfmt_endian_e endian) {
   FILE *fd;
   long size;
   int i;
@@ -111,7 +112,7 @@ void r_binfmt_load(r_binfmt_s *bin, const char *filename, r_binfmt_arch_e arch) 
     R_UTILS_ERR("Error while read binary file");
 
   if(arch != R_BINFMT_ARCH_UNDEF) {
-    r_binfmt_raw_load(bin, arch);
+    r_binfmt_raw_load(bin, arch, endian);
     return;
   }
 

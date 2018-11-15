@@ -142,7 +142,7 @@ void patch_cmd(int argc, char **argv) {
 
   patch_options_parse(argc, argv);
 
-  r_binfmt_load(&bin, patch_options_filename, patch_options_arch);
+  r_binfmt_load(&bin, patch_options_filename, patch_options_arch, 0);
 
   if(patch_options_offset != R_BINFMT_BAD_ADDR) {
     patch_offset(&bin,

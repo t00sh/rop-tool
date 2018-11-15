@@ -111,7 +111,7 @@ void info_cmd(int argc, char **argv) {
 
   info_options_parse(argc, argv);
 
-  r_binfmt_load(&bin, info_options_filename, 0);
+  r_binfmt_load(&bin, info_options_filename, 0, 0);
 
   if(info_options_short)
     r_binfmt_print_infos(&bin, info_options_color);

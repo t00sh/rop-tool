@@ -30,14 +30,15 @@ int gadget_options_filter = 1;
 int gadget_options_color = 1;
 int gadget_options_all = 0;
 r_binfmt_arch_e gadget_options_arch = R_BINFMT_ARCH_UNDEF;
-r_disa_flavor_e gadget_options_flavor = R_DISA_FLAVOR_INTEL;
+r_binfmt_endian_e gadget_options_endian = R_BINFMT_ENDIAN_UNDEF;
+r_disa_flavor_e gadget_options_flavor = R_DISA_FLAVOR_UNDEF;
 r_utils_bytes_s *gadget_options_bad = NULL;
 const char *gadget_options_filename = "a.out";
 
 void gadget_help(void) {
   printf("Usage : %s gadget [OPTIONS] [FILENAME]\n\n", PACKAGE);
   printf("OPTIONS:\n");
-  printf("  --arch, -A               Select an architecture (x86, x86-64, arm, arm64)\n");
+  printf("  --arch, -A               Select an architecture (use -A list to see available architectures)\n");
   printf("  --all, -a                Print all gadgets (even gadgets which are not uniq)\n");
   printf("  --bad, -B           [b]  Specify bad chars in address\n");
   printf("  --depth, -d         [d]  Specify the depth for gadget searching (default is %d)\n", GADGET_DEFAULT_DEPTH);
@@ -69,8 +70,12 @@ void gadget_options_parse(int argc, char **argv) {
     switch(opt) {
 
     case 'A':
-      gadget_options_arch = r_binfmt_string_to_arch(optarg);
-      if(gadget_options_arch == R_BINFMT_ARCH_UNDEF)
+      if(!strcmp(optarg, "list")) {
+        r_disa_list_architectures();
+        exit(EXIT_SUCCESS);
+      }
+
+      if(!r_disa_string_to_arch(optarg, &gadget_options_arch, &gadget_options_endian))
         R_UTILS_ERR("%s: bad architecture.", optarg);
       break;
 
@@ -124,7 +129,7 @@ void gadget_cmd(int argc, char **argv) {
 
   gadget_options_parse(argc, argv);
 
-  r_binfmt_load(&bin, gadget_options_filename, gadget_options_arch);
+  r_binfmt_load(&bin, gadget_options_filename, gadget_options_arch, gadget_options_endian);
   R_UTILS_PRINT_YELLOW_BG_BLACK(gadget_options_color, "Looking gadgets, please wait...\n");
   gadget_print_search(&bin);
   r_binfmt_free(&bin);

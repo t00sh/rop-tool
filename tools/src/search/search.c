@@ -132,7 +132,7 @@ void search_cmd(int argc, char **argv) {
 
   search_options_parse(argc, argv);
 
-  r_binfmt_load(&bin, search_options_filename, search_options_arch);
+  r_binfmt_load(&bin, search_options_filename, search_options_arch, 0);
 
   switch(search_options_mode) {
   case SEARCH_MODE_STRING_ALL:

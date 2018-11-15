@@ -28,8 +28,9 @@ int dis_options_color = 1;
 addr_t dis_options_address = R_BINFMT_BAD_ADDR;
 addr_t dis_options_offset = R_BINFMT_BAD_OFFSET;
 u64 dis_options_len = 0;
-r_binfmt_arch_e dis_options_arch = R_BINFMT_TYPE_UNDEF;
-r_disa_flavor_e dis_options_flavor = R_DISA_FLAVOR_INTEL;
+r_binfmt_arch_e dis_options_arch = R_BINFMT_ARCH_UNDEF;
+r_binfmt_endian_e dis_options_endian = R_BINFMT_ENDIAN_UNDEF;
+r_disa_flavor_e dis_options_flavor = R_DISA_FLAVOR_UNDEF;
 const char *dis_options_sym = NULL;
 
 /* Print disassemble help */
@@ -42,7 +43,7 @@ void dis_help(void) {
   printf("  --offset, -o     <o>     Start disassembling at offset <o>\n");
   printf("  --sym, -s        <s>     Disassemble symbol\n");
   printf("  --len, -l        <l>     Disassemble only <l> bytes\n");
-  printf("  --arch, -A       <a>     Select architecture (x86, x86-64, arm, arm64)\n");
+  printf("  --arch, -A       <a>     Select architecture (use -A list to see available architectures)\n");
   printf("  --flavor, -f     <f>     Change flavor (intel, att)\n");
   printf("\n");
 }
@@ -76,15 +77,19 @@ void dis_options_parse(int argc, char **argv) {
       break;
 
     case 'A':
-      dis_options_arch = r_binfmt_string_to_arch(optarg);
-      if(dis_options_arch == R_BINFMT_ARCH_UNDEF)
-  R_UTILS_ERR("%s: bad architecture.", optarg);
+      if(!strcmp(optarg, "list")) {
+        r_disa_list_architectures();
+        exit(EXIT_SUCCESS);
+      }
+
+      if(!r_disa_string_to_arch(optarg, &dis_options_arch, &dis_options_endian))
+        R_UTILS_ERR("%s: bad architecture.", optarg);
       break;
 
     case 'f':
       dis_options_flavor = r_disa_string_to_flavor(optarg);
       if(dis_options_flavor == R_DISA_FLAVOR_UNDEF)
-  R_UTILS_ERR("%s: bad flavor.", optarg);
+        R_UTILS_ERR("%s: bad flavor.", optarg);
       break;
 
     case 'h':
@@ -226,12 +231,11 @@ void dis_cmd(int argc, char **argv) {
 
   dis_options_parse(argc, argv);
 
-  r_binfmt_load(&bin, dis_options_filename, dis_options_arch);
+  r_binfmt_load(&bin, dis_options_filename, dis_options_arch, dis_options_endian);
 
   /* Init disassembler */
   if(!r_disa_init(&dis, bin.arch, bin.endian))
     R_UTILS_ERR("Can't init disassembler");
-
   if(!r_disa_set_flavor(&dis, dis_options_flavor))
     R_UTILS_ERR("Can't set flavor");
 

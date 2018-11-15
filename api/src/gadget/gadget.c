@@ -45,10 +45,9 @@ int r_gadget_handle_init(r_gadget_handle_s *g_handle, r_binfmt_arch_e arch,
 
   if(!r_disa_init(&g_handle->disa, arch, endian))
     return 0;
-  if(!r_disa_set_flavor(&g_handle->disa, flavor)) {
-    r_disa_close(&g_handle->disa);
+
+  if(!r_disa_set_flavor(&g_handle->disa, flavor))
     return 0;
-  }
 
   g_handle->depth = depth;
   r_utils_linklist_init(&g_handle->g_list);

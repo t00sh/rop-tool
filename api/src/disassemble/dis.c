@@ -22,78 +22,119 @@
 /************************************************************************/
 #include "disassemble.h"
 
-/*
- * Convert r_binfmt_endian_e to cs_mode
- */
-static cs_mode r_disa_convert_endian(r_binfmt_endian_e endian) {
-  switch(endian) {
-  case R_BINFMT_ENDIAN_BIG:
-    return CS_MODE_BIG_ENDIAN;
-  case R_BINFMT_ENDIAN_LITTLE:
-    return CS_MODE_LITTLE_ENDIAN;
-  default:
-    return 0;
+
+typedef struct {
+  const char *name;
+  const char *comment;
+  r_binfmt_arch_e arch;
+  r_binfmt_endian_e endian;
+  int cs_arch;
+  int cs_mode;
+} r_disa_arch_s;
+
+static const r_disa_arch_s g_available_architectures[] = {
+  {
+    "x86", "x86 architecture",
+    R_BINFMT_ARCH_X86, R_BINFMT_ENDIAN_LITTLE,
+    CS_ARCH_X86, CS_MODE_32,
+  },
+  {
+    "x86-64", "x86-64 architecture",
+    R_BINFMT_ARCH_X86_64, R_BINFMT_ENDIAN_LITTLE,
+    CS_ARCH_X86, CS_MODE_64,
+  },
+  {
+    "arm", "ARM architecture",
+    R_BINFMT_ARCH_ARM, R_BINFMT_ENDIAN_LITTLE,
+    CS_ARCH_ARM, CS_MODE_32,
+  },
+  {
+    "arm64", "ARM 64bits architecture",
+    R_BINFMT_ARCH_ARM64, R_BINFMT_ENDIAN_LITTLE,
+    CS_ARCH_ARM, CS_MODE_64,
+  },
+  {
+    "mipsel", "MIPS 32bits little endian architecture",
+    R_BINFMT_ARCH_MIPS, R_BINFMT_ENDIAN_LITTLE,
+    CS_ARCH_MIPS, CS_MODE_32 | CS_MODE_LITTLE_ENDIAN,
+  },
+  {
+    "mips", "MIPS 32bits big endian architecture",
+    R_BINFMT_ARCH_MIPS, R_BINFMT_ENDIAN_BIG,
+    CS_ARCH_MIPS, CS_MODE_32 | CS_MODE_BIG_ENDIAN,
+  },
+  {NULL, NULL, 0, 0, 0, 0}
+};
+
+void r_disa_list_architectures(void) {
+  int i;
+
+  printf("Architectures :\n");
+  for(i = 0; g_available_architectures[i].name != NULL; i++) {
+    printf("  - %-25s %s\n", g_available_architectures[i].name,
+           g_available_architectures[i].comment);
+  }
+}
+
+int r_disa_string_to_arch(const char *string, r_binfmt_arch_e *arch,
+                          r_binfmt_endian_e *endian) {
+  int i;
+
+  assert(string != NULL);
+  assert(arch != NULL);
+  assert(endian != NULL);
+
+  for(i = 0; g_available_architectures[i].name != NULL; i++) {
+    if(!strcmp(string, g_available_architectures[i].name)) {
+      *arch = g_available_architectures[i].arch;
+      *endian = g_available_architectures[i].endian;
+      return 1;
+    }
   }
   return 0;
 }
 
-/* Init the disassembler */
-int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch, r_binfmt_endian_e endian) {
-  int cs_mode;
-  int cs_arch;
+int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch,
+                       r_binfmt_endian_e endian) {
+  int cs_arch = 0, cs_mode = 0, i;
 
-  assert(dis != NULL);
+  for(i = 0; g_available_architectures[i].name != NULL; i++) {
+    if(g_available_architectures[i].arch == arch &&
+       g_available_architectures[i].endian == endian) {
+      cs_arch = g_available_architectures[i].cs_arch;
+      cs_mode = g_available_architectures[i].cs_mode;
+      break;
+    }
+  }
 
-  memset(dis, 0, sizeof(*dis));
+  if(g_available_architectures[i].name == NULL)
+    return 0;
 
-  if(arch == R_BINFMT_ARCH_X86_64) {
-    cs_mode = CS_MODE_64;
-    cs_arch = CS_ARCH_X86;
-  } else if(arch == R_BINFMT_ARCH_X86) {
-    cs_mode = CS_MODE_32;
-    cs_arch = CS_ARCH_X86;
-  }else if(arch == R_BINFMT_ARCH_ARM) {
-    cs_mode = CS_MODE_ARM;
-    cs_arch = CS_ARCH_ARM;
-  } else if(arch == R_BINFMT_ARCH_ARM64) {
-    cs_mode = CS_MODE_ARM;
-    cs_arch = CS_ARCH_ARM64;
-  } else if(arch == R_BINFMT_ARCH_MIPS) {
-    cs_mode = CS_MODE_MIPS32;
-    cs_arch = CS_ARCH_MIPS;
-  } else if(arch == R_BINFMT_ARCH_MIPS64) {
-    cs_mode = CS_MODE_MIPS64;
-    cs_arch = CS_ARCH_MIPS;
-  } else {
+  memset(dis, 0, sizeof(r_disa_s));
+
+  if(cs_open(cs_arch, cs_mode, &dis->handle) != CS_ERR_OK) {
     return 0;
   }
 
-  cs_mode |= r_disa_convert_endian(endian);
-  if(cs_open(cs_arch, cs_mode, &dis->handle) != CS_ERR_OK)
-    return 0;
-
   dis->arch = arch;
-  dis->flavor = R_DISA_FLAVOR_INTEL;
+  dis->endian = endian;
+  dis->flavor = R_DISA_FLAVOR_UNDEF;
 
   return 1;
 }
 
-/* Set the disassembler flavor (intel/AT&T) */
 int r_disa_set_flavor(r_disa_s *dis, r_disa_flavor_e flavor) {
-
-  assert(dis != NULL);
-
-  if(dis->arch != R_BINFMT_ARCH_X86 && dis->arch != R_BINFMT_ARCH_X86_64)
-    return 1;
-
   dis->flavor = flavor;
-
-  if(flavor == R_DISA_FLAVOR_INTEL)
-    return cs_option(dis->handle, CS_OPT_SYNTAX, CS_OPT_SYNTAX_INTEL) == CS_ERR_OK;
-  if(flavor == R_DISA_FLAVOR_ATT)
-    return cs_option(dis->handle, CS_OPT_SYNTAX, CS_OPT_SYNTAX_ATT) == CS_ERR_OK;
-
-  return 0;
+  switch(flavor) {
+  case R_DISA_FLAVOR_INTEL:
+    return cs_option(dis->handle, CS_OPT_SYNTAX,
+                     CS_OPT_SYNTAX_INTEL) == CS_ERR_OK;
+  case R_DISA_FLAVOR_ATT:
+    return cs_option(dis->handle, CS_OPT_SYNTAX,
+                     CS_OPT_SYNTAX_ATT) == CS_ERR_OK;
+  default:
+    return 1;
+  }
 }
 
 /* Free the instruction list */

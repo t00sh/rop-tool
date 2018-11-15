@@ -24,7 +24,7 @@
 #define DEF_API_BINFMT_BIN_H
 
 void r_binfmt_free(r_binfmt_s *bin);
-void r_binfmt_load(r_binfmt_s *bin, const char *filename, r_binfmt_arch_e arch);
+void r_binfmt_load(r_binfmt_s *, const char *, r_binfmt_arch_e, r_binfmt_endian_e);
 void r_binfmt_write(r_binfmt_s *bin, const char *filename);
 r_binfmt_arch_e r_binfmt_string_to_arch(const char *str);
 const char* r_binfmt_arch_to_string(r_binfmt_arch_e arch);

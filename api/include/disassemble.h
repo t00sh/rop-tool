@@ -48,18 +48,23 @@ typedef struct r_disa {
   r_disa_handle_t handle;
   r_disa_instr_lst_s instr_lst;
   r_binfmt_arch_e arch;
+  r_binfmt_endian_e endian;
   r_disa_flavor_e flavor;
 }r_disa_s;
 
 
 
-int r_disa_init(r_disa_s *dis, r_binfmt_arch_e arch, r_binfmt_endian_e endian);
-int r_disa_set_flavor(r_disa_s *dis, r_disa_flavor_e flavor);
+int r_disa_init_from_string(r_disa_s *, const char *);
+int r_disa_init(r_disa_s *, r_binfmt_arch_e, r_binfmt_endian_e);
+int r_disa_string_to_arch(const char *, r_binfmt_arch_e *, r_binfmt_endian_e *);
+int r_disa_set_flavor(r_disa_s *, r_disa_flavor_e);
+void r_disa_list_architectures(void);
 void r_disa_free_instr_lst(r_disa_s *dis);
 void r_disa_close(r_disa_s *dis);
 size_t r_disa_code(r_disa_s *dis, byte_t *code, len_t len, addr_t addr, size_t count);
 r_disa_instr_t* r_disa_next_instr(r_disa_s *dis);
 char* r_disa_instr_lst_to_str(r_disa_s *dis);
 r_disa_flavor_e r_disa_string_to_flavor(const char *string);
+
 
 #endif

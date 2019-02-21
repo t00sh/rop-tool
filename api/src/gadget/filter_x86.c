@@ -56,7 +56,7 @@ const char *r_filter_x86[] = {
 };
 
 const char *r_filter_x86_end[] = {
-  "int 0x86",
+  "int 0x80",
   "call %R",
   "call %W ptr [%R]",
   "call %W ptr [%R %S %R*%X]",
